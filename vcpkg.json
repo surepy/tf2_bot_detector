@@ -1,23 +1,36 @@
 {
-	"name": "tf2-bot-detector",
-	"version-string": "",
-	"dependencies": [
-		"sdl2",
-		"cryptopp",
-		"libzippp",
-		"fmt",
-		{
-			"name": "discord-game-sdk",
-			"platform": "!static"
-		},
-		"stb",
-		"nlohmann-json",
-		"catch2",
-		"sqlitecpp",
-		{
-			"name": "cpprestsdk",
-			"features": [ "compression" ]
-		},
-		"zlib"
-	]
+  "name": "tf2-bot-detector",
+  "version-string": "",
+  "dependencies": [
+    "sdl2",
+    "cryptopp",
+    "libzippp",
+    {
+      "name": "fmt",
+      "version>=": "8.0.1"
+    },
+    {
+      "name": "discord-game-sdk",
+      "platform": "!static"
+    },
+    "stb",
+    "nlohmann-json",
+    "catch2",
+    "sqlitecpp",
+    {
+      "name": "cpprestsdk",
+      "features": [
+        "compression"
+      ]
+    },
+    "zlib",
+    "mh-cmake-common"
+  ],
+  "overrides": [
+    {
+      "name": "fmt",
+      "version": "8.0.1"
+    }
+  ],
+  "builtin-baseline": "253704407ae68efa37bf8f5b59b3e06dd40d3d3f"
 }

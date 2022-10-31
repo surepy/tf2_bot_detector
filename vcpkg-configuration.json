@@ -1,0 +1,12 @@
+{
+  "registries": [
+    {
+      "kind": "git",
+      "baseline": "c1fa700c9440aef5bf58ad73736a99693091c19c",
+      "repository": "https://github.com/PazerOP/vcpkg-registry",
+      "packages": [
+        "mh-cmake-common"
+      ]
+    }
+  ]
+}
