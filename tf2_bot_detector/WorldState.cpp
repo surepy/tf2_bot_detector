@@ -570,15 +570,15 @@ std::vector<IPlayer*> WorldState::GetRecentPlayers(size_t recentPlayerCount)
 void WorldState::OnConfigExecLineParsed(const ConfigExecLine& execLine)
 {
 	const std::string_view& cfgName = execLine.GetConfigFileName();
-	if (cfgName == "scout.cfg"sv ||
-		cfgName == "sniper.cfg"sv ||
-		cfgName == "soldier.cfg"sv ||
-		cfgName == "demoman.cfg"sv ||
-		cfgName == "medic.cfg"sv ||
-		cfgName == "heavyweapons.cfg"sv ||
-		cfgName == "pyro.cfg"sv ||
-		cfgName == "spy.cfg"sv ||
-		cfgName == "engineer.cfg"sv)
+	if (cfgName.ends_with("scout.cfg"sv) ||
+		cfgName.ends_with("sniper.cfg"sv) ||
+		cfgName.ends_with("soldier.cfg"sv) ||
+		cfgName.ends_with("demoman.cfg"sv) ||
+		cfgName.ends_with("medic.cfg"sv) ||
+		cfgName.ends_with("heavyweapons.cfg"sv) ||
+		cfgName.ends_with("pyro.cfg"sv) ||
+		cfgName.ends_with("spy.cfg"sv) ||
+		cfgName.ends_with("engineer.cfg"sv))
 	{
 		DebugLog("Spawned as {}", cfgName.substr(0, cfgName.size() - 3));
 
