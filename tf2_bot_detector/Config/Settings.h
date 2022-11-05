@@ -75,6 +75,7 @@ namespace tf2_bot_detector
 
 	struct GeneralSettings : public ISteamAPISettings
 	{
+		bool m_AutoChatWarningsConnectingParty = true;
 		bool m_AutoChatWarnings = true;
 		bool m_AutoChatWarningsConnecting = false;
 		bool m_AutoVotekick = true;

@@ -469,6 +469,9 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 		if (ImGui::BeginMenu("Mark"))
 		{
+			std::string mark_reason; 
+
+			ImGui::InputText("Reason", &mark_reason);
 			for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
 			{
 				const auto attr = PlayerAttribute(i);
@@ -476,7 +479,7 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 				if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
 				{
-					if (modLogic.SetPlayerAttribute(player, attr, AttributePersistence::Saved, !existingMarked))
+					if (modLogic.SetPlayerAttribute(player, attr, AttributePersistence::Saved, !existingMarked, mark_reason))
 						Log("Manually marked {}{} {:v}", player, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr));
 				}
 			}

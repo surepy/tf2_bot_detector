@@ -509,6 +509,7 @@ void MainWindow::OnDraw()
 			};
 
 			ModerationCheckbox("Enable Chat Warnings", m_Settings.m_AutoChatWarnings, "Enables chat message warnings about cheaters.");
+			ModerationCheckbox("Enable Chat Warnings (Party)", m_Settings.m_AutoChatWarningsConnectingParty, "Enables party message warnings about cheaters.");
 			ModerationCheckbox("Enable Auto Votekick", m_Settings.m_AutoVotekick, "Automatically votekicks cheaters on your team.");
 			ModerationCheckbox("Enable Auto-mark", m_Settings.m_AutoMark, "Automatically marks players matching the detection rules.");
 

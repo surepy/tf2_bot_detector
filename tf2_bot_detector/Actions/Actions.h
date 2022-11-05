@@ -83,6 +83,7 @@ namespace tf2_bot_detector
 		Public,
 		Team,
 		Party,
+		PartyChat // tf_party_chat vs say_party
 	};
 
 	class ChatMessageAction final : public GenericCommandAction

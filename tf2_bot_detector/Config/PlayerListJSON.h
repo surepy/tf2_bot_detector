@@ -101,6 +101,7 @@ namespace tf2_bot_detector
 		std::optional<LastSeen> m_LastSeen;
 
 		std::vector<nlohmann::json> m_Proof;
+		void addProof(std::string reason);
 
 		bool operator==(const PlayerListData&) const;
 
