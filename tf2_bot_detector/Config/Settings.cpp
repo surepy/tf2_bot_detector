@@ -398,6 +398,12 @@ void Settings::Deserialize(const nlohmann::json& json)
 	{
 		static const GeneralSettings DEFAULTS;
 
+		// this setting does not exist in normal bot detector.
+		if (auto found = json.find("custom"); found != json.end())
+		{
+			try_get_to_defaulted(*found, m_AutoChatWarningsConnectingParty, "auto_chat_warnings_connecting_party", DEFAULTS.m_AutoChatWarningsConnectingParty);
+		}
+
 		try_get_to_defaulted(*found, m_LocalSteamIDOverride, "local_steamid_override");
 		try_get_to_defaulted(*found, m_SleepWhenUnfocused, "sleep_when_unfocused");
 		try_get_to_defaulted(*found, m_AutoTempMute, "auto_temp_mute", DEFAULTS.m_AutoTempMute);
@@ -451,6 +457,7 @@ void Settings::Serialize(nlohmann::json& json) const
 		{ "theme", m_Theme },
 		{ "general",
 			{
+				{ "custom", { { "auto_chat_warnings_connecting_party", m_AutoChatWarningsConnectingParty } } },
 				{ "sleep_when_unfocused", m_SleepWhenUnfocused },
 				{ "auto_temp_mute", m_AutoTempMute },
 				{ "program_update_check_mode", m_ReleaseChannel },

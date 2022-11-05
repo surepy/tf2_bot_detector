@@ -66,6 +66,7 @@ std::string_view ChatMessageAction::GetCommand(ChatMessageType type)
 	case ChatMessageType::Public:  return "say"sv;
 	case ChatMessageType::Team:    return "say_team"sv;
 	case ChatMessageType::Party:   return "say_party"sv;
+	case ChatMessageType::PartyChat:   return "tf_party_chat"sv;
 
 	default:
 		throw std::invalid_argument("Unhandled/invalid ChatMessageType");

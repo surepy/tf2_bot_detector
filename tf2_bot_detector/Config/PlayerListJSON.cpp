@@ -382,6 +382,11 @@ PlayerListData::~PlayerListData()
 {
 }
 
+void tf2_bot_detector::PlayerListData::addProof(std::string reason)
+{
+	m_Proof.push_back(reason);
+}
+
 bool PlayerListData::operator==(const PlayerListData& other) const
 #if _MSC_VER >= 1927
 = default;

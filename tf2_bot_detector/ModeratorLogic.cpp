@@ -13,6 +13,7 @@
 #include "PlayerStatus.h"
 #include "WorldEventListener.h"
 #include "WorldState.h"
+#include "Networking/SteamAPI.h"
 
 #include <mh/algorithm/algorithm_generic.hpp>
 #include <mh/algorithm/multi_compare.hpp>
@@ -53,7 +54,7 @@ namespace
 		PlayerMarks HasPlayerAttributes(const SteamID& id, const PlayerAttributesList& attributes, AttributePersistence persistence) const override;
 		bool InitiateVotekick(const IPlayer& player, KickReason reason, const PlayerMarks* marks = nullptr) override;
 
-		bool SetPlayerAttribute(const IPlayer& id, PlayerAttribute markType, AttributePersistence persistence, bool set = true) override;
+		bool SetPlayerAttribute(const IPlayer& id, PlayerAttribute markType, AttributePersistence persistence, bool set = true, std::string proof = "") override;
 
 		std::optional<LobbyMemberTeam> TryGetMyTeam() const;
 		TeamShareResult GetTeamShareResult(const SteamID& id) const override;
@@ -86,6 +87,9 @@ namespace
 			// (we don't know the cheater's name yet, so don't spam if they can't do anything about it yet)
 			bool m_PreWarnedOtherTeam = false;
 
+			// same as above, but we don't want to spam party chat.
+			bool m_PartyWarned = false;
+
 			// If we're not the bot leader, prevent this player from triggering
 			// any warnings (but still participates in other warnings!!!)
 			std::optional<time_point_t> m_ConnectingWarningDelayEnd;
@@ -103,6 +107,9 @@ namespace
 
 		void OnPlayerStatusUpdate(IWorldState& world, const IPlayer& player) override;
 		void OnChatMsg(IWorldState& world, IPlayer& player, const std::string_view& msg) override;
+
+		// FIXME: move to a different file, this really shouldn't be here.
+		void OnLocalPlayerInitialized(IWorldState& world, bool initialized);
 
 		void OnRuleMatch(const ModerationRule& rule, const IPlayer& player);
 
@@ -127,6 +134,7 @@ namespace
 			const std::vector<Cheater>& connectingEnemyCheaters);
 		void HandleConnectedEnemyCheaters(const std::vector<Cheater>& enemyCheaters);
 		void HandleConnectingEnemyCheaters(const std::vector<Cheater>& connectingEnemyCheaters);
+		void HandleConnectingMarkedPlayers(const std::vector<Cheater>& connectingEnemyCheaters);
 
 		// Minimum interval between callvote commands (the 150 comes from the default value of sv_vote_creation_timer)
 		static constexpr duration_t MIN_VOTEKICK_INTERVAL = std::chrono::seconds(150);
@@ -260,6 +268,27 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 			OnRuleMatch(rule, player);
 			Log("Chat message rule match for {}: {}", rule.m_Description, std::quoted(msg));
 		}
+	}
+}
+
+void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initialized)
+{
+	m_ActionManager->QueueAction<GenericCommandAction>("exec tf2bd/OnGameJoin");
+
+	if (m_Settings->m_AutoChatWarningsConnectingParty) {
+		mh::fmtstr<128> chatMsg;
+
+		int markedPlayerCount = 0;
+		for (IPlayer& player : m_World->GetLobbyMembers())
+		{
+			if (!m_PlayerList.GetPlayerAttributes(player).empty()) {
+				++markedPlayerCount;
+			}
+		}
+
+		chatMsg.fmt("[tf2bd] Currently {} players are marked in this lobby.", markedPlayerCount);
+
+		m_ActionManager->QueueAction<ChatMessageAction>(chatMsg.str(), ChatMessageType::PartyChat);
 	}
 }
 
@@ -539,6 +568,153 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 	}
 }
 
+void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& connectingEnemyCheaters)
+{
+	if (!m_Settings->m_AutoChatWarningsConnectingParty || connectingEnemyCheaters.size() < 1) {
+		return;
+	}
+
+	mh::fmtstr<128> chatMsg;
+	if (connectingEnemyCheaters.size() == 1)
+	{
+		auto& cheaterData = connectingEnemyCheaters.at(0)->GetOrCreateData<PlayerExtraData>();
+		if (cheaterData.m_PartyWarned)
+			return;
+
+		tf2_bot_detector::IPlayer& player = connectingEnemyCheaters.at(0).m_Player.get();
+		PlayerMarks marks = connectingEnemyCheaters.at(0).m_Marks;
+		SteamID steamid = player.GetSteamID();
+
+		// bad, lazy, and can't find the conversion helper rn
+		// CSER or C-ER
+		std::string attribute = "";
+
+		if (marks.m_Marks.size() > 1) {
+			std::string attrib_summary = "----";
+
+			if (marks.Has(PlayerAttribute::Cheater)) {
+				attrib_summary.at(0) = 'C';
+			}
+			if (marks.Has(PlayerAttribute::Suspicious)) {
+				attrib_summary.at(1) = 'S';
+			}
+			if (marks.Has(PlayerAttribute::Exploiter)) {
+				attrib_summary.at(2) = 'E';
+			}
+			if (marks.Has(PlayerAttribute::Racist)) {
+				attrib_summary.at(3) = 'R';
+			}
+			attribute = attrib_summary;
+		}
+		else {
+			if (marks.Has(PlayerAttribute::Cheater)) {
+				attribute = "Cheating";
+			}
+			else if (marks.Has(PlayerAttribute::Suspicious)) {
+				attribute = "Possib,Cheat";
+			}
+			else if (marks.Has(PlayerAttribute::Exploiter)) {
+				attribute = "Exploiting";
+			}
+			else if (marks.Has(PlayerAttribute::Racist)) {
+				attribute = "Racism/Trolling";
+			}
+		}
+
+		//player.GetNameSafe(),
+		auto summary = player.GetPlayerSummary();
+
+		// steamapi didn't get the name yet, try again next loop.
+		if (!summary.has_value()) {
+			Log(steamid.str() + " - steamapi didnt recieve info, waiting.");
+			return;
+		}
+		std::string username = summary.value().m_Nickname;
+
+		chatMsg.fmt("[tf2bd] WARN: Marked Player Joining ({} - {}).", username, attribute);
+	}
+	else
+	{
+		std::string msg = "";
+
+		for (auto& p : connectingEnemyCheaters) {
+			auto& cheaterData = p->GetOrCreateData<PlayerExtraData>();
+			if (cheaterData.m_PartyWarned)
+				return;
+
+			tf2_bot_detector::IPlayer& player = p.m_Player.get();
+			PlayerMarks marks = p.m_Marks;
+			SteamID steamid = player.GetSteamID();
+			// bad, lazy, and can't find the conversion helper rn
+			// CSER or C-ER
+			std::string attribute = "";
+
+			if (marks.m_Marks.size() > 1) {
+				std::string attrib_summary = "----";
+
+				if (marks.Has(PlayerAttribute::Cheater)) {
+					attrib_summary.at(0) = 'C';
+				}
+				if (marks.Has(PlayerAttribute::Suspicious)) {
+					attrib_summary.at(1) = 'S';
+				}
+				if (marks.Has(PlayerAttribute::Exploiter)) {
+					attrib_summary.at(2) = 'E';
+				}
+				if (marks.Has(PlayerAttribute::Racist)) {
+					attrib_summary.at(3) = 'R';
+				}
+				attribute = attrib_summary;
+			}
+			else {
+				//mh::enum_fmt(marks.m_Marks.at(0).m_Attributes).c_str();
+
+				if (marks.Has(PlayerAttribute::Cheater)) {
+					attribute = "Cheating";
+				}
+				else if (marks.Has(PlayerAttribute::Suspicious)) {
+					attribute = "Possib,Cheat";
+				}
+				else if (marks.Has(PlayerAttribute::Exploiter)) {
+					attribute = "Exploiting";
+				}
+				else if (marks.Has(PlayerAttribute::Racist)) {
+					attribute = "Racism/Trolling";
+				}
+			}
+
+
+			//player.GetNameSafe(),
+			auto summary = player.GetPlayerSummary();
+
+			// steamapi didn't get the name yet, try again next loop.
+			if (!summary.has_value()) {
+				Log(steamid.str() + " - steamapi didnt recieve info, waiting next turn.");
+				continue;
+			}
+			std::string name = summary.value().m_Nickname;
+
+			if (name.size() > 10) {
+				name.resize(8, '.');
+				name += "..";
+			}
+
+			
+			msg += mh::format("{} - {},",  player.GetNameSafe(), attribute);
+		}
+
+		msg.pop_back();
+
+		chatMsg.fmt("[tf2bd] WARN: {} Marked Players Joining. ({})", connectingEnemyCheaters.size(), msg);
+	}
+
+	if (m_ActionManager->QueueAction<ChatMessageAction>(chatMsg.str(), ChatMessageType::PartyChat))
+	{
+		for (auto& cheater : connectingEnemyCheaters)
+			cheater->GetOrCreateData<PlayerExtraData>().m_PartyWarned = true;
+	}
+}
+
 void ModeratorLogic::ProcessPlayerActions()
 {
 	const auto now = m_World->GetCurrentTime();
@@ -575,6 +751,8 @@ void ModeratorLogic::ProcessPlayerActions()
 	std::vector<Cheater> enemyCheaters;
 	std::vector<Cheater> friendlyCheaters;
 	std::vector<Cheater> connectingEnemyCheaters;
+	// the struct Cheater doesnt really have to be always a cheater.
+	std::vector<Cheater> connectingMarkedPlayer;
 
 	const bool isBotLeader = IsBotLeader();
 	bool needsEnemyWarning = false;
@@ -582,7 +760,14 @@ void ModeratorLogic::ProcessPlayerActions()
 	{
 		const bool isPlayerConnected = player.GetConnectionState() == PlayerStatusState::Active;
 		const auto isCheater = m_PlayerList.HasPlayerAttributes(player, PlayerAttribute::Cheater);
+		const bool isMarked = !m_PlayerList.GetPlayerAttributes(player).empty();
 		const auto teamShareResult = m_World->GetTeamShareResult(*myTeam, player);
+
+		if (isMarked && !isPlayerConnected)
+		{
+			connectingMarkedPlayer.push_back({ player, m_PlayerList.GetPlayerAttributes(player) });
+		}
+
 		if (teamShareResult == TeamShareResult::SameTeams)
 		{
 			if (isPlayerConnected)
@@ -617,9 +802,10 @@ void ModeratorLogic::ProcessPlayerActions()
 
 	HandleEnemyCheaters(totalEnemyPlayers, enemyCheaters, connectingEnemyCheaters);
 	HandleFriendlyCheaters(totalFriendlyPlayers, connectedFriendlyPlayers, friendlyCheaters);
+	HandleConnectingMarkedPlayers(connectingMarkedPlayer);
 }
 
-bool ModeratorLogic::SetPlayerAttribute(const IPlayer& player, PlayerAttribute attribute, AttributePersistence persistence, bool set)
+bool ModeratorLogic::SetPlayerAttribute(const IPlayer& player, PlayerAttribute attribute, AttributePersistence persistence, bool set, std::string proof)
 {
 	bool attributeChanged = false;
 
@@ -648,6 +834,10 @@ bool ModeratorLogic::SetPlayerAttribute(const IPlayer& player, PlayerAttribute a
 
 			if (const auto& name = player.GetNameUnsafe(); !name.empty())
 				data.m_LastSeen->m_PlayerName = name;
+
+			if (proof != "") {
+				data.addProof(proof);
+			}
 
 			return ModifyPlayerAction::Modified;
 		});
