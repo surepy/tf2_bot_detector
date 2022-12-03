@@ -23,6 +23,7 @@ namespace tf2_bot_detector
 		Suspicious,
 		Exploiter,
 		Racist,
+		Blocked, // do not interact!
 
 		COUNT,
 	};
@@ -62,6 +63,7 @@ namespace tf2_bot_detector
 		constexpr bool operator==(const PlayerAttributesList&) const = default;
 
 		bool empty() const { return m_Bits.none(); }
+		std::size_t count() const { return m_Bits.count(); }
 		explicit operator bool() const { return m_Bits.any(); }
 
 	private:
@@ -102,6 +104,7 @@ namespace tf2_bot_detector
 
 		std::vector<nlohmann::json> m_Proof;
 		void addProof(std::string reason);
+		bool proofExists(std::string reason);
 
 		bool operator==(const PlayerListData&) const;
 
@@ -211,6 +214,7 @@ namespace tf2_bot_detector
 		} m_CFGGroup;
 	};
 
+	std::string to_string(const PlayerAttribute& d);
 	void to_json(nlohmann::json& j, const PlayerAttribute& d);
 	void from_json(const nlohmann::json& j, PlayerAttribute& d);
 }

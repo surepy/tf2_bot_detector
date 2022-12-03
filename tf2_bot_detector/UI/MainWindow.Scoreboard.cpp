@@ -471,7 +471,7 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 		{
 			std::string mark_reason; 
 
-			ImGui::InputText("Reason", &mark_reason);
+			ImGui::InputTextWithHint("", "Reason", &mark_reason, ImGuiInputTextFlags_CallbackAlways);
 			for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
 			{
 				const auto attr = PlayerAttribute(i);
@@ -917,6 +917,10 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 	{
 		ImGui::NewLine();
 		ImGui::TextFmt("Player {} marked in playerlist(s):{}", player, playerAttribs);
+		//ImGui::NewLine();
+		//ImGui::Text("Reasons: ");
+		//for (auto& [fileName, found] : m_PlayerList.FindPlayerData(steamid)) {
+
 	}
 }
 
