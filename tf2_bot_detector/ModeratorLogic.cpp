@@ -186,7 +186,7 @@ void ModeratorLogic::OnRuleMatch(const ModerationRule& rule, const IPlayer& play
 {
 	for (PlayerAttribute attribute : rule.m_Actions.m_Mark)
 	{
-		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved))
+		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, true, "[auto] automatically marked: " + to_string(attribute)))
 			Log("Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
 	}
 	for (PlayerAttribute attribute : rule.m_Actions.m_TransientMark)
@@ -568,6 +568,40 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 	}
 }
 
+// lazy and dumb function to convert player marks to string
+std::string marksToString(PlayerMarks& marks) {
+	PlayerAttributesList attribute{ 0 };
+
+	// combine all the m_Marks to one attributeList
+	for (const auto& mark : marks.m_Marks)
+	{
+		attribute |= mark.m_Attributes;
+	}
+
+	// only one attrib
+	if (attribute.count() == 1) {
+		std::size_t idx = 0;
+		while (idx < static_cast<std::size_t>(PlayerAttribute::COUNT) && !attribute.HasAttribute(static_cast<PlayerAttribute>(idx))) ++idx;
+
+		//if (idx == static_cast<std::size_t>(PlayerAttribute::COUNT)) {
+		//	return "#Error!";
+		//}
+
+		return to_string(static_cast<PlayerAttribute>(idx));
+	}
+
+	std::string attrib_summary = "-----";
+
+	// loop over the attributes and combine using first character.
+	for (std::size_t i = 0; i < static_cast<std::size_t>(PlayerAttribute::COUNT); ++i) {
+		if (attribute.HasAttribute(static_cast<PlayerAttribute>(i))) {
+			attrib_summary.at(i) = to_string(PlayerAttribute::Cheater).at(0);
+		} 
+	}
+
+	return attrib_summary;
+}
+
 void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& connectingEnemyCheaters)
 {
 	if (!m_Settings->m_AutoChatWarningsConnectingParty || connectingEnemyCheaters.size() < 1) {
@@ -585,53 +619,36 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 		PlayerMarks marks = connectingEnemyCheaters.at(0).m_Marks;
 		SteamID steamid = player.GetSteamID();
 
-		// bad, lazy, and can't find the conversion helper rn
-		// CSER or C-ER
-		std::string attribute = "";
-
-		if (marks.m_Marks.size() > 1) {
-			std::string attrib_summary = "----";
-
-			if (marks.Has(PlayerAttribute::Cheater)) {
-				attrib_summary.at(0) = 'C';
-			}
-			if (marks.Has(PlayerAttribute::Suspicious)) {
-				attrib_summary.at(1) = 'S';
-			}
-			if (marks.Has(PlayerAttribute::Exploiter)) {
-				attrib_summary.at(2) = 'E';
-			}
-			if (marks.Has(PlayerAttribute::Racist)) {
-				attrib_summary.at(3) = 'R';
-			}
-			attribute = attrib_summary;
-		}
-		else {
-			if (marks.Has(PlayerAttribute::Cheater)) {
-				attribute = "Cheating";
-			}
-			else if (marks.Has(PlayerAttribute::Suspicious)) {
-				attribute = "Possib,Cheat";
-			}
-			else if (marks.Has(PlayerAttribute::Exploiter)) {
-				attribute = "Exploiting";
-			}
-			else if (marks.Has(PlayerAttribute::Racist)) {
-				attribute = "Racism/Trolling";
-			}
-		}
-
-		//player.GetNameSafe(),
 		auto summary = player.GetPlayerSummary();
 
-		// steamapi didn't get the name yet, try again next loop.
+		// steamapi didn't get the name yet, exit the function and this function will run again next loop.
 		if (!summary.has_value()) {
 			Log(steamid.str() + " - steamapi didnt recieve info, waiting.");
 			return;
 		}
 		std::string username = summary.value().m_Nickname;
 
-		chatMsg.fmt("[tf2bd] WARN: Marked Player Joining ({} - {}).", username, attribute);
+		/*
+		for (auto& [fileName, found] : m_PlayerList.FindPlayerData(steamid)) {
+			// personal: ignore bot list conifgs.
+			if (fileName == "playerlist.sleepy-bots.json" || fileName == "playerlist.sleepy-bots.vinesauce.json") {
+				break;
+			}
+
+			if (found.m_LastSeen.has_value() && !found.m_LastSeen.value().m_PlayerName.empty()) {
+				if (found.m_LastSeen.value().m_PlayerName != username) {
+					username += " aka " + found.m_LastSeen.value().m_PlayerName;
+				}
+			}
+		}*/
+
+		// move this into a func
+		size_t pos;
+		while ((pos = username.find(";")) != std::string::npos) {
+			username.replace(pos, 1, "");
+		}
+
+		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining. ({}).", username, marksToString(marks));
 	}
 	else
 	{
@@ -645,64 +662,32 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			tf2_bot_detector::IPlayer& player = p.m_Player.get();
 			PlayerMarks marks = p.m_Marks;
 			SteamID steamid = player.GetSteamID();
-			// bad, lazy, and can't find the conversion helper rn
-			// CSER or C-ER
-			std::string attribute = "";
 
-			if (marks.m_Marks.size() > 1) {
-				std::string attrib_summary = "----";
-
-				if (marks.Has(PlayerAttribute::Cheater)) {
-					attrib_summary.at(0) = 'C';
-				}
-				if (marks.Has(PlayerAttribute::Suspicious)) {
-					attrib_summary.at(1) = 'S';
-				}
-				if (marks.Has(PlayerAttribute::Exploiter)) {
-					attrib_summary.at(2) = 'E';
-				}
-				if (marks.Has(PlayerAttribute::Racist)) {
-					attrib_summary.at(3) = 'R';
-				}
-				attribute = attrib_summary;
-			}
-			else {
-				//mh::enum_fmt(marks.m_Marks.at(0).m_Attributes).c_str();
-
-				if (marks.Has(PlayerAttribute::Cheater)) {
-					attribute = "Cheating";
-				}
-				else if (marks.Has(PlayerAttribute::Suspicious)) {
-					attribute = "Possib,Cheat";
-				}
-				else if (marks.Has(PlayerAttribute::Exploiter)) {
-					attribute = "Exploiting";
-				}
-				else if (marks.Has(PlayerAttribute::Racist)) {
-					attribute = "Racism/Trolling";
-				}
-			}
-
-
-			//player.GetNameSafe(),
+			//player.GetNameSafe();
 			auto summary = player.GetPlayerSummary();
 
-			// steamapi didn't get the name yet, try again next loop.
+			// steamapi didn't get the name yet, exit the function and this function will run again next loop.
 			if (!summary.has_value()) {
-				Log(steamid.str() + " - steamapi didnt recieve info, waiting next turn.");
-				continue;
+				Log(steamid.str() + " - steamapi didnt recieve info, waiting.");
+				return;
 			}
-			std::string name = summary.value().m_Nickname;
+			std::string name = (summary.value().m_Nickname);
+
+			// move this into a func
+			size_t pos;
+			while ((pos = name.find(";")) != std::string::npos) {
+				name.replace(pos, 1, "");
+			}
 
 			if (name.size() > 10) {
 				name.resize(8, '.');
 				name += "..";
 			}
-
 			
-			msg += mh::format("{} - {},",  player.GetNameSafe(), attribute);
+			msg += mh::format("{} - {}, ", name, marksToString(marks));
 		}
 
+		msg.pop_back();
 		msg.pop_back();
 
 		chatMsg.fmt("[tf2bd] WARN: {} Marked Players Joining. ({})", connectingEnemyCheaters.size(), msg);
@@ -714,6 +699,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			cheater->GetOrCreateData<PlayerExtraData>().m_PartyWarned = true;
 	}
 }
+
 
 void ModeratorLogic::ProcessPlayerActions()
 {
@@ -835,7 +821,7 @@ bool ModeratorLogic::SetPlayerAttribute(const IPlayer& player, PlayerAttribute a
 			if (const auto& name = player.GetNameUnsafe(); !name.empty())
 				data.m_LastSeen->m_PlayerName = name;
 
-			if (proof != "") {
+			if (proof != "" && !data.proofExists(proof)) {
 				data.addProof(proof);
 			}
 

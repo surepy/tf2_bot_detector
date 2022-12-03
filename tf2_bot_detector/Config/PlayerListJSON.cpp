@@ -22,6 +22,20 @@ static std::filesystem::path s_PlayerListPath("cfg/playerlist.json");
 
 namespace tf2_bot_detector
 {
+	std::string to_string(const PlayerAttribute& d)
+	{
+		switch (d)
+		{
+		case PlayerAttribute::Cheater:      return "Cheater";
+		case PlayerAttribute::Suspicious:	return "Suspicious";
+		case PlayerAttribute::Exploiter:    return "Exploiter";
+		case PlayerAttribute::Racist:		return "Racist"; 
+		case PlayerAttribute::Blocked:		return "Blocked";
+		default: return "unknown";
+		}
+
+		return std::string();
+	}
 	void to_json(nlohmann::json& j, const PlayerAttribute& d)
 	{
 		switch (d)
@@ -30,6 +44,7 @@ namespace tf2_bot_detector
 		case PlayerAttribute::Suspicious:  j = "suspicious"; break;
 		case PlayerAttribute::Exploiter:   j = "exploiter"; break;
 		case PlayerAttribute::Racist:      j = "racist"; break;
+		case PlayerAttribute::Blocked:     j = "blocked"; break;
 
 		default:
 			throw std::runtime_error("Unknown PlayerAttribute value "s << +std::underlying_type_t<PlayerAttribute>(d));
@@ -83,6 +98,9 @@ namespace tf2_bot_detector
 			d = PlayerAttribute::Exploiter;
 		else if (str == "racist"sv)
 			d = PlayerAttribute::Racist;
+		else if (str == "blocked"sv)
+			d = PlayerAttribute::Blocked;
+
 		else
 			throw std::runtime_error("Unknown player attribute type "s << std::quoted(str));
 	}
@@ -385,6 +403,19 @@ PlayerListData::~PlayerListData()
 void tf2_bot_detector::PlayerListData::addProof(std::string reason)
 {
 	m_Proof.push_back(reason);
+}
+
+bool tf2_bot_detector::PlayerListData::proofExists(std::string reason)
+{
+	bool found = false;
+	for (auto p : m_Proof) {
+		if (p == reason) {
+			found = true;
+			break;
+		}
+	}
+
+	return found;
 }
 
 bool PlayerListData::operator==(const PlayerListData& other) const
