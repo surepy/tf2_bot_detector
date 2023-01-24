@@ -124,3 +124,34 @@ void tf2_bot_detector::from_json(const nlohmann::json& j, KickReason& d)
 	else
 		throw std::invalid_argument(mh::format("{}: unexpected value {}", MH_SOURCE_LOCATION_CURRENT(), std::quoted(value)));
 }
+
+
+PartyChatMessageAction::PartyChatMessageAction(const std::string_view& message) :
+	GenericCommandAction("tf_party_chat", ScrubMessage(std::string(message)))
+{
+}
+
+duration_t PartyChatMessageAction::GetMinInterval() const
+{
+	return 0s; // Actual cooldown is 0.66 seconds
+}
+
+std::string PartyChatMessageAction::ScrubMessage(std::string msg)
+{
+	msg.erase(std::remove_if(msg.begin(), msg.end(),
+		[](char c)
+		{
+			return
+				c == '\r' ||
+				c == '\0' ||
+				c == '\n';
+		}), msg.end());
+
+	for (auto& c : msg)
+	{
+		if (c == '"')
+			c = '\'';
+	}
+
+	return "\""s << msg << '"';
+}
