@@ -171,6 +171,40 @@ namespace
 	}
 }
 
+// lazy and dumb function to convert player marks to string
+std::string marksToString(PlayerMarks& marks) {
+	PlayerAttributesList attribute{ 0 };
+
+	// combine all the m_Marks to one attributeList
+	for (const auto& mark : marks.m_Marks)
+	{
+		attribute |= mark.m_Attributes;
+	}
+
+	// only one attrib
+	if (attribute.count() == 1) {
+		std::size_t idx = 0;
+		while (idx < static_cast<std::size_t>(PlayerAttribute::COUNT) && !attribute.HasAttribute(static_cast<PlayerAttribute>(idx))) { ++idx; }
+
+		//if (idx == static_cast<std::size_t>(PlayerAttribute::COUNT)) {
+		//	return "#Error!";
+		//}
+
+		return to_string(static_cast<PlayerAttribute>(idx));
+	}
+
+	std::string attrib_summary = "-----";
+
+	// loop over the attributes and combine using first character.
+	for (std::size_t i = 0; i < static_cast<std::size_t>(PlayerAttribute::COUNT); ++i) {
+		if (attribute.HasAttribute(static_cast<PlayerAttribute>(i))) {
+			attrib_summary.at(i) = to_string(PlayerAttribute::Cheater).at(0);
+		}
+	}
+
+	return attrib_summary;
+}
+
 std::unique_ptr<IModeratorLogic> IModeratorLogic::Create(IWorldState& world,
 	const Settings& settings, IRCONActionManager& actionManager)
 {
@@ -279,16 +313,54 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 		mh::fmtstr<128> chatMsg;
 
 		int markedPlayerCount = 0;
+		std::vector<std::string> players;
+
 		for (IPlayer& player : m_World->GetLobbyMembers())
 		{
 			if (!m_PlayerList.GetPlayerAttributes(player).empty()) {
+				mh::fmtstr<128> message;
+
+				auto marks = GetPlayerAttributes(player);
+
+				std::string username = player.GetNameSafe();
+
+				// if username is none try getting data from steamapi
+				if (username == "") {
+					auto summary = player.GetPlayerSummary();
+
+					
+					if (summary.has_value()) {
+						username = summary.value().m_Nickname;
+					}
+					else {
+						// steamapi didn't get the name either so gg
+						username = player.GetSteamID().str();
+					}
+				}
+
+				players.push_back(
+					message.fmt(
+						"{}: {} - {} ({})",
+						markedPlayerCount,
+						username,
+						marksToString(marks),
+						marks.m_Marks.front().m_FileName
+					).c_str()
+				);
 				++markedPlayerCount;
+
+				// don't warn again, we're gona warn here.
+				player.GetOrCreateData<PlayerExtraData>().m_PartyWarned = true;
 			}
 		}
 
 		chatMsg.fmt("[tf2bd] Currently {} players are marked in this lobby.", markedPlayerCount);
 
-		m_ActionManager->QueueAction<ChatMessageAction>(chatMsg.str(), ChatMessageType::PartyChat);
+		m_ActionManager->QueueAction<PartyChatMessageAction>(chatMsg.str());
+
+		for (std::string player : players) {
+			m_ActionManager->QueueAction<PartyChatMessageAction>(player);
+		}
 	}
 }
 
@@ -568,40 +640,6 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 	}
 }
 
-// lazy and dumb function to convert player marks to string
-std::string marksToString(PlayerMarks& marks) {
-	PlayerAttributesList attribute{ 0 };
-
-	// combine all the m_Marks to one attributeList
-	for (const auto& mark : marks.m_Marks)
-	{
-		attribute |= mark.m_Attributes;
-	}
-
-	// only one attrib
-	if (attribute.count() == 1) {
-		std::size_t idx = 0;
-		while (idx < static_cast<std::size_t>(PlayerAttribute::COUNT) && !attribute.HasAttribute(static_cast<PlayerAttribute>(idx))) ++idx;
-
-		//if (idx == static_cast<std::size_t>(PlayerAttribute::COUNT)) {
-		//	return "#Error!";
-		//}
-
-		return to_string(static_cast<PlayerAttribute>(idx));
-	}
-
-	std::string attrib_summary = "-----";
-
-	// loop over the attributes and combine using first character.
-	for (std::size_t i = 0; i < static_cast<std::size_t>(PlayerAttribute::COUNT); ++i) {
-		if (attribute.HasAttribute(static_cast<PlayerAttribute>(i))) {
-			attrib_summary.at(i) = to_string(PlayerAttribute::Cheater).at(0);
-		} 
-	}
-
-	return attrib_summary;
-}
-
 void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& connectingEnemyCheaters)
 {
 	if (!m_Settings->m_AutoChatWarningsConnectingParty || connectingEnemyCheaters.size() < 1) {
@@ -648,7 +686,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			username.replace(pos, 1, "");
 		}
 
-		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining. ({}).", username, marksToString(marks));
+		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining ({} - {}).", username, marksToString(marks), marks.m_Marks.front().m_FileName);
 	}
 	else
 	{
@@ -684,7 +722,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 				name += "..";
 			}
 			
-			msg += mh::format("{} - {}, ", name, marksToString(marks));
+			msg += mh::format("{} - {}, ", name, marksToString(marks), marks.m_Marks.front().m_FileName);
 		}
 
 		msg.pop_back();

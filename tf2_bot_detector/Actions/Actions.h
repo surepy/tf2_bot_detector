@@ -100,6 +100,19 @@ namespace tf2_bot_detector
 		static std::string ScrubMessage(std::string msg);
 	};
 
+	class PartyChatMessageAction final : public GenericCommandAction
+	{
+	public:
+		PartyChatMessageAction(const std::string_view& message);
+
+		duration_t GetMinInterval() const override;
+		ActionType GetType() const override { return ActionType::ChatMessage; }
+		size_t GetMaxQueuedCount() const override { return 24; }
+
+	private:
+		static std::string ScrubMessage(std::string msg);
+};
+
 #if 0
 	class StatusUpdateAction final : public GenericCommandAction
 	{
