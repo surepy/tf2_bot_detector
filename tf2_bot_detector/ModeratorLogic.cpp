@@ -111,7 +111,7 @@ namespace
 		// FIXME: move to a different file, this really shouldn't be here.
 		void OnLocalPlayerInitialized(IWorldState& world, bool initialized);
 
-		void OnRuleMatch(const ModerationRule& rule, const IPlayer& player);
+		void OnRuleMatch(const ModerationRule& rule, const IPlayer& player, std::string reason = "none");
 
 		// How long inbetween accusations
 		static constexpr duration_t CHEATER_WARNING_INTERVAL = std::chrono::seconds(20);
@@ -216,11 +216,11 @@ void ModeratorLogic::Update()
 	ProcessPlayerActions();
 }
 
-void ModeratorLogic::OnRuleMatch(const ModerationRule& rule, const IPlayer& player)
+void ModeratorLogic::OnRuleMatch(const ModerationRule& rule, const IPlayer& player, std::string reason)
 {
 	for (PlayerAttribute attribute : rule.m_Actions.m_Mark)
 	{
-		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, true, "[auto] automatically marked: " + to_string(attribute)))
+		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, true, "[auto] automatically marked: " + to_string(attribute) + " | reason: " + reason))
 			Log("Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
 	}
 	for (PlayerAttribute attribute : rule.m_Actions.m_TransientMark)
@@ -247,7 +247,7 @@ void ModeratorLogic::OnPlayerStatusUpdate(IWorldState& world, const IPlayer& pla
 			if (!rule.Match(player))
 				continue;
 
-			OnRuleMatch(rule, player);
+			OnRuleMatch(rule, player, rule.m_Description);
 		}
 	}
 }
@@ -299,8 +299,12 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 			if (!rule.Match(player, msg))
 				continue;
 
-			OnRuleMatch(rule, player);
-			Log("Chat message rule match for {}: {}", rule.m_Description, std::quoted(msg));
+			// why must i do this this feels dumb
+			std::ostringstream os;
+			os << std::quoted(msg);
+
+			OnRuleMatch(rule, player, os.str());
+			Log("Chat message rule match for {}: {}", rule.m_Description, os.str());
 		}
 	}
 }
