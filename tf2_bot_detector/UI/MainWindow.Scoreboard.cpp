@@ -16,6 +16,8 @@
 
 #include <string_view>
 
+#include "nlohmann/json.hpp"
+
 using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 using namespace tf2_bot_detector;
@@ -917,10 +919,20 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 	{
 		ImGui::NewLine();
 		ImGui::TextFmt("Player {} marked in playerlist(s):{}", player, playerAttribs);
-		//ImGui::NewLine();
-		//ImGui::Text("Reasons: ");
-		//for (auto& [fileName, found] : m_PlayerList.FindPlayerData(steamid)) {
+		ImGui::NewLine();
+		ImGui::Text("Reasons: ");
+		for (auto& [fileName, data] : GetModLogic().GetPlayerList()->FindPlayerData(player.GetSteamID())) {
+			if (data.m_Proof.empty()) {
+				continue;
+			}
 
+			std::string proofs = "";
+			for (auto p : data.m_Proof) {
+				proofs += p.dump() + " ";
+			}
+
+			ImGui::TextFmt("  {}: {}", fileName, proofs);
+		}
 	}
 }
 

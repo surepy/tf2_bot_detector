@@ -20,6 +20,7 @@ namespace tf2_bot_detector
 	class Settings;
 	class SteamID;
 	class IWorldState;
+	class PlayerListJSON;
 
 	struct VoteCooldown
 	{
@@ -65,6 +66,8 @@ namespace tf2_bot_detector
 		virtual size_t GetRuleCount() const = 0;
 
 		virtual void ReloadConfigFiles() = 0;
+
+		virtual PlayerListJSON* GetPlayerList() = 0;
 	};
 }
 
