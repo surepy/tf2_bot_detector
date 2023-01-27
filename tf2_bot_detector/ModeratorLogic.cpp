@@ -76,6 +76,8 @@ namespace
 
 		void ReloadConfigFiles() override;
 
+		PlayerListJSON* GetPlayerList() { return &m_PlayerList; }
+
 	private:
 		IWorldState* m_World = nullptr;
 		const Settings* m_Settings = nullptr;
@@ -169,6 +171,26 @@ namespace
 
 		return os;
 	}
+}
+
+// lazy and dumb function to make a string list of marked files
+std::string listMarkFiles(PlayerMarks& marks) {
+	PlayerAttributesList attribute{ 0 };
+	std::vector<std::string> files;
+
+	for (const auto& mark : marks.m_Marks)
+	{
+		// push file names into a nice vector so we can return
+		if (std::find(files.begin(), files.end(), mark.m_FileName) != files.end()) {
+			files.push_back(mark.m_FileName);
+		}
+	}
+
+	std::ostringstream oss;
+	std::copy(files.begin(), files.end() - 1, std::ostream_iterator<std::string>(oss, ","));
+	oss << files.back();
+
+	return oss.str();
 }
 
 // lazy and dumb function to convert player marks to string
@@ -690,7 +712,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			username.replace(pos, 1, "");
 		}
 
-		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining ({} - {}).", username, marksToString(marks), marks.m_Marks.front().m_FileName);
+		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining {} ({} - {}).", username, marksToString(marks), marks.m_Marks.front().m_FileName);
 	}
 	else
 	{
@@ -993,6 +1015,8 @@ bool ModeratorLogic::InitiateVotekick(const IPlayer& player, KickReason reason, 
 
 		m_LastVoteCallTime = tfbd_clock_t::now();
 	}
+
+	//m_ActionManager->QueueAction<ChatMessageAction>("[tf2bd] votekicking ", ChatMessageType::PartyChat);
 
 	return true;
 }
