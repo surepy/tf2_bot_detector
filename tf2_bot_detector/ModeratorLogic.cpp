@@ -198,7 +198,7 @@ std::string marksToString(PlayerMarks& marks) {
 	// loop over the attributes and combine using first character.
 	for (std::size_t i = 0; i < static_cast<std::size_t>(PlayerAttribute::COUNT); ++i) {
 		if (attribute.HasAttribute(static_cast<PlayerAttribute>(i))) {
-			attrib_summary.at(i) = to_string(PlayerAttribute::Cheater).at(0);
+			attrib_summary.at(i) = to_string(static_cast<PlayerAttribute>(i)).at(0);
 		}
 	}
 
