@@ -702,6 +702,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			if (found.m_LastSeen.has_value() && !found.m_LastSeen.value().m_PlayerName.empty()) {
 				if (found.m_LastSeen.value().m_PlayerName != username) {
 					username += " aka " + found.m_LastSeen.value().m_PlayerName;
+					break;
 				}
 			}
 		}*/
@@ -712,7 +713,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			username.replace(pos, 1, "");
 		}
 
-		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining {} ({} - {}).", username, marksToString(marks), marks.m_Marks.front().m_FileName);
+		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining ({} - {}).", username, marksToString(marks), marks.m_Marks.front().m_FileName);
 	}
 	else
 	{
