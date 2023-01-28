@@ -687,6 +687,12 @@ void MainWindow::OnDrawMenuBar()
 	{
 		ImGui::Separator();
 
+		if (ImGui::MenuItem("FakeState"))
+		{
+			// TODO: fake a in-game state so i dont have to launch tf2 every time i want to debug this
+			//  though i don't think i have the effort to do this tbf
+		}
+
 		if (ImGui::MenuItem("Crash"))
 		{
 			struct Test
