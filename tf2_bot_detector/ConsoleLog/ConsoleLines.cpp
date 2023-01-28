@@ -163,9 +163,20 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 	ImGuiDesktop::ScopeGuards::ID id(this);
 
 	ImGui::BeginGroup();
-	ProcessChatMessage(*this, args.m_Settings.m_Theme,
-		[](const ImVec4& color, const std::string_view& msg) { ImGui::TextFmt(color, msg); },
-		[] { ImGui::SameLine(); });
+	ProcessChatMessage(
+		*this,
+		args.m_Settings.m_Theme,
+		[](const ImVec4& color, const std::string_view& msg) {
+			// TODO: selectable text?
+			//ImGuiDesktop::TextColor scope(color);
+			//auto message = mh::fmtstr<3073>(msg);
+			//std::string str = message.str();
+			//ImGui::InputText("", &str, ImGuiInputTextFlags_ReadOnly);
+
+			ImGui::TextFmt(color, msg);
+		},
+		[] { ImGui::SameLine(); }
+	);
 	ImGui::EndGroup();
 
 	const bool isHovered = ImGui::IsItemHovered();
@@ -175,6 +186,7 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 		if (ImGui::MenuItem("Copy"))
 		{
 			std::string fullText;
+			ImGui::Selectable("test");
 
 			ProcessChatMessage(*this, args.m_Settings.m_Theme,
 				[&](const ImVec4&, const std::string_view& msg)
@@ -188,6 +200,31 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 
 			ImGui::SetClipboardText(fullText.c_str());
 		}
+
+		// not copypasted from scoreboard, fiy
+		if (ImGui::BeginMenu("Mark"))
+		{
+			std::string mark_reason;
+
+			IModeratorLogic* modLogic = &args.m_MainWindow.GetModLogic();
+
+			ImGui::InputTextWithHint("", "Reason", &mark_reason, ImGuiInputTextFlags_CallbackAlways);
+			for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
+			{
+				const auto attr = PlayerAttribute(i);
+				const bool existingMarked = (bool)modLogic->HasPlayerAttributes(m_PlayerSteamID, attr, AttributePersistence::Saved);
+
+				if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
+				{
+					if (modLogic->SetPlayerAttribute(m_PlayerSteamID, m_PlayerName, attr, AttributePersistence::Saved, !existingMarked, mark_reason))
+						Log("Manually marked {}{} {:v}", m_PlayerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr));
+				}
+			}
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_PlayerSteamID.str());
 	}
 	else if (isHovered)
 	{

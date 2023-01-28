@@ -55,6 +55,7 @@ namespace
 		bool InitiateVotekick(const IPlayer& player, KickReason reason, const PlayerMarks* marks = nullptr) override;
 
 		bool SetPlayerAttribute(const IPlayer& id, PlayerAttribute markType, AttributePersistence persistence, bool set = true, std::string proof = "") override;
+		bool SetPlayerAttribute(const SteamID& id, std::string name, PlayerAttribute markType, AttributePersistence persistence, bool set = true, std::string proof = "") override;
 
 		std::optional<LobbyMemberTeam> TryGetMyTeam() const;
 		TeamShareResult GetTeamShareResult(const SteamID& id) const override;
@@ -858,9 +859,14 @@ void ModeratorLogic::ProcessPlayerActions()
 
 bool ModeratorLogic::SetPlayerAttribute(const IPlayer& player, PlayerAttribute attribute, AttributePersistence persistence, bool set, std::string proof)
 {
+	return SetPlayerAttribute(player.GetSteamID(), player.GetNameUnsafe(), attribute, persistence, set, proof);
+}
+
+bool ModeratorLogic::SetPlayerAttribute(const SteamID& player, std::string name, PlayerAttribute attribute, AttributePersistence persistence, bool set, std::string proof)
+{
 	bool attributeChanged = false;
 
-	m_PlayerList.ModifyPlayer(player.GetSteamID(), [&](PlayerListData& data)
+	m_PlayerList.ModifyPlayer(player, [&](PlayerListData& data)
 		{
 			PlayerAttributesList& attribs = [&]() -> PlayerAttributesList&
 			{
@@ -883,7 +889,7 @@ bool ModeratorLogic::SetPlayerAttribute(const IPlayer& player, PlayerAttribute a
 
 			data.m_LastSeen->m_Time = m_World->GetCurrentTime();
 
-			if (const auto& name = player.GetNameUnsafe(); !name.empty())
+			if (!name.empty())
 				data.m_LastSeen->m_PlayerName = name;
 
 			if (proof != "" && !data.proofExists(proof)) {
