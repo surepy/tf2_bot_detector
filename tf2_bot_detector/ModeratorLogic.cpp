@@ -759,7 +759,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 		chatMsg.fmt("[tf2bd] WARN: {} Marked Players Joining. ({})", connectingEnemyCheaters.size(), msg);
 	}
 
-	if (m_ActionManager->QueueAction<ChatMessageAction>(chatMsg.str(), ChatMessageType::PartyChat))
+	if (m_ActionManager->QueueAction<PartyChatMessageAction>(chatMsg.str()))
 	{
 		for (auto& cheater : connectingEnemyCheaters)
 			cheater->GetOrCreateData<PlayerExtraData>().m_PartyWarned = true;
