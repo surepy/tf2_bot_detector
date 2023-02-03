@@ -56,6 +56,7 @@ namespace
 
 		void AddSecret(std::string value, std::string replace) override;
 
+		void LogChat(const std::string_view& chatMessage) override;
 	private:
 		bool m_IsInit = false;
 		void EnsureInit(MH_SOURCE_LOCATION_AUTO(location)) const;
@@ -79,6 +80,10 @@ namespace
 
 		mutable std::recursive_mutex m_ConsoleLogMutex;
 		std::ofstream m_ConsoleLogFile;
+
+		// not pasted from ConsoleLog
+		mutable std::recursive_mutex m_ChatLogMutex;
+		std::ofstream m_ChatLogFile;
 	};
 
 	static LogManager& GetLogState()
@@ -109,7 +114,7 @@ void LogManager::Init()
 		const auto t = ToTM(tfbd_clock_t::now());
 		const mh::fmtstr<128> timestampStr("{}", std::put_time(&t, "%Y-%m-%d_%H-%M-%S"));
 
-		// Pick file name
+		// Pick file name for main log file
 		{
 			std::filesystem::path logPath = IFilesystem::Get().GetLogsDir();
 
@@ -126,7 +131,7 @@ void LogManager::Init()
 			}
 		}
 
-		// Try open file
+		// Try open main log file
 		if (!m_FileName.empty())
 		{
 			m_File = std::ofstream(m_FileName, std::ofstream::ate | std::ofstream::app | std::ofstream::out | std::ofstream::binary);
@@ -144,6 +149,7 @@ void LogManager::Init()
 			}
 		}
 
+		// console log file
 		{
 			auto logDir = std::filesystem::path("logs") / "console";
 			std::error_code ec;
@@ -159,6 +165,26 @@ void LogManager::Init()
 				m_ConsoleLogFile = std::ofstream(logPath, std::ofstream::ate | std::ofstream::binary);
 				if (!m_ConsoleLogFile.good())
 					::LogWarning("Failed to open console log file {}. Console output will not be logged.", logPath);
+			}
+		}
+
+		// chat log file (not pasted)
+		{
+			auto logDir = std::filesystem::path("logs") / "chat";
+			std::error_code ec;
+			std::filesystem::create_directories(logDir, ec);
+			if (ec)
+			{
+				::LogWarning("Failed to create one or more directory in the path {}. Chat output will not be logged.",
+					logDir);
+			}
+			else
+			{
+				// doing chat_(blah) is repetitive, but it's how is formatted on console so i cry about it (for consistancy sake)
+				auto logPath = logDir / mh::fmtstr<128>("chat_{}.log", timestampStr).view();
+				m_ChatLogFile = std::ofstream(logPath, std::ofstream::ate | std::ofstream::binary);
+				if (!m_ChatLogFile.good())
+					::LogWarning("Failed to open Chat log file {}. Chat output will not be logged.", logPath);
 			}
 		}
 
@@ -364,6 +390,14 @@ void LogManager::LogConsoleOutput(const std::string_view& consoleOutput)
 
 	std::lock_guard lock(m_ConsoleLogMutex);
 	m_ConsoleLogFile << consoleOutput << std::flush;
+}
+
+void LogManager::LogChat(const std::string_view & chatMessage)
+{
+	EnsureInit();
+
+	std::lock_guard lock(m_ConsoleLogMutex);
+	m_ChatLogFile << chatMessage << std::flush;
 }
 
 void LogManager::CleanupLogFiles() try

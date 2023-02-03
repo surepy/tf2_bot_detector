@@ -650,6 +650,11 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		if (changeType == LobbyChangeType::Created)
 		{
 			ClearLobbyState();
+
+			if (m_Settings.m_SaveChatHistory) {
+				// we should really probbaly not do this here like this, but what do i care
+				ILogManager::GetInstance().LogChat("-------------------------------[LOBBY CHANGED]-------------------------------\n");
+			}
 		}
 
 		if (changeType == LobbyChangeType::Created || changeType == LobbyChangeType::Updated)
@@ -693,6 +698,34 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		{
 			LogWarning("Dropped chat message with unknown SteamID from {}: {}",
 				std::quoted(chatLine.GetPlayerName()), std::quoted(chatLine.GetMessage()));
+		}
+
+		if (m_Settings.m_SaveChatHistory) {
+			// we should probbaly not do this here like this, but what do i care
+			// TODO: maybe make the function closer to how LogManager::Log() looks like
+			time_point_t timestamp = tfbd_clock_t::now();
+			tm tm_timestamp = ToTM(timestamp);
+
+			std::ostringstream oss;
+
+			// timestamp + steamid
+			oss << '[' << std::put_time(&tm_timestamp, "%T") << "] "
+				<< '<' << chatLine.getSteamID().ID64 << "> ";
+
+			// can't think of a good format for "YOU"
+			//if (chatLine.IsSelf()) {}
+			if (chatLine.IsDead()) {
+				oss << "*DEAD*";
+			}
+			if (chatLine.IsTeam()) {
+				oss << "(TEAM)";
+			}
+
+			oss << " " << chatLine.GetPlayerName() << " : "
+				<< chatLine.GetMessage()
+				<< std::endl;
+
+			ILogManager::GetInstance().LogChat(oss.str());
 		}
 
 		break;

@@ -51,6 +51,7 @@ namespace tf2_bot_detector
 
 		const std::string& GetPlayerName() const { return m_PlayerName; }
 		const std::string& GetMessage() const { return m_Message; }
+		const SteamID getSteamID() const { return m_PlayerSteamID; }
 		bool IsDead() const { return m_IsDead; }
 		bool IsTeam() const { return m_IsTeam; }
 		bool IsSelf() const { return m_IsSelf; }

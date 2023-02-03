@@ -723,7 +723,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 		for (auto& p : connectingEnemyCheaters) {
 			auto& cheaterData = p->GetOrCreateData<PlayerExtraData>();
 			if (cheaterData.m_PartyWarned)
-				return;
+				continue;
 
 			tf2_bot_detector::IPlayer& player = p.m_Player.get();
 			PlayerMarks marks = p.m_Marks;
