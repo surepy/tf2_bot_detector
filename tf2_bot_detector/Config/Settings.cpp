@@ -409,6 +409,8 @@ void Settings::Deserialize(const nlohmann::json& json)
 			}
 
 			try_get_to_defaulted(*found, m_AutoChatWarningsConnectingParty, "auto_chat_warnings_connecting_party", DEFAULTS.m_AutoChatWarningsConnectingParty);
+
+			try_get_to_defaulted(*found, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
 		}
 
 		try_get_to_defaulted(*found, m_LocalSteamIDOverride, "local_steamid_override");

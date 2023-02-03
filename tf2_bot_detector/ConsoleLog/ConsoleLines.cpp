@@ -52,6 +52,9 @@ ChatConsoleLine::ChatConsoleLine(time_point_t timestamp, std::string playerName,
 	m_Message.shrink_to_fit();
 }
 
+// this is a bad fix, but we can't really access PlayerExtraData (+ the fact that they will be destroyed when the player leave will screw over a lot of stuff)
+std::string ChatConsoleLine::m_PendingMarkReason = "";
+
 std::shared_ptr<IConsoleLine> ChatConsoleLine::TryParse(const ConsoleLineTryParseArgs& args)
 {
 	LogError(MH_SOURCE_LOCATION_CURRENT(), "This should never happen!");
@@ -208,7 +211,8 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 
 			IModeratorLogic* modLogic = &args.m_MainWindow.GetModLogic();
 
-			ImGui::InputTextWithHint("", "Reason", &mark_reason, ImGuiInputTextFlags_CallbackAlways);
+			ImGui::InputTextWithHint("", "Reason", &m_PendingMarkReason, ImGuiInputTextFlags_CallbackAlways);
+
 			for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
 			{
 				const auto attr = PlayerAttribute(i);
@@ -216,8 +220,10 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 
 				if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
 				{
-					if (modLogic->SetPlayerAttribute(m_PlayerSteamID, m_PlayerName, attr, AttributePersistence::Saved, !existingMarked, mark_reason))
-						Log("Manually marked {}{} {:v}", m_PlayerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr));
+					if (modLogic->SetPlayerAttribute(m_PlayerSteamID, m_PlayerName, attr, AttributePersistence::Saved, !existingMarked, m_PendingMarkReason)) {
+						Log("Manually marked {}{} {:v} | {}", m_PlayerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), m_PendingMarkReason);
+						m_PendingMarkReason = "";
+					}
 				}
 			}
 

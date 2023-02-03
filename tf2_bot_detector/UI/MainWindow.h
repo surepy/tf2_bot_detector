@@ -139,6 +139,8 @@ namespace tf2_bot_detector
 
 			const IPlayer* m_Parent = nullptr;
 
+			std::string m_pendingReason;
+
 			time_point_t m_LastPingUpdateTime{};
 			std::vector<PingSample> m_PingHistory{};
 			float GetAveragePing() const;
