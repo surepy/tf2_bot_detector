@@ -75,7 +75,14 @@ namespace tf2_bot_detector
 
 	struct GeneralSettings : public ISteamAPISettings
 	{
+		// custom: logging settings
+		bool m_SaveApplicationLogs = true;
+		bool m_SaveConsoleLogs = true;
+		bool m_SaveChatHistory = true;
+
+		// custom: print to party chat
 		bool m_AutoChatWarningsConnectingParty = true;
+
 		bool m_AutoChatWarnings = true;
 		bool m_AutoChatWarningsConnecting = false;
 		bool m_AutoVotekick = true;
