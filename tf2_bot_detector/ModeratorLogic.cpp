@@ -669,19 +669,33 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 
 void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& connectingEnemyCheaters)
 {
+	// we either disabled it or dont have anything in the vector
 	if (!m_Settings->m_AutoChatWarningsConnectingParty || connectingEnemyCheaters.size() < 1) {
 		return;
 	}
 
+	// seperate unwarned cheater data with already warned ones
+	std::vector<Cheater> unwarnedCheaters;
+	for (auto& p : connectingEnemyCheaters) {
+		if (!p->GetOrCreateData<PlayerExtraData>().m_PartyWarned) {
+			unwarnedCheaters.push_back(p);
+		}
+	}
+
+	// we don't have new cheaters to warn about
+	if (unwarnedCheaters.size() < 1) {
+		return;
+	}
+
 	mh::fmtstr<128> chatMsg;
-	if (connectingEnemyCheaters.size() == 1)
+	if (unwarnedCheaters.size() == 1)
 	{
-		auto& cheaterData = connectingEnemyCheaters.at(0)->GetOrCreateData<PlayerExtraData>();
+		auto& cheaterData = unwarnedCheaters.at(0)->GetOrCreateData<PlayerExtraData>();
 		if (cheaterData.m_PartyWarned)
 			return;
 
-		tf2_bot_detector::IPlayer& player = connectingEnemyCheaters.at(0).m_Player.get();
-		PlayerMarks marks = connectingEnemyCheaters.at(0).m_Marks;
+		tf2_bot_detector::IPlayer& player = unwarnedCheaters.at(0).m_Player.get();
+		PlayerMarks marks = unwarnedCheaters.at(0).m_Marks;
 		SteamID steamid = player.GetSteamID();
 
 		auto summary = player.GetPlayerSummary();
@@ -720,7 +734,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 	{
 		std::string msg = "";
 
-		for (auto& p : connectingEnemyCheaters) {
+		for (auto& p : unwarnedCheaters) {
 			auto& cheaterData = p->GetOrCreateData<PlayerExtraData>();
 			if (cheaterData.m_PartyWarned)
 				continue;
@@ -761,7 +775,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 
 	if (m_ActionManager->QueueAction<PartyChatMessageAction>(chatMsg.str()))
 	{
-		for (auto& cheater : connectingEnemyCheaters)
+		for (auto& cheater : unwarnedCheaters)
 			cheater->GetOrCreateData<PlayerExtraData>().m_PartyWarned = true;
 	}
 }
