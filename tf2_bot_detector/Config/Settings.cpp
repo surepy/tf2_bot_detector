@@ -405,7 +405,7 @@ void Settings::Deserialize(const nlohmann::json& json)
 			{
 				// try_get_to_defaulted(*found, m_SaveApplicationLogs, "save_application_logs", DEFAULTS.m_SaveApplicationLogs);
 				try_get_to_defaulted(*found, m_SaveConsoleLogs, "save_console_logs", DEFAULTS.m_SaveConsoleLogs);
-				// try_get_to_defaulted(*found, m_SaveChatHistory, "save_chat_history", DEFAULTS.m_SaveChatHistory);
+				try_get_to_defaulted(*found, m_SaveChatHistory, "save_chat_history", DEFAULTS.m_SaveChatHistory);
 			}
 
 			try_get_to_defaulted(*found, m_AutoChatWarningsConnectingParty, "auto_chat_warnings_connecting_party", DEFAULTS.m_AutoChatWarningsConnectingParty);
@@ -470,7 +470,7 @@ void Settings::Serialize(nlohmann::json& json) const
 							{
 								// { "save_application_logs", m_SaveApplicationLogs },
 								{ "save_console_logs", m_SaveConsoleLogs },
-								// { "save_chat_history", m_SaveChatHistory }
+								{ "save_chat_history", m_SaveChatHistory }
 							}
 						},
 						{ "auto_chat_warnings_connecting_party", m_AutoChatWarningsConnectingParty }
