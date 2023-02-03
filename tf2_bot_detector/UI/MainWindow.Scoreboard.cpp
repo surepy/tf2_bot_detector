@@ -1050,16 +1050,17 @@ void MainWindow::OnDrawTeamStats()
 	{
 		const auto totalMarked = statsArray[0].m_MarkedCount + statsArray[1].m_MarkedCount;
 		const auto totalMarkedActive = statsArray[0].m_MarkedCountActive + statsArray[1].m_MarkedCountActive;
-
-		const float markedRate = (totalPlayers - totalMarked) / float(totalPlayers);
+		const auto totalUnmarked = totalPlayers - totalMarked;
+		const auto totalUnmarkedActive = totalPlayersActive - totalMarkedActive;
+		const float markedRate = totalUnmarked / float(totalPlayers);
 
 		if (totalMarkedActive > 0 && totalMarkedActive != totalMarked) {
 			ImGui::ProgressBar(markedRate, { -FLT_MIN, 0 },
-				mh::fmtstr<128>("MarkedVS: {} ({}) vs {} ({})", totalPlayers, totalPlayersActive, totalMarked, totalMarkedActive).c_str());
+				mh::fmtstr<128>("MarkedVS: {} ({}) vs {} ({})", totalUnmarked, totalUnmarkedActive, totalMarked, totalMarkedActive).c_str());
 		}
 		else {
 			ImGui::ProgressBar(markedRate, { -FLT_MIN, 0 },
-				mh::fmtstr<128>("MarkedVS: {} vs {}", totalPlayers, totalMarked).c_str());
+				mh::fmtstr<128>("MarkedVS: {} vs {}", totalUnmarked, totalMarked).c_str());
 		}
 	}
 
