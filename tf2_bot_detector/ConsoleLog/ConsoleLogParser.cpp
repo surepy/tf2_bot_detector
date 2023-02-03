@@ -108,7 +108,9 @@ void ConsoleLogParser::Parse(bool& linesProcessed, bool& snapshotUpdated, bool& 
 		if (readCount > 0)
 		{
 			m_FileLineBuf.append(buf, readCount);
-			ILogManager::GetInstance().LogConsoleOutput(std::string_view(buf, readCount));
+			if (m_Settings->m_SaveConsoleLogs) {
+				ILogManager::GetInstance().LogConsoleOutput(std::string_view(buf, readCount));
+			}
 
 			auto parseEnd = m_FileLineBuf.cbegin();
 			ParseChunk(parseEnd, linesProcessed, snapshotUpdated, consoleLinesUpdated);
