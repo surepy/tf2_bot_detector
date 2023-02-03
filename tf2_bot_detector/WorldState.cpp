@@ -710,7 +710,7 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 
 			// timestamp + steamid
 			oss << '[' << std::put_time(&tm_timestamp, "%T") << "] "
-				<< '<' << chatLine.getSteamID().ID64 << "> ";
+				<< '<' << std::setw(17) << std::setfill('0') << chatLine.getSteamID().ID64 << "> ";
 
 			// can't think of a good format for "YOU"
 			//if (chatLine.IsSelf()) {}

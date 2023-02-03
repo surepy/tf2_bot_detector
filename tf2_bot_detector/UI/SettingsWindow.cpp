@@ -79,6 +79,12 @@ void SettingsWindow::OnDrawLoggingSettings()
 		if (ImGui::Checkbox("RCON Packets", &m_Settings.m_Logging.m_RCONPackets))
 			m_Settings.SaveFile();
 
+		if (ImGui::Checkbox("Log Console Entries", &m_Settings.m_SaveConsoleLogs))
+			m_Settings.SaveFile();
+
+		if (ImGui::Checkbox("Log Chat History", &m_Settings.m_SaveChatHistory))
+			m_Settings.SaveFile();
+
 		ImGui::NewLine();
 		ImGui::TreePop();
 	}
@@ -114,6 +120,16 @@ void SettingsWindow::OnDrawModerationSettings()
 				"\n"
 				"Looks like: \"Heads up! There are N known cheaters joining the other team! Names unknown until they fully join.\"");
 		}
+
+		/*
+		{
+			if (ImGui::Checkbox("(Party) Marked VS notifications", &m_Settings.m_AutoChatWarningsMarkedVSNotifications))
+				m_Settings.SaveFile();
+
+			ImGui::SetHoverTooltip(
+				"Shows VS notifications when cheaters join or leave."
+			);
+		}*/
 
 		ImGui::NewLine();
 		ImGui::TreePop();

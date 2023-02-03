@@ -67,6 +67,9 @@ namespace tf2_bot_detector
 		bool m_IsDead : 1;
 		bool m_IsTeam : 1;
 		bool m_IsSelf : 1;
+
+		// this really shouldn't be here, but can't think of a better solution atm.
+		static std::string m_PendingMarkReason;
 	};
 
 	class LobbyStatusFailedLine final : public ConsoleLineBase<LobbyStatusFailedLine>

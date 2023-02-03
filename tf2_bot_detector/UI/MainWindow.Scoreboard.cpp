@@ -471,9 +471,10 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 		if (ImGui::BeginMenu("Mark"))
 		{
-			std::string mark_reason; 
+			auto &data = player.GetOrCreateData<PlayerExtraData>(player);
 
-			ImGui::InputTextWithHint("", "Reason", &mark_reason, ImGuiInputTextFlags_CallbackAlways);
+			ImGui::InputTextWithHint("", "Reason", &data.m_pendingReason, ImGuiInputTextFlags_CallbackAlways);
+
 			for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
 			{
 				const auto attr = PlayerAttribute(i);
@@ -481,8 +482,10 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 				if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
 				{
-					if (modLogic.SetPlayerAttribute(player, attr, AttributePersistence::Saved, !existingMarked, mark_reason))
+					if (modLogic.SetPlayerAttribute(player, attr, AttributePersistence::Saved, !existingMarked, data.m_pendingReason)) {
 						Log("Manually marked {}{} {:v}", player, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr));
+						data.m_pendingReason = "";
+					}
 				}
 			}
 
@@ -944,8 +947,12 @@ void MainWindow::OnDrawTeamStats()
 	struct TeamStats
 	{
 		uint8_t m_PlayerCount = 0;
+		uint8_t m_PlayerCountActive = 0;
 		uint32_t m_Kills = 0;
 		uint32_t m_Deaths = 0;
+		uint32_t m_MarkedCount = 0;
+		uint32_t m_MarkedCountActive = 0;
+
 		duration_t m_AccountAgeSum{};
 	};
 
@@ -976,6 +983,10 @@ void MainWindow::OnDrawTeamStats()
 
 		stats->m_PlayerCount++;
 
+		if (player.GetConnectionState() == PlayerStatusState::Active) {
+			stats->m_PlayerCountActive++;
+		}
+
 		bool foundAccountAge = false;
 		if (auto summary = player.GetPlayerSummary())
 		{
@@ -997,6 +1008,14 @@ void MainWindow::OnDrawTeamStats()
 
 		stats->m_Kills += player.GetScores().m_Kills;
 		stats->m_Deaths += player.GetScores().m_Deaths;
+
+		if (!GetModLogic().GetPlayerList()->GetPlayerAttributes(player).empty()) {
+			stats->m_MarkedCount++;
+
+			if (player.GetConnectionState() == PlayerStatusState::Active) {
+				stats->m_MarkedCountActive++;
+			}
+		}
 	}
 
 	const auto& themeCols = m_Settings.m_Theme.m_Colors;
@@ -1008,7 +1027,10 @@ void MainWindow::OnDrawTeamStats()
 	ImGuiDesktop::ScopeGuards::StyleColor progressBarFG(ImGuiCol_PlotHistogram, friendlyBG);
 	ImGuiDesktop::ScopeGuards::StyleColor progressBarBG(ImGuiCol_FrameBg, enemyBG);
 
-	if (const auto totalPlayers = statsArray[0].m_PlayerCount + statsArray[1].m_PlayerCount; totalPlayers > 0)
+	const auto totalPlayers = statsArray[0].m_PlayerCount + statsArray[1].m_PlayerCount;
+	const auto totalPlayersActive = statsArray[0].m_PlayerCountActive + statsArray[1].m_PlayerCountActive;
+
+	if (totalPlayers > 0)
 	{
 		const float playersFraction = statsArray[0].m_PlayerCount / float(totalPlayers);
 
@@ -1022,6 +1044,23 @@ void MainWindow::OnDrawTeamStats()
 
 		ImGui::ProgressBar(killsFraction, { -FLT_MIN, 0 },
 			mh::fmtstr<128>("Team Kills: {} | {}", statsArray[0].m_Kills, statsArray[1].m_Kills).c_str());
+	}
+
+	if (totalPlayers > 0)
+	{
+		const auto totalMarked = statsArray[0].m_MarkedCount + statsArray[1].m_MarkedCount;
+		const auto totalMarkedActive = statsArray[0].m_MarkedCountActive + statsArray[1].m_MarkedCountActive;
+
+		const float markedRate = (totalPlayers - totalMarked) / float(totalPlayers);
+
+		if (totalMarkedActive > 0 && totalMarkedActive != totalMarked) {
+			ImGui::ProgressBar(markedRate, { -FLT_MIN, 0 },
+				mh::fmtstr<128>("MarkedVS: {} ({}) vs {} ({})", totalPlayers, totalPlayersActive, totalMarked, totalMarkedActive).c_str());
+		}
+		else {
+			ImGui::ProgressBar(markedRate, { -FLT_MIN, 0 },
+				mh::fmtstr<128>("MarkedVS: {} vs {}", totalPlayers, totalMarked).c_str());
+		}
 	}
 
 #if 0
