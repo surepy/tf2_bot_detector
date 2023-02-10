@@ -10,7 +10,7 @@ jobs:
     - name: Download batch script from repo
       uses: suisei-cn/actions-download-file@v1
       with:
-        url: "https://github.com/PazerOP/tf2_bot_detector/raw/${{ github.sha }}/util/download_and_compile.bat"
+        url: "https://github.com/surepy/tf2_bot_detector/raw/${{ github.sha }}/util/download_and_compile.bat"
 
     - name: Run batch script
       shell: cmd
