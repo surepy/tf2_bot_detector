@@ -113,11 +113,11 @@ jobs:
         arch: ${{ matrix.tf2bd_arch }}
 
     - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v10
-        id: runvcpkg
-        with:
-          vcpkgDirectory: '${{ github.workspace }}/submodules/vcpkg'
-          vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
+      uses: lukka/run-vcpkg@v10
+      id: runvcpkg
+      with:
+        vcpkgDirectory: '${{ github.workspace }}/submodules/vcpkg'
+        vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
 
     - name: Create Build Folder
       run: |
@@ -229,11 +229,11 @@ jobs:
         arch: ${{ matrix.tf2bd_arch }}
 
     - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v10
-        id: runvcpkg
-        with:
-          vcpkgDirectory: '${{ github.workspace }}/submodules/vcpkg'
-          vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
+      uses: lukka/run-vcpkg@v10
+      id: runvcpkg
+      with:
+        vcpkgDirectory: '${{ github.workspace }}/submodules/vcpkg'
+        vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
 
     - name: Create Build Folder
       run: |
