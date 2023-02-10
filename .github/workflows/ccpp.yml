@@ -112,6 +112,13 @@ jobs:
       with:
         arch: ${{ matrix.tf2bd_arch }}
 
+    - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v10
+        id: runvcpkg
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/submodules/vcpkg'
+          vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
+
     - name: Create Build Folder
       run: |
         mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
@@ -220,6 +227,13 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1.5.0
       with:
         arch: ${{ matrix.tf2bd_arch }}
+
+    - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v10
+        id: runvcpkg
+        with:
+          vcpkgDirectory: '${{ github.workspace }}/submodules/vcpkg'
+          vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
 
     - name: Create Build Folder
       run: |
