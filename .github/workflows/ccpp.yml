@@ -115,12 +115,11 @@ jobs:
     # we're technically getting cmake twice
     # should be fine right
     - uses: lukka/get-cmake@latest
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v10
-      id: runvcpkg
-      with:
-        vcpkgDirectory: '${{ github.workspace }}/submodules/vcpkg'
-        vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
+
+    - name: Fix vcpkg
+      working-directory: ${{env.VCPKG_ROOT}}
+      run: | 
+        "git fetch"
 
     - name: Create Build Folder
       run: |
@@ -231,12 +230,10 @@ jobs:
       with:
         arch: ${{ matrix.tf2bd_arch }}
 
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v10
-      id: runvcpkg
-      with:
-        vcpkgDirectory: '${{ github.workspace }}/submodules/vcpkg'
-        vcpkgJsonGlob: '${{ github.workspace }}/vcpkg.json'
+    - name: Fix vcpkg
+      working-directory: ${{env.VCPKG_ROOT}}
+      run: | 
+        "git fetch"
 
     - name: Create Build Folder
       run: |
