@@ -11,7 +11,7 @@ on:
 env:
   VCPKG_ROOT: ${{ github.workspace }}/submodules/vcpkg
   VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
-  VCPKG_FEATURE_FLAGS: manifests,binarycaching
+  VCPKG_FEATURE_FLAGS: manifests,binarycaching,registries
   VCPKG_CACHE_VERSION: 9
 
 defaults:
@@ -60,12 +60,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
-        triplet: [x64-windows]
-        # triplet: [x86-windows, x64-windows]
-        discord_integration: [ true ]
+        triplet: [x86-windows, x64-windows]
+        discord_integration: [true]
         # discord_integration: [true, false]        
-        build_type: [ Debug ]
-        # build_type: [Debug, Release]
+        build_type: [Debug, Release]
         include:
           - os: windows-latest
             triplet: x86-windows
@@ -137,7 +135,7 @@ jobs:
       working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
-        cmake --build . --config ${{ matrix.build_type }}
+        cmake --build . --config ${{matrix.build_type}}
 
     - name: "Artifacts: Fresh, signed exe"
       if: steps.determine_artifact_behavior.outputs.upload && startsWith(matrix.os, 'windows')
@@ -182,9 +180,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        #triplet: [x86-windows-static, x64-windows-static]
-        triplet: [x64-windows-static]
-        build_type: [ Debug ]
+        triplet: [x86-windows-static, x64-windows-static]
+        build_type: [Debug, Release]
         # build_type: [Debug, Release]
         include:
           - os: windows-latest
