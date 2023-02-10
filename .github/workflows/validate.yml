@@ -20,7 +20,7 @@ jobs:
         shell: bash
 
       - name: Install validator
-        run: go get github.com/neilpa/yajsv
+        run: go install github.com/neilpa/yajsv@latest
 
       - name: Validate playerlist
         run: yajsv -s schemas/v3/playerlist.schema.json staging/cfg/playerlist.official.json
