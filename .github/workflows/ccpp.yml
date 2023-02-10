@@ -125,9 +125,9 @@ jobs:
     - name: Create Build Folder
       run: |
         mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
+        cd "${{needs.config.outputs.tf2bd_build_dir}}"
 
     - name: Configure and Build tf2bd
-      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
       uses: lukka/run-cmake@v10
       with:
         makeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
@@ -241,9 +241,9 @@ jobs:
     - name: Create Build Folder
       run: |
         mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
+        cd "${{needs.config.outputs.tf2bd_build_dir}}"
 
     - name: Configure and Build tf2bd
-      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
       uses: lukka/run-cmake@v10
       with:
         makeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
