@@ -60,9 +60,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
-        triplet: [x86-windows, x64-windows]
-        discord_integration: [true, false]
-        build_type: [Debug, Release]
+        triplet: [x64-windows]
+        # triplet: [x86-windows, x64-windows]
+        discord_integration: [ true ]
+        # discord_integration: [true, false]        
+        build_type: [ Debug ]
+        # build_type: [Debug, Release]
         include:
           - os: windows-latest
             triplet: x86-windows
@@ -108,6 +111,10 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1.5.0
       with:
         arch: ${{ matrix.tf2bd_arch }}
+
+    - name: Configure Build
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      run 
 
     - name: CMake
       if: ${{ startsWith(matrix.os, 'windows') }}
@@ -167,8 +174,10 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        triplet: [x86-windows-static, x64-windows-static]
-        build_type: [Debug, Release]
+        #triplet: [x86-windows-static, x64-windows-static]
+        triplet: [x64-windows-static]
+        build_type: [ Debug ]
+        # build_type: [Debug, Release]
         include:
           - os: windows-latest
             triplet: x86-windows-static
