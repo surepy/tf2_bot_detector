@@ -27,7 +27,7 @@ jobs:
       tf2bd_build_dir: ${{ steps.tf2bd_paths.outputs.build_dir }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Extract TF2BD_VERSION
       id: tf2bd_version
@@ -93,8 +93,9 @@ jobs:
         echo "needs.config.outputs.tf2bd_build_dir = ${{ needs.config.outputs.tf2bd_build_dir }}"
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
+        fetch-depth: 0
         submodules: recursive
 
     - name: Setup NuGet Credentials
@@ -115,11 +116,6 @@ jobs:
     # we're technically getting cmake twice
     # should be fine right
     - uses: lukka/get-cmake@latest
-
-    - name: Fix vcpkg
-      working-directory: ${{env.VCPKG_ROOT}}
-      run: | 
-        "git fetch"
 
     - name: Create Build Folder
       run: |
@@ -211,8 +207,9 @@ jobs:
         echo "needs.config.outputs.tf2bd_build_dir = ${{ needs.config.outputs.tf2bd_build_dir }}"
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
+        fetch-depth: 0
         submodules: recursive
 
     - name: Setup NuGet Credentials
@@ -229,11 +226,6 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1.5.0
       with:
         arch: ${{ matrix.tf2bd_arch }}
-
-    - name: Fix vcpkg
-      working-directory: ${{env.VCPKG_ROOT}}
-      run: | 
-        "git fetch"
 
     - name: Create Build Folder
       run: |
