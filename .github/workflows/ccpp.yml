@@ -112,6 +112,10 @@ jobs:
       with:
         arch: ${{ matrix.tf2bd_arch }}
 
+    - name: Create Build Folder
+      run: |
+        mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
+
     - name: Configure Build
       working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
       run: |
@@ -217,11 +221,13 @@ jobs:
       with:
         arch: ${{ matrix.tf2bd_arch }}
 
-    - name: CMake
-      if: ${{ startsWith(matrix.os, 'windows') }}
+    - name: Create Build Folder
       run: |
-        mkdir "${{ needs.config.outputs.tf2bd_build_dir }}"
-        cd "${{ needs.config.outputs.tf2bd_build_dir }}"
+        mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
+
+    - name: Configure Build
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      run: |
         cmake -G Ninja \
           -DTF2BD_IS_CI_COMPILE=ON \
           -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
@@ -233,6 +239,11 @@ jobs:
           -DTF2BD_ENABLE_DISCORD_INTEGRATION=${{ matrix.discord_integration }} \
           -DTF2BD_VERSION_BUILD=${{ github.run_number }} \
           ../tf2_bot_detector_updater/
+        
+    - name: Build tf2bd (updater)
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      if: ${{ startsWith(matrix.os, 'windows') }}
+      run: |
         cmake --build . --config ${{ matrix.build_type }}
 
     - name: "Artifacts: tf2_bot_detector_updater"
