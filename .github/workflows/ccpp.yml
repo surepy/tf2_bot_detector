@@ -125,23 +125,24 @@ jobs:
     - name: Create Build Folder
       run: |
         mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
-        cd "${{needs.config.outputs.tf2bd_build_dir}}"
 
-    - name: Configure and Build tf2bd
-      uses: lukka/run-cmake@v10
-      with:
-        makeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        configurePreset: 'ninja-multi-vcpkg'
-        configurePresetAdditionalArgs: 
-          - '-DTF2BD_IS_CI_COMPILE=ON',
-          - "-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}", 
-          - "-DCMAKE_TOOLCHAIN_FILE=\"${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake\"",
-          - "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=\"${{ needs.config.outputs.tf2bd_build_dir }}\"",
-          - "-DTF2BD_ENABLE_DISCORD_INTEGRATION=${{ matrix.discord_integration }}",
-          - "-DTF2BD_VERSION_BUILD=${{ github.run_number }}",
-          - "../"
-        buildPreset: 'ninja-multi-vcpkg'
-        buildPresetAdditionalArgs: [ '--build .', "--config ${{ matrix.build_type }" ]
+    - name: Configure Build
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      run: |
+        cmake -G Ninja \
+          -DTF2BD_IS_CI_COMPILE=ON \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" \
+          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="${{ needs.config.outputs.tf2bd_build_dir }}" \
+          -DTF2BD_ENABLE_DISCORD_INTEGRATION=${{ matrix.discord_integration }} \
+          -DTF2BD_VERSION_BUILD=${{ github.run_number }} \
+          ../
+
+    - name: Build tf2bd
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      if: ${{ startsWith(matrix.os, 'windows') }}
+      run: |
+        cmake --build . --config ${{ matrix.build_type }}
 
     - name: "Artifacts: Fresh, signed exe"
       if: steps.determine_artifact_behavior.outputs.upload && startsWith(matrix.os, 'windows')
@@ -240,26 +241,27 @@ jobs:
     - name: Create Build Folder
       run: |
         mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
-        cd "${{needs.config.outputs.tf2bd_build_dir}}"
 
-    - name: Configure and Build tf2bd
-      uses: lukka/run-cmake@v10
-      with:
-        makeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        configurePreset: 'ninja-multi-vcpkg'
-        configurePresetAdditionalArgs: 
-          - '-DTF2BD_IS_CI_COMPILE=ON',
-          - "-DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}", 
-          - "-DVCPKG_CRT_LINKAGE=static",
-          - "-DVCPKG_LIBRARY_LINKAGE=static",
-          - "-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}",
-          - "-DCMAKE_TOOLCHAIN_FILE=\"${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake\"",
-          - "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=\"${{ needs.config.outputs.tf2bd_build_dir }}\"",
-          - "-DTF2BD_ENABLE_DISCORD_INTEGRATION=${{ matrix.discord_integration }}",
-          - "-DTF2BD_VERSION_BUILD=${{ github.run_number }}",
-          - "../tf2_bot_detector_updater/"
-        buildPreset: 'ninja-multi-vcpkg'
-        buildPresetAdditionalArgs: ['--build .', "--config ${{ matrix.build_type }"]
+    - name: Configure Build
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      run: |
+        cmake -G Ninja \
+          -DTF2BD_IS_CI_COMPILE=ON \
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+          -DVCPKG_CRT_LINKAGE=static \
+          -DVCPKG_LIBRARY_LINKAGE=static \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" \
+          -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="${{ needs.config.outputs.tf2bd_build_dir }}" \
+          -DTF2BD_ENABLE_DISCORD_INTEGRATION=${{ matrix.discord_integration }} \
+          -DTF2BD_VERSION_BUILD=${{ github.run_number }} \
+          ../tf2_bot_detector_updater/
+        
+    - name: Build tf2bd (updater)
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      if: ${{ startsWith(matrix.os, 'windows') }}
+      run: |
+        cmake --build . --config ${{ matrix.build_type }}
 
     - name: "Artifacts: tf2_bot_detector_updater"
       uses: actions/upload-artifact@v2
