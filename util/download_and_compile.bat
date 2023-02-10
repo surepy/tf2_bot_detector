@@ -10,7 +10,7 @@ IF EXIST tf2_bot_detector (
 		IF %ERRORLEVEL% NEQ 0 EXIT /B
 ) ELSE (
 	ECHO Downloading TF2 Bot Detector source...
-		git clone --depth=1 https://github.com/PazerOP/tf2_bot_detector.git tf2_bot_detector --recurse-submodules
+		git clone --depth=1 https://github.com/surepy/tf2_bot_detector.git tf2_bot_detector --recurse-submodules
 		IF %ERRORLEVEL% NEQ 0 EXIT /B
 		CD tf2_bot_detector
 )
