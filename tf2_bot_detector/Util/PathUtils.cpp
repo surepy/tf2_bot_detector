@@ -186,7 +186,7 @@ std::filesystem::path tf2_bot_detector::FindTFDir(const std::filesystem::path& s
 		return tfDir;
 	}
 
-	LogError(MH_SOURCE_LOCATION_CURRENT(), "Failed to find tf directory from {}", steamDir);
+	DebugLog(MH_SOURCE_LOCATION_CURRENT(), "Failed to find tf directory from {}", steamDir);
 	return {};
 }
 
