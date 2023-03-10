@@ -935,6 +935,7 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 			}
 
 			ImGui::TextFmt("  {}: {}", fileName, proofs);
+			ImGui::NewLine();
 		}
 	}
 }
