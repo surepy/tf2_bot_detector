@@ -399,18 +399,19 @@ void Settings::Deserialize(const nlohmann::json& json)
 		static const GeneralSettings DEFAULTS;
 
 		// this setting does not exist in normal bot detector.
-		if (auto found = json.find("custom"); found != json.end())
+		if (auto custom_values = found.value().find("custom"); custom_values != json.end())
 		{
-			if (auto found = json.find("logging"); found != json.end())
+			// meme
+			if (auto logging_values = custom_values.value().find("logging"); logging_values != json.end())
 			{
 				// try_get_to_defaulted(*found, m_SaveApplicationLogs, "save_application_logs", DEFAULTS.m_SaveApplicationLogs);
-				try_get_to_defaulted(*found, m_SaveConsoleLogs, "save_console_logs", DEFAULTS.m_SaveConsoleLogs);
-				try_get_to_defaulted(*found, m_SaveChatHistory, "save_chat_history", DEFAULTS.m_SaveChatHistory);
+				try_get_to_defaulted(*logging_values, m_SaveConsoleLogs, "save_console_logs", DEFAULTS.m_SaveConsoleLogs);
+				try_get_to_defaulted(*logging_values, m_SaveChatHistory, "save_chat_history", DEFAULTS.m_SaveChatHistory);
 			}
 
-			try_get_to_defaulted(*found, m_AutoChatWarningsConnectingParty, "auto_chat_warnings_connecting_party", DEFAULTS.m_AutoChatWarningsConnectingParty);
+			try_get_to_defaulted(*custom_values, m_AutoChatWarningsConnectingParty, "auto_chat_warnings_connecting_party", DEFAULTS.m_AutoChatWarningsConnectingParty);
 
-			try_get_to_defaulted(*found, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
+			try_get_to_defaulted(*custom_values, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
 		}
 
 		try_get_to_defaulted(*found, m_LocalSteamIDOverride, "local_steamid_override");
