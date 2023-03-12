@@ -1075,17 +1075,17 @@ void MainWindow::OnDrawTeamStats()
 		if (statsArray[0].m_MarkedCount > 0)
 		{
 			// change colors for cooresponding teams 
-			markedFG = ImGuiDesktop::ScopeGuards::StyleColor(ImGuiCol_PlotHistogram, friendlyBG);
+			ImGuiDesktop::ScopeGuards::StyleColor teamMarkedFG(ImGuiCol_PlotHistogram, friendlyBG);
 
 			const auto teamUnmarked = statsArray[0].m_PlayerCount - statsArray[0].m_MarkedCount;
-			const auto teamUnmarkedActive = statsArray[1].m_PlayerCountActive - statsArray[1].m_MarkedCountActive;
-			const float teamMarkedRate = statsArray[0].m_MarkedCount / static_cast<float>(statsArray[0].m_PlayerCount);
+			const auto teamUnmarkedActive = statsArray[0].m_PlayerCountActive - statsArray[0].m_MarkedCountActive;
+			const float teamMarkedRate = teamUnmarked / static_cast<float>(statsArray[0].m_PlayerCount);
 
 			mh::fmtstr<128> teamMessage;
 
 			if (statsArray[0].m_MarkedCount != statsArray[0].m_MarkedCountActive)
 			{
-				teamMessage.fmt("MarkedVS (Team): {} ({}) vs {} ({})", teamUnmarked, teamUnmarkedActive, statsArray[1].m_MarkedCount, statsArray[1].m_MarkedCountActive);
+				teamMessage.fmt("MarkedVS (Team): {} ({}) vs {} ({})", teamUnmarked, teamUnmarkedActive, statsArray[0].m_MarkedCount, statsArray[0].m_MarkedCountActive);
 			}
 			else
 			{
@@ -1097,16 +1097,16 @@ void MainWindow::OnDrawTeamStats()
 
 		if (statsArray[1].m_MarkedCount > 0)
 		{
-			// change colors for cooresponding teams 
-			markedFG = ImGuiDesktop::ScopeGuards::StyleColor(ImGuiCol_PlotHistogram, enemyBG);
+			// change colors for cooresponding teams
+			ImGuiDesktop::ScopeGuards::StyleColor enemyMarkedFG(ImGuiCol_PlotHistogram, enemyBG);
 
 			const auto enemyUnmarked = statsArray[1].m_PlayerCount - statsArray[1].m_MarkedCount;
 			const auto enemyUnmarkedActive = statsArray[1].m_PlayerCountActive - statsArray[1].m_MarkedCountActive;
-			float enemyMarkedRate = statsArray[1].m_MarkedCount / static_cast<float>(statsArray[1].m_PlayerCount);
+			float enemyMarkedRate = enemyUnmarked / static_cast<float>(statsArray[1].m_PlayerCount);
 
 			mh::fmtstr<128> enemyMessage;
 
-			if (statsArray[0].m_MarkedCount != statsArray[1].m_MarkedCountActive)
+			if (statsArray[1].m_MarkedCount != statsArray[1].m_MarkedCountActive)
 			{
 				enemyMessage.fmt("MarkedVS (Enemy): {} ({}) vs {} ({})", enemyUnmarked, enemyUnmarkedActive, statsArray[1].m_MarkedCount, statsArray[1].m_MarkedCountActive);
 			}
