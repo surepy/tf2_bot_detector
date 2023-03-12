@@ -1055,13 +1055,67 @@ void MainWindow::OnDrawTeamStats()
 		const auto totalUnmarkedActive = totalPlayersActive - totalMarkedActive;
 		const float markedRate = totalUnmarked / float(totalPlayers);
 
-		if (totalMarkedActive > 0 && totalMarkedActive != totalMarked) {
+		// total MarkedVS
+
+		// colors are kind of bad, whatever
+		ImGuiDesktop::ScopeGuards::StyleColor markedFG(ImGuiCol_PlotHistogram, { 0, 1, 0, 1 });
+		ImGuiDesktop::ScopeGuards::StyleColor markedBG(ImGuiCol_FrameBg, themeCols.m_ScoreboardCheaterBG);
+
+		if (totalMarkedActive > 0 && totalMarkedActive != totalMarked)
+		{
 			ImGui::ProgressBar(markedRate, { -FLT_MIN, 0 },
-				mh::fmtstr<128>("MarkedVS: {} ({}) vs {} ({})", totalUnmarked, totalUnmarkedActive, totalMarked, totalMarkedActive).c_str());
+				mh::fmtstr<128>("MarkedVS (Total): {} ({}) vs {} ({})", totalUnmarked, totalUnmarkedActive, totalMarked, totalMarkedActive).c_str());
 		}
-		else {
+		else
+		{
 			ImGui::ProgressBar(markedRate, { -FLT_MIN, 0 },
-				mh::fmtstr<128>("MarkedVS: {} vs {}", totalUnmarked, totalMarked).c_str());
+				mh::fmtstr<128>("MarkedVS (Total): {} vs {}", totalUnmarked, totalMarked).c_str());
+		}
+
+		if (statsArray[0].m_MarkedCount > 0)
+		{
+			// change colors for cooresponding teams 
+			markedFG = ImGuiDesktop::ScopeGuards::StyleColor(ImGuiCol_PlotHistogram, friendlyBG);
+
+			const auto teamUnmarked = statsArray[0].m_PlayerCount - statsArray[0].m_MarkedCount;
+			const auto teamUnmarkedActive = statsArray[1].m_PlayerCountActive - statsArray[1].m_MarkedCountActive;
+			const float teamMarkedRate = statsArray[0].m_MarkedCount / static_cast<float>(statsArray[0].m_PlayerCount);
+
+			mh::fmtstr<128> teamMessage;
+
+			if (statsArray[0].m_MarkedCount != statsArray[0].m_MarkedCountActive)
+			{
+				teamMessage.fmt("MarkedVS (Team): {} ({}) vs {} ({})", teamUnmarked, teamUnmarkedActive, statsArray[1].m_MarkedCount, statsArray[1].m_MarkedCountActive);
+			}
+			else
+			{
+				teamMessage.fmt("MarkedVS (Team): {} vs {}", teamUnmarked, statsArray[0].m_MarkedCount);
+			}
+
+			ImGui::ProgressBar(teamMarkedRate, { -FLT_MIN, 0 }, teamMessage.c_str());
+		}
+
+		if (statsArray[1].m_MarkedCount > 0)
+		{
+			// change colors for cooresponding teams 
+			markedFG = ImGuiDesktop::ScopeGuards::StyleColor(ImGuiCol_PlotHistogram, enemyBG);
+
+			const auto enemyUnmarked = statsArray[1].m_PlayerCount - statsArray[1].m_MarkedCount;
+			const auto enemyUnmarkedActive = statsArray[1].m_PlayerCountActive - statsArray[1].m_MarkedCountActive;
+			float enemyMarkedRate = statsArray[1].m_MarkedCount / static_cast<float>(statsArray[1].m_PlayerCount);
+
+			mh::fmtstr<128> enemyMessage;
+
+			if (statsArray[0].m_MarkedCount != statsArray[1].m_MarkedCountActive)
+			{
+				enemyMessage.fmt("MarkedVS (Enemy): {} ({}) vs {} ({})", enemyUnmarked, enemyUnmarkedActive, statsArray[1].m_MarkedCount, statsArray[1].m_MarkedCountActive);
+			}
+			else
+			{
+				enemyMessage.fmt("MarkedVS (Enemy): {} vs {}", enemyUnmarked, statsArray[1].m_MarkedCount);
+			}
+
+			ImGui::ProgressBar(enemyMarkedRate, { -FLT_MIN, 0 }, enemyMessage.c_str());
 		}
 	}
 
