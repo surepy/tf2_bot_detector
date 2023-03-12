@@ -399,10 +399,10 @@ void Settings::Deserialize(const nlohmann::json& json)
 		static const GeneralSettings DEFAULTS;
 
 		// this setting does not exist in normal bot detector.
-		if (auto custom_values = found.value().find("custom"); custom_values != json.end())
+		if (auto custom_values = found.value().find("custom"); custom_values != found.value().end())
 		{
 			// meme
-			if (auto logging_values = custom_values.value().find("logging"); logging_values != json.end())
+			if (auto logging_values = custom_values.value().find("logging"); logging_values != custom_values.value().end())
 			{
 				// try_get_to_defaulted(*found, m_SaveApplicationLogs, "save_application_logs", DEFAULTS.m_SaveApplicationLogs);
 				try_get_to_defaulted(*logging_values, m_SaveConsoleLogs, "save_console_logs", DEFAULTS.m_SaveConsoleLogs);
