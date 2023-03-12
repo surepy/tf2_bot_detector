@@ -310,6 +310,7 @@ namespace
 			if (auto client = m_Settings.GetHTTPClient())
 			{
 				const auto releaseChannel = m_Settings.m_ReleaseChannel.value_or(ReleaseChannel::None);
+				/*
 				if (releaseChannel != ReleaseChannel::None)
 				{
 					auto sharedClient = client->shared_from_this();
@@ -329,11 +330,10 @@ namespace
 								return json.get<BuildInfo>();
 							}));
 				}
-				else
-				{
-					m_State.Emplace<std::monostate>(MH_SOURCE_LOCATION_CURRENT(), UpdateStatus::UpdateCheckDisabled,
-						"Update checks disabled by the user.");
-				}
+				*/
+
+				m_State.Emplace<std::monostate>(MH_SOURCE_LOCATION_CURRENT(), UpdateStatus::UpdateCheckDisabled,
+					"Update checks disabled by maintainer, you'll have to check manually (sorry!)");
 			}
 			else
 			{
