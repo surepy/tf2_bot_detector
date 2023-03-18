@@ -103,7 +103,6 @@ target_sources(tf2_bot_detector PRIVATE
 	"SetupFlow/ChatWrappersGeneratorPage.cpp"
 	"SetupFlow/ChatWrappersVerifyPage.h"
 	"SetupFlow/ChatWrappersVerifyPage.cpp"
-	"SetupFlow/CheckFaceitClosedPage.cpp"
 	"SetupFlow/CheckSteamOpenPage.cpp"
 	"SetupFlow/ISetupFlowPage.h"
 	"SetupFlow/NetworkSettingsPage.h"
