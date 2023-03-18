@@ -15,7 +15,6 @@ namespace tf2_bot_detector
 		PermissionsCheck = 0,
 		NetworkSettings,
 		UpdateCheck,
-		CheckFaceitClosed,
 		CheckSteamOpen,
 		BasicSettings,
 		AddonManager,
