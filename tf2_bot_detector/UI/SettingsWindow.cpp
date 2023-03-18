@@ -216,7 +216,7 @@ void SettingsWindow::OnDrawServiceIntegrationSettings()
 					}
 
 					LogError("Unknown value {}", mh::enum_fmt(mode));
-					return "Proxied";
+					return "Disabled";
 				};
 
 				ImGui::NewLine();
@@ -234,8 +234,10 @@ void SettingsWindow::OnDrawServiceIntegrationSettings()
 					ModeSelectable(SteamAPIMode::Disabled);
 					ImGui::SetHoverTooltip("Disables the Steam API integration completely.");
 
+#if 0
 					ModeSelectable(SteamAPIMode::Proxy);
 					ImGui::SetHoverTooltip("The default setting. Proxies all Steam API traffic through a TF2BD server. Does not require entering a Steam API key.");
+#endif 
 
 					ModeSelectable(SteamAPIMode::Direct);
 					ImGui::SetHoverTooltip("Communicates directly with the Steam API servers. Offers improved performance and privacy compared to Proxy, but requires entering a Steam API key.");
