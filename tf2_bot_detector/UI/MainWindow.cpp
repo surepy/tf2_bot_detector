@@ -277,7 +277,7 @@ void MainWindow::OnDrawAboutPopup()
 	{
 		ImGui::PushTextWrapPos();
 
-		ImGui::TextFmt("TF2 Bot Detector v\"{}\n"
+		ImGui::TextFmt("TF2 Bot Detector v{}\n"
 			"\n"
 			"Automatically detects and votekicks cheaters in Team Fortress 2 Casual.\n"
 			"\n"
@@ -286,6 +286,10 @@ void MainWindow::OnDrawAboutPopup()
 			" executable.", VERSION);
 
 		ImGui::NewLine();
+
+		ImGui::TextFmt("You are currently using Sleepy's build - forked from tf2bd release 1.2.1\n (commit 44f7a803d5dce93ad4f8aa9f1fd83b4ffffae625)");
+		ImGui::NewLine();
+
 		ImGui::Separator();
 		ImGui::NewLine();
 

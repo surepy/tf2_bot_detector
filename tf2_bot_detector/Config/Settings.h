@@ -58,7 +58,7 @@ namespace tf2_bot_detector
 	enum class SteamAPIMode
 	{
 		Disabled,  // Totally opt out
-		Proxy,     // Through tf2bd-util.pazer.us
+		Proxy,     // Through tf2bd-util.pazer.us (note: permanently down, so this option will be disabled and hidden)
 		Direct,    // Requires Steam API key
 	};
 
