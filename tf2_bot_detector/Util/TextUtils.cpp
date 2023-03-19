@@ -115,9 +115,9 @@ void tf2_bot_detector::WriteWideFile(const std::filesystem::path& filename, cons
 	file.write(reinterpret_cast<const char*>(text.data()), text.size() * sizeof(text[0]));
 }
 
-std::string tf2_bot_detector::CollapseNewlines(const std::string_view& input)
+tf2_bot_detector::string tf2_bot_detector::CollapseNewlines(const tf2_bot_detector::string_view& input)
 {
-	std::string retVal;
+	tf2_bot_detector::string retVal;
 
 	// collapse groups of newlines in the message into red "(\n x <count>)" text
 	bool firstLine = true;
