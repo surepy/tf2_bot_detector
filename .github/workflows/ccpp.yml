@@ -34,7 +34,7 @@ jobs:
       run: |
         mkdir build_dir
         cd build_dir
-        cmake ../ || true     # we know this will fail, we just need version info from CMakeCache.txt
+        cmake -DCMAKE_TOOLCHAIN_FILE="" ../ || true     # we know this will fail, we just need version info from CMakeCache.txt
         TF2BD_VERSION_NOBUILD=`cat CMakeCache.txt | grep TF2BD_VERSION_NOBUILD: | cut -d "=" -f2`
         echo "::set-output name=value::$TF2BD_VERSION_NOBUILD.${{ github.run_number }}"
 
