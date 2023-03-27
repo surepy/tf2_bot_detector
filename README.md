@@ -251,8 +251,8 @@ Huge thanks to anyone who threw money at this project via GitHub Sponsors. Since
 [issues-url]: https://github.com/PazerOP/tf2_bot_detector/issues
 [license-shield]: https://img.shields.io/github/license/PazerOP/tf2_bot_detector
 [license-url]: https://github.com/PazerOP/tf2_bot_detector/blob/master/LICENSE
-[actions-build-url]: https://github.com/PazerOP/tf2_bot_detector/actions?query=workflow%3Abuild
-[build-shield]: https://github.com/PazerOP/tf2_bot_detector/workflows/build/badge.svg
+[actions-build-url]: https://github.com/surepy/tf2_bot_detector/actions?query=workflow%3Abuild
+[build-shield]: https://github.com/surepy/tf2_bot_detector/workflows/build/badge.svg
 [discord-shield]: https://img.shields.io/discord/716525494421553243?label=discord&logo=discord
 [repo-link]: https://github.com/PazerOP/tf2_bot_detector
 [wiki-link]: https://github.com/PazerOP/tf2_bot_detector/wiki
