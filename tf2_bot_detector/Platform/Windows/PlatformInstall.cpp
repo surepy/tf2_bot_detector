@@ -19,11 +19,5 @@ bool tf2_bot_detector::Platform::IsInstalled()
 
 bool tf2_bot_detector::Platform::CanInstallUpdate(const BuildInfo& bi)
 {
-	if (!IsInstalled())
-		return false;
-
-	if (bi.m_MSIXBundleURL.empty())
-		return false;
-
-	return true;
+	return false;
 }

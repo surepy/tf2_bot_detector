@@ -25,13 +25,13 @@ namespace
 {
 	struct InternalRelease : NewVersionResult::Release
 	{
-		bool m_IsPrerelease;
 	};
 }
 
+// remove?
 static mh::generator<InternalRelease> GetAllReleases(const HTTPClient& client)
 {
-	auto str = co_await client.GetStringAsync("https://api.github.com/repos/PazerOP/tf2_bot_detector/releases");
+	auto str = client.GetString("https://api.github.com/repos/surepy/tf2_bot_detector/releases");
 	if (str.empty())
 		throw std::runtime_error("Autoupdate: response string was empty");
 
@@ -53,6 +53,7 @@ static mh::generator<InternalRelease> GetAllReleases(const HTTPClient& client)
 			retVal.m_Version = *version;
 		else
 		{
+			// note: don't let this happen, ever.
 			DebugLogWarning("Release id "s << releases.at("id") << " has invalid tag_name version " << versionTag);
 			continue;
 		}

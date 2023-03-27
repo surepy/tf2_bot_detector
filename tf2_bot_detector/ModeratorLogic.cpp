@@ -1,4 +1,5 @@
 #include "ModeratorLogic.h"
+#include "Util/TextUtils.h"
 #include "Actions/Actions.h"
 #include "Actions/RCONActionManager.h"
 #include "Config/PlayerListJSON.h"
@@ -336,20 +337,20 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 {
 	m_ActionManager->QueueAction<GenericCommandAction>("exec tf2bd/OnGameJoin");
 
+	// do our "onjoin" message
 	if (m_Settings->m_AutoChatWarningsConnectingParty) {
 		mh::fmtstr<128> chatMsg;
 
 		int markedPlayerCount = 0;
-		std::vector<std::string> players;
+		std::vector<tf2_bot_detector::string> players;
 
 		for (IPlayer& player : m_World->GetLobbyMembers())
 		{
 			if (!m_PlayerList.GetPlayerAttributes(player).empty()) {
-				mh::fmtstr<128> message;
 
 				auto marks = GetPlayerAttributes(player);
 
-				std::string username = player.GetNameSafe();
+				tf2_bot_detector::string username = player.GetNameSafe();
 
 				// if username is none try getting data from steamapi
 				if (username == "") {
@@ -366,7 +367,7 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 				}
 
 				players.push_back(
-					message.fmt(
+					mh::fmtstr<128>(
 						"{}: {} - {} ({})",
 						markedPlayerCount,
 						username,
