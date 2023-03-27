@@ -63,11 +63,12 @@ namespace tf2_bot_detector
 				NeedsUpdateTool>;
 		};
 
+		// As opposed to portable,
+		// this always returns false, as msix "installed" is a can of worm that i do not want to bother;
+		// and is getting removed.
 		bool CanInstallUpdate(const BuildInfo& bi);
-		mh::task<InstallUpdate::Result> BeginInstallUpdate(const BuildInfo& bi, const IHTTPClient& client);
-		bool IsInstalled(); // As opposed to portable
 
-		bool NeedsElevationToWrite(const std::filesystem::path& path, bool recursive = false);
+		bool IsInstalled();
 
 		namespace Processes
 		{
