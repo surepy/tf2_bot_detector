@@ -32,6 +32,7 @@ namespace tf2_bot_detector
 		value_type m_Major{};
 		value_type m_Minor{};
 		value_type m_Patch{};
+		// TODO: make this a string, with compiler info or something
 		value_type m_Build{};
 	};
 

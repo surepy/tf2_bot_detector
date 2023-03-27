@@ -35,6 +35,7 @@ namespace tf2_bot_detector::GithubAPI
 		{
 			Version m_Version;
 			std::string m_URL;
+			bool m_IsPrerelease;
 		};
 
 		bool m_Error = false;

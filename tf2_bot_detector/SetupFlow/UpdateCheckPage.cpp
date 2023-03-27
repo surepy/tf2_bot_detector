@@ -188,7 +188,7 @@ namespace
 
 		if (updateStatus.m_Status == UpdateStatus::UpdateAvailable)
 		{
-			ImGui::TextFmt({ 0, 1, 1, 1 }, "Update available: v{} {:v} (current version v{})",
+			ImGui::TextFmt({ 0, 1, 1, 1 }, "Update available: v{} [{:v}] (current version v{})",
 				update->m_BuildInfo.m_Version, mh::enum_fmt(update->m_BuildInfo.m_ReleaseChannel), VERSION);
 
 			if (update->m_BuildInfo.m_ReleaseChannel == ReleaseChannel::Nightly)
@@ -198,21 +198,6 @@ namespace
 			}
 
 			ImGui::NewLine();
-
-			ImGui::EnabledSwitch(update->CanSelfUpdate(), [&]
-				{
-					ImGui::EnabledSwitch(!m_UpdateButtonPressed, [&]
-						{
-							if (ImGui::Button("Update Now"))
-							{
-								update->BeginSelfUpdate();
-							}
-
-						}, "Update in progress...");
-
-				}, "Self-update not currently available. Visit GitHub to download and install the new version.");
-
-			ImGui::SameLine();
 
 			ImGui::EnabledSwitch(!update->m_BuildInfo.m_GitHubURL.empty(), [&]
 				{

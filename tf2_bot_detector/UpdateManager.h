@@ -13,23 +13,12 @@ namespace tf2_bot_detector
 {
 	class Settings;
 
+	// we're gonna rely on github tag_names instead.
 	struct BuildInfo
 	{
 		ReleaseChannel m_ReleaseChannel{};
 		Version m_Version{};
-
 		std::string m_GitHubURL;
-		std::string m_MSIXBundleURL;
-
-		struct BuildVariant
-		{
-			Platform::OS m_OS{};
-			Platform::Arch m_Arch{};
-			std::string m_DownloadURL;
-		};
-
-		std::vector<BuildVariant> m_Updater;
-		std::vector<BuildVariant> m_Portable;
 	};
 }
 
@@ -41,9 +30,6 @@ namespace tf2_bot_detector
 		IAvailableUpdate(BuildInfo&& bi) : m_BuildInfo(std::move(bi)) {}
 		virtual ~IAvailableUpdate() = default;
 
-		[[nodiscard]] virtual bool CanSelfUpdate() const = 0;
-		virtual bool BeginSelfUpdate() const = 0;
-
 		BuildInfo m_BuildInfo;
 	};
 
@@ -51,6 +37,7 @@ namespace tf2_bot_detector
 	{
 		Unknown = 0,
 
+		// ?
 		StateSwitchFailure,
 
 		UpdateCheckDisabled,
@@ -63,15 +50,18 @@ namespace tf2_bot_detector
 		UpToDate,
 		UpdateAvailable,
 
+		// DEPRECATED: I won't be implementing these any time soon 
 		UpdateToolRequired,
 		UpdateToolDownloading,
 		UpdateToolDownloadFailed,
 		UpdateToolDownloadSuccess,
 
+		// DEPRECATED: I won't be implementing these any time soon 
 		Downloading,
 		DownloadFailed,
 		DownloadSuccess,
 
+		// DEPRECATED: I won't be implementing these any time soon 
 		Updating,
 		UpdateFailed,
 		UpdateSuccess,
