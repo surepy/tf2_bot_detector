@@ -51,8 +51,6 @@ namespace tf2_bot_detector
 	{
 		os << v.m_Major << '.' << v.m_Minor << '.' << v.m_Patch;
 
-		os << " (sleepybuild)";
-
 		if (v.IsCustomBuild())
 			os << " (Custom Build)";
 		else

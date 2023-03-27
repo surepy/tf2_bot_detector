@@ -55,7 +55,7 @@ namespace tf2_bot_detector
 }
 
 MainWindow::MainWindow(ImGuiDesktop::Application& app) :
-	ImGuiDesktop::Window(app, 800, 600, mh::fmtstr<128>("TF2 Bot Detector v{}", VERSION).c_str()),
+	ImGuiDesktop::Window(app, 800, 600, mh::fmtstr<128>("TF2 Bot Detector v{} (sleepybuild)", VERSION).c_str()),
 	m_WorldState(IWorldState::Create(m_Settings)),
 	m_ActionManager(IRCONActionManager::Create(m_Settings, GetWorld())),
 	m_TextureManager(ITextureManager::Create()),
