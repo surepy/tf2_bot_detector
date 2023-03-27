@@ -240,19 +240,22 @@ namespace
 						"Checking for updates...",
 						std::async([sharedClient, releaseChannel]() -> BuildInfo
 							{
-								auto a = sharedClient->shared_from_this();
-
-								auto newver = tf2_bot_detector::GithubAPI::CheckForNewVersion(*a);
-								newver.wait();
+								auto newver = tf2_bot_detector::GithubAPI::CheckForNewVersion(*sharedClient);
 								tf2_bot_detector::GithubAPI::NewVersionResult result = newver.get();
 
 								BuildInfo ret;
 
-								ret.m_GitHubURL = result.GetURL();
-
 								// TODO: pre-release == ReleaseChannel::Preview
 								ret.m_ReleaseChannel = ReleaseChannel::Public;
-								ret.m_Version = result.m_Stable->m_Version;
+
+								if (result.m_Stable) {
+									ret.m_GitHubURL = result.GetURL();
+									ret.m_Version = result.m_Stable->m_Version;
+								}
+								// if result.m_Stable == null, that means no new versions to look at, so just return our current version.
+								else {
+									ret.m_Version = tf2_bot_detector::VERSION;
+								}
 
 								return ret;
 							}));
