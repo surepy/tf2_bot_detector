@@ -17,6 +17,7 @@
 #include <exception>
 #include <mutex>
 #include <thread>
+#include <unordered_map>
 
 #include <Windows.h>
 #include <shellapi.h>
@@ -225,14 +226,30 @@ mh::task<std::vector<std::string>> tf2_bot_detector::Processes::GetTF2CommandLin
 	}
 }
 
+
 bool tf2_bot_detector::Processes::IsSteamRunning()
 {
 	static mh::cached_variable m_CachedValue(std::chrono::seconds(1), []() { return IsProcessRunning("Steam.exe"); });
 	return m_CachedValue.get();
 }
 
+// optimization, instead of going through CreateToolhelp32Snapshot over and over again, just open a handle and check exit code.
+static std::unordered_map<std::string, HANDLE> processHandles;
+
 bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& processName)
 {
+	if (processHandles.contains(processName.data())) {
+		HANDLE hndProcess = processHandles.at(processName.data());
+		DWORD dwExitCode;
+		if (GetExitCodeProcess(hndProcess, &dwExitCode)) {
+			return dwExitCode == STILL_ACTIVE;
+		}
+
+		// our handle is invalid, and we should get a new one.
+		processHandles.erase(processName.data());
+		CloseHandle(hndProcess);
+	}
+
 	const SafeHandle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
 
 	PROCESSENTRY32 entry{};
@@ -248,7 +265,10 @@ bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& proce
 	do
 	{
 		if (mh::case_insensitive_compare(std::string_view(entry.szExeFile), processName))
+		{
+			processHandles.insert_or_assign(processName.data(), OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, entry.th32ProcessID));
 			return true;
+		}
 
 	} while (Process32Next(snapshot.get(), &entry));
 
