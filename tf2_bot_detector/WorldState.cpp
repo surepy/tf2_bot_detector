@@ -715,11 +715,9 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 			// can't think of a good format for "YOU"
 			//if (chatLine.IsSelf()) {}
 			if (chatLine.IsDead()) {
-				oss << " *DEAD*";
+				oss << "*DEAD*";
 			}
-			else {
-				oss << " ";
-			}
+
 			if (chatLine.IsTeam()) {
 				oss << "(TEAM)";
 			}
