@@ -28,6 +28,7 @@ void SettingsWindow::OnDraw()
 	OnDrawPerformanceSettings();
 	OnDrawServiceIntegrationSettings();
 	OnDrawUISettings();
+	OnDrawMiscSettings();
 
 	ImGui::NewLine();
 
@@ -119,6 +120,13 @@ void SettingsWindow::OnDrawModerationSettings()
 				" is enabled (upper left of main window).\n"
 				"\n"
 				"Looks like: \"Heads up! There are N known cheaters joining the other team! Names unknown until they fully join.\"");
+		}
+
+		{
+			if (ImGui::Checkbox("Party message warnings for connecting cheaters", &m_Settings.m_AutoChatWarningsConnectingParty))
+				m_Settings.SaveFile();
+
+			ImGui::SetHoverTooltip("Sends a party chat message notifying a marked player is joining.");
 		}
 
 		/*
@@ -327,6 +335,18 @@ void SettingsWindow::OnDrawUISettings()
 
 			ImGui::EndCombo();
 		}
+
+		ImGui::NewLine();
+		ImGui::TreePop();
+	}
+}
+
+void tf2_bot_detector::SettingsWindow::OnDrawMiscSettings()
+{
+	if (ImGui::TreeNode("Misc"))
+	{
+		if (ImGui::Checkbox("Show kill logs on chat", &m_Settings.m_KillLogsInChat))
+			m_Settings.SaveFile();
 
 		ImGui::NewLine();
 		ImGui::TreePop();

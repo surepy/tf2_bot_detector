@@ -703,26 +703,22 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		if (m_Settings.m_SaveChatHistory) {
 			// we should probbaly not do this here like this, but what do i care
 			// TODO: maybe make the function closer to how LogManager::Log() looks like
-			time_point_t timestamp = tfbd_clock_t::now();
-			tm tm_timestamp = ToTM(timestamp);
-
 			std::ostringstream oss;
 
-			// timestamp + steamid
-			oss << '[' << std::put_time(&tm_timestamp, "%T") << "] "
-				<< '<' << std::setw(17) << std::setfill('0') << chatLine.getSteamID().ID64 << "> ";
+			// steamid
+			oss << '<' << std::setw(17) << std::setfill('0') << chatLine.getSteamID().ID64 << "> ";
 
 			// can't think of a good format for "YOU"
 			//if (chatLine.IsSelf()) {}
 			if (chatLine.IsDead()) {
-				oss << "*DEAD*";
+				oss << "*DEAD* ";
 			}
 
 			if (chatLine.IsTeam()) {
-				oss << "(TEAM)";
+				oss << "(TEAM) ";
 			}
 
-			oss << " " << chatLine.GetPlayerName() << " : "
+			oss << chatLine.GetPlayerName() << " : "
 				<< chatLine.GetMessage()
 				<< std::endl;
 
@@ -842,6 +838,10 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		const auto attackerSteamID = FindSteamIDForName(killLine.GetAttackerName());
 		const auto victimSteamID = FindSteamIDForName(killLine.GetVictimName());
 
+		// i don't like doing like this, but this is the quickest way to implement this.
+		// i love tech debt.
+		std::ostringstream killLogStream;
+
 		if (attackerSteamID)
 		{
 			auto& attacker = FindOrCreatePlayer(*attackerSteamID);
@@ -849,7 +849,11 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 
 			if (victimSteamID == localSteamID)
 				attacker.m_Scores.m_LocalKills++;
+
+			killLogStream << "<" << std::setw(17) << std::setfill('0') << attacker.GetSteamID().ID64 << "> " << attacker.GetNameSafe();
 		}
+
+		killLogStream << " -> ";
 
 		if (victimSteamID)
 		{
@@ -858,6 +862,16 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 
 			if (attackerSteamID == localSteamID)
 				victim.m_Scores.m_LocalDeaths++;
+
+
+			killLogStream << "<" << victim.GetSteamID().ID64 << "> " << victim.GetNameSafe();
+		}
+
+		killLogStream << " // " << killLine.GetWeaponName() << (killLine.WasCrit() ? " (crit)" : "") << std::endl;
+
+		if (m_Settings.m_KillLogsInChat) {
+			// this looks messy af, i'm gonna add another setting value
+			// ILogManager::GetInstance().LogChat(killLogStream.str());
 		}
 
 		break;

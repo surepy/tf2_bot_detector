@@ -397,7 +397,10 @@ void LogManager::LogChat(const std::string_view & chatMessage)
 	EnsureInit();
 
 	std::lock_guard lock(m_ConsoleLogMutex);
-	m_ChatLogFile << chatMessage << std::flush;
+
+	time_point_t timestamp = tfbd_clock_t::now();
+	tm tm_timestamp = ToTM(timestamp);
+	m_ChatLogFile << '[' << std::put_time(&tm_timestamp, "%T") << "] " << chatMessage << std::flush;
 }
 
 void LogManager::CleanupLogFiles() try

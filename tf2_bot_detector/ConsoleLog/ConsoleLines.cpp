@@ -205,30 +205,36 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 		}
 
 		// not copypasted from scoreboard, fiy
-		if (ImGui::BeginMenu("Mark"))
-		{
-			std::string mark_reason;
-
-			IModeratorLogic* modLogic = &args.m_MainWindow.GetModLogic();
-
-			ImGui::InputTextWithHint("", "Reason", &m_PendingMarkReason, ImGuiInputTextFlags_CallbackAlways);
-
-			for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
+		if (m_PlayerSteamID.IsValid()) {
+			if (ImGui::BeginMenu("Mark"))
 			{
-				const auto attr = PlayerAttribute(i);
-				const bool existingMarked = (bool)modLogic->HasPlayerAttributes(m_PlayerSteamID, attr, AttributePersistence::Saved);
+				std::string mark_reason;
 
-				if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
+				IModeratorLogic* modLogic = &args.m_MainWindow.GetModLogic();
+
+				ImGui::InputTextWithHint("", "Reason", &m_PendingMarkReason, ImGuiInputTextFlags_CallbackAlways);
+
+				for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
 				{
-					if (modLogic->SetPlayerAttribute(m_PlayerSteamID, m_PlayerName, attr, AttributePersistence::Saved, !existingMarked, m_PendingMarkReason)) {
-						Log("Manually marked {}{} {:v} | {}", m_PlayerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), m_PendingMarkReason);
-						m_PendingMarkReason = "";
+					const auto attr = PlayerAttribute(i);
+					const bool existingMarked = (bool)modLogic->HasPlayerAttributes(m_PlayerSteamID, attr, AttributePersistence::Saved);
+
+					if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
+					{
+						if (modLogic->SetPlayerAttribute(m_PlayerSteamID, m_PlayerName, attr, AttributePersistence::Saved, !existingMarked, m_PendingMarkReason)) {
+							Log("Manually marked {}{} {:v} | {}", m_PlayerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), m_PendingMarkReason);
+							m_PendingMarkReason = "";
+						}
 					}
 				}
-			}
 
-			ImGui::EndMenu();
+				ImGui::EndMenu();
+			}
 		}
+		else {
+			ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");
+		}
+		
 
 		ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_PlayerSteamID.str());
 	}
@@ -472,14 +478,26 @@ KillNotificationLine::KillNotificationLine(time_point_t timestamp, std::string a
 {
 }
 
+KillNotificationLine::KillNotificationLine(time_point_t timestamp, std::string attackerName, IPlayer* attacker,
+	std::string victimName, IPlayer* victim, std::string weaponName, bool wasCrit) :
+	BaseClass(timestamp), m_AttackerName(std::move(attackerName)), m_VictimName(std::move(victimName)),
+	m_WeaponName(std::move(weaponName)), m_WasCrit(wasCrit), m_Attacker(attacker), m_Victim(victim)
+{
+}
+
 std::shared_ptr<IConsoleLine> KillNotificationLine::TryParse(const ConsoleLineTryParseArgs& args)
 {
 	static const std::regex s_Regex(R"regex((.*) killed (.*) with (.*)\.( \(crit\))?)regex", std::regex::optimize);
 
 	if (svmatch result; std::regex_match(args.m_Text.begin(), args.m_Text.end(), result, s_Regex))
 	{
-		return std::make_shared<KillNotificationLine>(args.m_Timestamp, result[1].str(),
-			result[2].str(), result[3].str(), result[4].matched);
+		auto attacker = args.m_World.FindSteamIDForName(result[1].str());
+		auto victim = args.m_World.FindSteamIDForName(result[2].str());
+
+		return std::make_shared<KillNotificationLine>(args.m_Timestamp,
+			result[1].str(), attacker.has_value() ? args.m_World.FindPlayer(attacker.value()) : nullptr,
+			result[2].str(), victim.has_value() ? args.m_World.FindPlayer(victim.value()) : nullptr,
+			result[3].str(), result[4].matched);
 	}
 
 	return nullptr;
@@ -487,8 +505,67 @@ std::shared_ptr<IConsoleLine> KillNotificationLine::TryParse(const ConsoleLineTr
 
 void KillNotificationLine::Print(const PrintArgs& args) const
 {
-	ImGui::TextFmt("{} killed {} with {}.{}", m_AttackerName.c_str(),
-		m_VictimName.c_str(), m_WeaponName.c_str(), m_WasCrit ? " (crit)" : "");
+	if (args.m_Settings.m_KillLogsInChat) {
+		/*
+		auto& colorSettings = args.m_Settings.m_Theme.m_Colors;
+		std::array<float, 4> colors{ 0.8f, 0.8f, 1.0f, 1.0f };
+
+		if (m_AttackerName.)
+			colors = colorSettings.m_ChatLogYouFG;
+		else if (msgLine.GetTeamShareResult() == TeamShareResult::SameTeams)
+			colors = colorSettings.m_ChatLogFriendlyTeamFG;
+		else if (msgLine.GetTeamShareResult() == TeamShareResult::OppositeTeams)
+			colors = colorSettings.m_ChatLogEnemyTeamFG;
+		*/
+		// TODO: stare at how chatconsoleline::print or ProcessChatMessage works
+		// TODO: COPYPASTED CODE FROM ChatConsoleLine::Print;; move into a seperate function!
+		ImGuiDesktop::ScopeGuards::ID id(this);
+
+		ImGui::BeginGroup();
+		ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "{} -> {} // {} {}", m_AttackerName.c_str(),
+			m_VictimName.c_str(), m_WeaponName.c_str(), m_WasCrit ? "(crit)" : "");
+		ImGui::EndGroup();
+
+		const bool isHovered = ImGui::IsItemHovered();
+
+		if (auto scope = ImGui::BeginPopupContextItemScope("ChatConsoleLineContextMenu"))
+		{
+			if (m_Attacker) {
+				if (ImGui::BeginMenu("Mark"))
+				{
+					IModeratorLogic* modLogic = &args.m_MainWindow.GetModLogic();
+
+					// FIXME: reasons
+					// ImGui::InputTextWithHint("", "Reason", &m_PendingMarkReason, ImGuiInputTextFlags_CallbackAlways);
+
+					for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
+					{
+						const auto attr = PlayerAttribute(i);
+						const bool existingMarked = (bool)modLogic->HasPlayerAttributes(m_Attacker->GetSteamID(), attr, AttributePersistence::Saved);
+
+						if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
+						{
+							if (modLogic->SetPlayerAttribute(m_Attacker->GetSteamID(), m_AttackerName, attr, AttributePersistence::Saved, !existingMarked, "")) {
+								Log("Manually marked {}{} {:v} | {}", m_AttackerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), "");
+							}
+						}
+					}
+
+					ImGui::EndMenu();
+				}
+			}
+			else {
+				ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");
+			}
+
+			ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_Attacker->GetSteamID().str());
+		}
+		else if (isHovered)
+		{
+			if (m_Attacker)
+				args.m_MainWindow.DrawPlayerTooltip(*m_Attacker);
+		}
+	}
 }
 
 LobbyChangedLine::LobbyChangedLine(time_point_t timestamp, LobbyChangeType type) :
