@@ -85,6 +85,8 @@ namespace tf2_bot_detector
 		// (unimplemented)
 		bool m_AutoChatWarningsMarkedVSNotifications = true;
 
+		bool m_KillLogsInChat = false;
+
 		bool m_AutoChatWarnings = true;
 		bool m_AutoChatWarningsConnecting = false;
 		bool m_AutoVotekick = true;

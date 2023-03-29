@@ -23,6 +23,7 @@ namespace tf2_bot_detector
 		void OnDrawPerformanceSettings();
 		void OnDrawServiceIntegrationSettings();
 		void OnDrawUISettings();
+		void OnDrawMiscSettings();
 
 		Settings& m_Settings;
 		MainWindow& m_MainWindow;
