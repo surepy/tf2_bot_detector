@@ -483,7 +483,7 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 				if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
 				{
 					if (modLogic.SetPlayerAttribute(player, attr, AttributePersistence::Saved, !existingMarked, data.m_pendingReason)) {
-						Log("Manually marked {}{} {:v}", player, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr));
+						Log("Manually marked {}{} {:v} | {}", player, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), data.m_pendingReason);
 						data.m_pendingReason = "";
 					}
 				}
