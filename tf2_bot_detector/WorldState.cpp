@@ -636,9 +636,7 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 	{
 		if (!m_CurrentLobbyMembers.empty() || !m_PendingLobbyMembers.empty())
 		{
-			m_CurrentLobbyMembers.clear();
-			m_PendingLobbyMembers.clear();
-			m_CurrentPlayerData.clear();
+			ClearLobbyState();
 		}
 		break;
 	}
