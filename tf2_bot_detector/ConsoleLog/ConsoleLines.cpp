@@ -478,8 +478,8 @@ KillNotificationLine::KillNotificationLine(time_point_t timestamp, std::string a
 {
 }
 
-KillNotificationLine::KillNotificationLine(time_point_t timestamp, std::string attackerName, IPlayer* attacker,
-	std::string victimName, IPlayer* victim, std::string weaponName, bool wasCrit) :
+KillNotificationLine::KillNotificationLine(time_point_t timestamp, std::string attackerName, SteamID attacker,
+	std::string victimName, SteamID victim, std::string weaponName, bool wasCrit) :
 	BaseClass(timestamp), m_AttackerName(std::move(attackerName)), m_VictimName(std::move(victimName)),
 	m_WeaponName(std::move(weaponName)), m_WasCrit(wasCrit), m_Attacker(attacker), m_Victim(victim)
 {
@@ -495,8 +495,8 @@ std::shared_ptr<IConsoleLine> KillNotificationLine::TryParse(const ConsoleLineTr
 		auto victim = args.m_World.FindSteamIDForName(result[2].str());
 
 		return std::make_shared<KillNotificationLine>(args.m_Timestamp,
-			result[1].str(), attacker.has_value() ? args.m_World.FindPlayer(attacker.value()) : nullptr,
-			result[2].str(), victim.has_value() ? args.m_World.FindPlayer(victim.value()) : nullptr,
+			result[1].str(), attacker.has_value() ? args.m_World.FindPlayer(attacker.value())->GetSteamID() : SteamID::SteamID(),
+			result[2].str(), victim.has_value() ? args.m_World.FindPlayer(victim.value())->GetSteamID() : SteamID::SteamID(),
 			result[3].str(), result[4].matched);
 	}
 
@@ -517,12 +517,37 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 		else if (msgLine.GetTeamShareResult() == TeamShareResult::OppositeTeams)
 			colors = colorSettings.m_ChatLogEnemyTeamFG;
 		*/
+
 		// TODO: stare at how chatconsoleline::print or ProcessChatMessage works
-		// TODO: COPYPASTED CODE FROM ChatConsoleLine::Print;; move into a seperate function!
+		// TODO: COPYPASTED CODE FROM ChatConsoleLine::Print; move into a seperate function!
 		ImGuiDesktop::ScopeGuards::ID id(this);
 
+		IPlayer* attacker = args.m_WorldState.FindPlayer(m_Attacker);
+
 		ImGui::BeginGroup();
-		ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "{} -> {} // {} {}", m_AttackerName.c_str(),
+
+		auto& colorSettings = args.m_Settings.m_Theme.m_Colors;
+		std::array<float, 4> chatColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		TeamShareResult team = args.m_WorldState.GetTeamShareResult(m_Attacker);
+
+		if (m_Attacker == args.m_Settings.GetLocalSteamID()) {
+			chatColor = colorSettings.m_ChatLogYouFG;
+		}
+		else if (team == TeamShareResult::OppositeTeams) {
+			chatColor = colorSettings.m_ChatLogEnemyTeamFG;
+		}
+		else if (team == TeamShareResult::SameTeams) {
+			chatColor = colorSettings.m_ChatLogFriendlyTeamFG;
+		}
+
+		// TODO: [POTENTIAL PERFORMANCE ISSUE] this is kind of a waste doing this same calculation over and over again, and might get out of hand pretty quickly.
+		// move into a seperate pre-calculated variable
+		// what this does is it just makes the color darker than the actual chat..
+		chatColor[0] = chatColor[0] / 2;
+		chatColor[1] = chatColor[1] / 2;
+		chatColor[2] = chatColor[2] / 2;
+
+		ImGui::TextFmt(chatColor, "{} -> {} // {} {}", m_AttackerName.c_str(),
 			m_VictimName.c_str(), m_WeaponName.c_str(), m_WasCrit ? "(crit)" : "");
 		ImGui::EndGroup();
 
@@ -530,7 +555,7 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 
 		if (auto scope = ImGui::BeginPopupContextItemScope("ChatConsoleLineContextMenu"))
 		{
-			if (m_Attacker) {
+			if (m_Attacker.IsValid()) {
 				if (ImGui::BeginMenu("Mark"))
 				{
 					IModeratorLogic* modLogic = &args.m_MainWindow.GetModLogic();
@@ -541,11 +566,11 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 					for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
 					{
 						const auto attr = PlayerAttribute(i);
-						const bool existingMarked = (bool)modLogic->HasPlayerAttributes(m_Attacker->GetSteamID(), attr, AttributePersistence::Saved);
+						const bool existingMarked = (bool)modLogic->HasPlayerAttributes(m_Attacker, attr, AttributePersistence::Saved);
 
 						if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
 						{
-							if (modLogic->SetPlayerAttribute(m_Attacker->GetSteamID(), m_AttackerName, attr, AttributePersistence::Saved, !existingMarked, "")) {
+							if (modLogic->SetPlayerAttribute(m_Attacker, m_AttackerName, attr, AttributePersistence::Saved, !existingMarked, "")) {
 								Log("Manually marked {}{} {:v} | {}", m_AttackerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), "");
 							}
 						}
@@ -558,12 +583,12 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 				ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");
 			}
 
-			ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_Attacker->GetSteamID().str());
+			ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_Attacker.str());
 		}
 		else if (isHovered)
 		{
-			if (m_Attacker)
-				args.m_MainWindow.DrawPlayerTooltip(*m_Attacker);
+			if (attacker)
+				args.m_MainWindow.DrawPlayerTooltip(*attacker);
 		}
 	}
 }
