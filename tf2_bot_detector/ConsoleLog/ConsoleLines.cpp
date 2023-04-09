@@ -522,8 +522,6 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 		// TODO: COPYPASTED CODE FROM ChatConsoleLine::Print; move into a seperate function!
 		ImGuiDesktop::ScopeGuards::ID id(this);
 
-		IPlayer* attacker = args.m_WorldState.FindPlayer(m_Attacker);
-
 		ImGui::BeginGroup();
 
 		auto& colorSettings = args.m_Settings.m_Theme.m_Colors;
@@ -587,7 +585,7 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 		}
 		else if (isHovered)
 		{
-			if (attacker)
+			if (IPlayer* attacker = args.m_WorldState.FindPlayer(m_Attacker))
 				args.m_MainWindow.DrawPlayerTooltip(*attacker);
 		}
 	}
