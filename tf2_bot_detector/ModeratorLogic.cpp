@@ -281,37 +281,32 @@ static bool IsCheaterConnectedWarning(const std::string_view& msg)
 	static const std::regex s_IngameWarning(
 		R"regex(Attention! There (?:is a|are \d+) cheaters? on the other team named .*\. Please kick them!)regex",
 		std::regex::optimize);
+	static const std::regex s_ConnectingWarning(
+		R"regex(Heads up! There (?:is a|are \d+) known cheaters? joining the other team! Names? unknown until they fully join\.)regex",
+		std::regex::optimize);
 
-	return std::regex_match(msg.begin(), msg.end(), s_IngameWarning);
+	return std::regex_match(msg.begin(), msg.end(), s_IngameWarning) || std::regex_match(msg.begin(), msg.end(), s_ConnectingWarning);
 }
 
 void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::string_view& msg)
 {
 	bool botMsgDetected = IsCheaterConnectedWarning(msg);
+
 	// Check if it is a moderation message from someone else
 	if (m_Settings->m_AutoTempMute &&
 		!m_PlayerList.HasPlayerAttributes(player, { PlayerAttribute::Cheater, PlayerAttribute::Exploiter }))
 	{
-		if (auto localPlayer = GetLocalPlayer();
-			localPlayer && (player.GetSteamID() != localPlayer->GetSteamID()))
+		if (auto localPlayer = GetLocalPlayer(); localPlayer && (player.GetSteamID() != localPlayer->GetSteamID()) && botMsgDetected)
 		{
-			static const std::regex s_ConnectingWarning(
-				R"regex(Heads up! There (?:is a|are \d+) known cheaters? joining the other team! Names? unknown until they fully join\.)regex",
-				std::regex::optimize);
+			Log("Detected message from {} as another instance of TF2BD: {}", player, std::quoted(msg));
+			SetUserRunningTool(player, true);
 
-			if (botMsgDetected || std::regex_match(msg.begin(), msg.end(), s_ConnectingWarning))
+			if (player.GetUserID() < localPlayer->GetUserID())
 			{
-				botMsgDetected = true;
-				Log("Detected message from {} as another instance of TF2BD: {}", player, std::quoted(msg));
-				SetUserRunningTool(player, true);
-
-				if (player.GetUserID() < localPlayer->GetUserID())
-				{
-					assert(!IsBotLeader());
-					Log("Deferring all cheater warnings for a bit because we think {} is running TF2BD", player);
-					m_NextCheaterWarningTime = m_NextConnectingCheaterWarningTime =
-						world.GetCurrentTime() + CHEATER_WARNING_INTERVAL_NONLOCAL;
-				}
+				assert(!IsBotLeader());
+				Log("Deferring all cheater warnings for a bit because we think {} is running TF2BD", player);
+				m_NextCheaterWarningTime = m_NextConnectingCheaterWarningTime =
+					world.GetCurrentTime() + CHEATER_WARNING_INTERVAL_NONLOCAL;
 			}
 		}
 	}
@@ -546,11 +541,10 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 	{
 		constexpr char FMT_ONE_CHEATER[] = "Attention! There is a cheater on the other team named \"{}\". Please kick them!";
 		constexpr char FMT_MULTIPLE_CHEATERS[] = "Attention! There are {} cheaters on the other team named {}. Please kick them!";
-		//constexpr char FMT_MANY_CHEATERS[] =     "Attention! There are %u cheaters on the other team including %s. Please kick them!";
+
 		constexpr size_t MAX_CHATMSG_LENGTH = 127;
 		constexpr size_t MAX_NAMES_LENGTH_ONE = MAX_CHATMSG_LENGTH - std::size(FMT_ONE_CHEATER) - 1 - 2;
 		constexpr size_t MAX_NAMES_LENGTH_MULTIPLE = MAX_CHATMSG_LENGTH - std::size(FMT_MULTIPLE_CHEATERS) - 1 - 1 - 2;
-		//constexpr size_t MAX_NAMES_LENGTH_MANY = MAX_CHATMSG_LENGTH - std::size(FMT_MANY_CHEATERS) - 1 - 1 - 2;
 
 		static_assert(MAX_NAMES_LENGTH_ONE >= 32);
 		mh::fmtstr<MAX_CHATMSG_LENGTH + 1> chatMsg;
