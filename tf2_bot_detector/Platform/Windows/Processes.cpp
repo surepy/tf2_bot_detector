@@ -241,8 +241,8 @@ bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& proce
 	if (processHandles.contains(processName.data())) {
 		HANDLE hndProcess = processHandles.at(processName.data());
 		DWORD dwExitCode;
-		if (GetExitCodeProcess(hndProcess, &dwExitCode)) {
-			return dwExitCode == STILL_ACTIVE;
+		if (GetExitCodeProcess(hndProcess, &dwExitCode) && dwExitCode == STILL_ACTIVE) {
+			return true;
 		}
 
 		// our handle is invalid, and we should get a new one.
