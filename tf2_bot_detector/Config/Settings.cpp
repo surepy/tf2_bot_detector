@@ -413,6 +413,26 @@ void Settings::Deserialize(const nlohmann::json& json)
 			try_get_to_defaulted(*custom_values, m_KillLogsInChat, "kill_logs_in_chat", DEFAULTS.m_KillLogsInChat);
 
 			try_get_to_defaulted(*custom_values, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
+
+			try_get_to_defaulted(*custom_values, m_ChatWarningInterval, "chat_warning_interval", DEFAULTS.m_ChatWarningInterval);
+
+			// invalid settings, this shouldn't be a negative value or faster than tf2's chat speed cap.
+			if (m_ChatWarningInterval < 2) {
+				m_ChatWarningInterval = 10;
+			}
+
+			// custom warning messages
+			{
+				try_get_to_defaulted(*custom_values, m_UseCustomChatWarnings, "use_custom_chat_warnings", DEFAULTS.m_UseCustomChatWarnings);
+
+				try_get_to_defaulted(*custom_values, m_OneCheaterConnectingMessage, "one_cheater_connecting", DEFAULTS.m_OneCheaterConnectingMessage);
+				try_get_to_defaulted(*custom_values, m_MultipleCheaterConnectingMessage, "muti_cheater_connecting", DEFAULTS.m_MultipleCheaterConnectingMessage);
+
+				try_get_to_defaulted(*custom_values, m_OneCheaterWarningMessage, "one_cheater_warning", DEFAULTS.m_OneCheaterWarningMessage);
+				try_get_to_defaulted(*custom_values, m_MultipleCheaterWarningMessage, "muti_cheater_warning", DEFAULTS.m_MultipleCheaterWarningMessage);
+			}
+
+			try_get_to_defaulted(*custom_values, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
 		}
 
 		try_get_to_defaulted(*found, m_LocalSteamIDOverride, "local_steamid_override");
@@ -478,7 +498,12 @@ void Settings::Serialize(nlohmann::json& json) const
 							}
 						},
 						{ "auto_chat_warnings_connecting_party", m_AutoChatWarningsConnectingParty },
-						{ "kill_logs_in_chat", m_KillLogsInChat }
+						{ "chat_warning_interval", m_ChatWarningInterval },
+						{ "use_custom_chat_warnings", m_UseCustomChatWarnings },
+						{ "one_cheater_connecting", m_OneCheaterConnectingMessage },
+						{ "muti_cheater_connecting", m_MultipleCheaterConnectingMessage },
+						{ "one_cheater_warning", m_OneCheaterWarningMessage },
+						{ "muti_cheater_warning", m_MultipleCheaterWarningMessage }
 					}
 				},
 				{ "sleep_when_unfocused", m_SleepWhenUnfocused },

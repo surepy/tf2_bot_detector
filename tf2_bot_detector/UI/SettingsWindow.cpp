@@ -110,6 +110,8 @@ void SettingsWindow::OnDrawModerationSettings()
 				"This is needed because players can't vote until they have joined a team and picked a class. If we call a vote before enough people are ready, it might fail.");
 		}
 
+		ImGui::NewLine();
+
 		// Send warnings for connecting cheaters
 		{
 			if (ImGui::Checkbox("Chat message warnings for connecting cheaters", &m_Settings.m_AutoChatWarningsConnecting))
@@ -121,6 +123,79 @@ void SettingsWindow::OnDrawModerationSettings()
 				"\n"
 				"Looks like: \"Heads up! There are N known cheaters joining the other team! Names unknown until they fully join.\"");
 		}
+
+		// Chat Warning Frequency
+		{
+			if (ImGui::SliderInt("Chat Warning Frequency", &m_Settings.m_ChatWarningInterval, 2, 60, "%d seconds"))
+				m_Settings.SaveFile();
+			ImGui::SetHoverTooltip("Delay between chat warnings");
+
+			if (m_Settings.m_ChatWarningInterval < 10) {
+				ImGui::TextFmt(
+					{ 1, 0, 0, 1 },
+					"WARN: YOU ARE SENDING MESSAGES WAY TOO FREQUENTLY! (<10s)\n"
+					"People usually find this chatspamming behavior annoying, and will likely kick **you** first instead!\n"
+					"(In fact, people find the default 10 second annoying, too!)\n"
+					"You have been warned!"
+				);
+			}
+		}
+
+		{
+			if (ImGui::Checkbox("Custom chat message warnings", &m_Settings.m_UseCustomChatWarnings))
+				m_Settings.SaveFile();
+			ImGui::SetHoverTooltip("Use a Custom chat warning, instead of the default \"Attention!\"...");
+		}
+
+		if (m_Settings.m_UseCustomChatWarnings)
+		{
+			ImGui::TextFmt(
+				{ 1, 0.5f, 0, 1 },
+				"NOTICE: enabling this setting will cause other bot detector users to not be able to recognize your message.\n"
+				"This in effect will cause the \"bot leader\" feature to not work, and multiple bot detector users may over-spam chat.\n"
+				"By using this option you understand that the above side-effect exists, and still want custom messages anyway."
+			);
+
+			ImGui::NewLine();
+
+			ImGui::TextFmt(
+				{ 1, 1, 1, 1 },
+				"Tip: format your strings using {}; if you want literal '{' or '}' do {{ and }} respectively"
+			);
+
+			ImGui::InputText("Cheater Joining", &m_Settings.m_OneCheaterConnectingMessage);
+			ImGui::InputText("Multiple Cheater Joining", &m_Settings.m_MultipleCheaterConnectingMessage);
+			try {
+				fmt::format(m_Settings.m_MultipleCheaterConnectingMessage, 1);
+			}
+			catch (fmt::format_error err) {
+				ImGui::TextFmt({ 1, 0, 0, 1 }, "Invalid string format! this takes 1 arguments maximum! (player count)");
+			}
+
+			ImGui::NewLine();
+
+			ImGui::InputText("Cheater Warning", &m_Settings.m_OneCheaterWarningMessage);
+			try {
+				fmt::format(m_Settings.m_OneCheaterWarningMessage, 1);
+			}
+			catch (fmt::format_error err) {
+				ImGui::TextFmt( { 1, 0, 0, 1 }, "Invalid string format! this takes 1 arguments maximum! (player count)");
+			}
+			ImGui::InputText("Multiple Cheater Warning", &m_Settings.m_MultipleCheaterWarningMessage);
+			try {
+				fmt::format(m_Settings.m_MultipleCheaterWarningMessage, fmt::arg("count", 2), fmt::arg("names", "a, b"));
+			}
+			catch (fmt::format_error err) {
+				ImGui::TextFmt({ 1, 0, 0, 1 }, "Invalid string format! this takes 2 arguments maximum! ({count}, {names})");
+			}
+
+			ImGui::NewLine();
+
+			if (ImGui::Button("Save Custom Messages"))
+				m_Settings.SaveFile();
+		}
+
+		ImGui::NewLine();
 
 		{
 			if (ImGui::Checkbox("Party message warnings for connecting cheaters", &m_Settings.m_AutoChatWarningsConnectingParty))

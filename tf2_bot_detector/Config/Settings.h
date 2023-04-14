@@ -85,7 +85,24 @@ namespace tf2_bot_detector
 		// (unimplemented)
 		bool m_AutoChatWarningsMarkedVSNotifications = true;
 
+		// put kill logs in chat
 		bool m_KillLogsInChat = false;
+
+		// how many times until chat warning, in seconds
+		int m_ChatWarningInterval = 10;
+
+		// TODO: wstring support?
+		// custom: custom chat warnings (most requested feature)
+		bool m_UseCustomChatWarnings = false;
+		// maybe?
+		// bool m_IgnoreBotLeaderPriority = false;
+		std::string m_OneCheaterConnectingMessage = "Heads up! There is a known cheater joining the other team! Name unknown until they fully join.";
+		std::string m_MultipleCheaterConnectingMessage = "Heads up! There are {} known cheaters joining the other team! Names unknown until they fully join.";
+
+		std::string m_OneCheaterWarningMessage = "Attention! There is a cheater on the other team named \"{}\". Please kick them!";
+		std::string m_MultipleCheaterWarningMessage = "Attention! There are {} cheaters on the other team named {}. Please kick them!";
+
+		// end custom
 
 		bool m_AutoChatWarnings = true;
 		bool m_AutoChatWarningsConnecting = false;
