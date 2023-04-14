@@ -186,7 +186,7 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 
 	if (auto scope = ImGui::BeginPopupContextItemScope("ChatConsoleLineContextMenu"))
 	{
-		if (ImGui::MenuItem("Copy"))
+		if (ImGui::MenuItem("Copy Text"))
 		{
 			std::string fullText;
 			ImGui::Selectable("test");
@@ -204,39 +204,17 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 			ImGui::SetClipboardText(fullText.c_str());
 		}
 
-		// not copypasted from scoreboard, fiy
+		tf2_bot_detector::DrawPlayerContextCopyMenu(m_PlayerName.c_str(), m_PlayerSteamID);
+		tf2_bot_detector::DrawPlayerContextGoToMenu(args.m_Settings, m_PlayerSteamID);
+
 		if (m_PlayerSteamID.IsValid()) {
-			if (ImGui::BeginMenu("Mark"))
-			{
-				std::string mark_reason;
-
-				IModeratorLogic* modLogic = &args.m_MainWindow.GetModLogic();
-
-				ImGui::InputTextWithHint("", "Reason", &m_PendingMarkReason, ImGuiInputTextFlags_CallbackAlways);
-
-				for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
-				{
-					const auto attr = PlayerAttribute(i);
-					const bool existingMarked = (bool)modLogic->HasPlayerAttributes(m_PlayerSteamID, attr, AttributePersistence::Saved);
-
-					if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
-					{
-						if (modLogic->SetPlayerAttribute(m_PlayerSteamID, m_PlayerName, attr, AttributePersistence::Saved, !existingMarked, m_PendingMarkReason)) {
-							Log("Manually marked {}{} {:v} | {}", m_PlayerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), m_PendingMarkReason);
-							m_PendingMarkReason = "";
-						}
-					}
-				}
-
-				ImGui::EndMenu();
-			}
+			args.m_MainWindow.DrawPlayerContextMarkMenu(m_PlayerSteamID, m_PlayerName, m_PendingMarkReason);
 		}
 		else {
 			ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");
 		}
-		
 
-		ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_PlayerSteamID.str());
+		// ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_PlayerSteamID.str());
 	}
 	else if (isHovered)
 	{
@@ -553,35 +531,19 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 
 		if (auto scope = ImGui::BeginPopupContextItemScope("ChatConsoleLineContextMenu"))
 		{
+			tf2_bot_detector::DrawPlayerContextCopyMenu(m_AttackerName.c_str(), m_Attacker);
+			tf2_bot_detector::DrawPlayerContextGoToMenu(args.m_Settings, m_Attacker);
+
 			if (m_Attacker.IsValid()) {
-				if (ImGui::BeginMenu("Mark"))
-				{
-					IModeratorLogic* modLogic = &args.m_MainWindow.GetModLogic();
+				std::string mark_reason = "todo";
 
-					// FIXME: reasons
-					// ImGui::InputTextWithHint("", "Reason", &m_PendingMarkReason, ImGuiInputTextFlags_CallbackAlways);
-
-					for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
-					{
-						const auto attr = PlayerAttribute(i);
-						const bool existingMarked = (bool)modLogic->HasPlayerAttributes(m_Attacker, attr, AttributePersistence::Saved);
-
-						if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
-						{
-							if (modLogic->SetPlayerAttribute(m_Attacker, m_AttackerName, attr, AttributePersistence::Saved, !existingMarked, "")) {
-								Log("Manually marked {}{} {:v} | {}", m_AttackerName, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), "");
-							}
-						}
-					}
-
-					ImGui::EndMenu();
-				}
+				args.m_MainWindow.DrawPlayerContextMarkMenu(m_Attacker, m_AttackerName, mark_reason);
 			}
 			else {
 				ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");
 			}
 
-			ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_Attacker.str());
+			// ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), m_Attacker.str());
 		}
 		else if (isHovered)
 		{

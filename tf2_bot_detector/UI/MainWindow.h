@@ -51,6 +51,8 @@ namespace tf2_bot_detector
 		void DrawPlayerTooltip(IPlayer& player);
 		void DrawPlayerTooltip(IPlayer& player, TeamShareResult teamShareResult, const PlayerMarks& playerAttribs);
 
+		void DrawPlayerContextMarkMenu(const SteamID& steamid, const std::string& name, std::string& reasons);
+
 	private:
 		void OnImGuiInit() override;
 		void OnOpenGLInit() override;

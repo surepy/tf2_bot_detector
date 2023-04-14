@@ -589,6 +589,59 @@ bool tf2_bot_detector::AutoLaunchTF2Checkbox(bool& value)
 	return ImGui::Checkbox("Automatically launch TF2 when TF2 Bot Detector is opened", &value);
 }
 
+void tf2_bot_detector::DrawPlayerContextCopyMenu(const char* name, const SteamID& steamID)
+{
+	// Just so we can be 100% sure of who we clicked on
+	ImGui::MenuItem(name, nullptr, nullptr, false);
+	ImGui::MenuItem(steamID.str().c_str(), nullptr, nullptr, false);
+	ImGui::Separator();
+
+	if (ImGui::BeginMenu("Copy"))
+	{
+		if (ImGui::MenuItem("In-game Name"))
+			ImGui::SetClipboardText(name);
+
+		if (ImGui::MenuItem("Steam ID", nullptr, false, steamID.IsValid()))
+			ImGui::SetClipboardText(steamID.str().c_str());
+
+		ImGui::EndMenu();
+	}
+}
+
+bool tf2_bot_detector::DrawPlayerContextGoToMenu(const Settings& settings, const SteamID& steamID)
+{
+	if (ImGui::BeginMenu("Go To", steamID.IsValid()))
+	{
+		if (!settings.m_GotoProfileSites.empty())
+		{
+			for (const auto& item : settings.m_GotoProfileSites)
+			{
+				ImGuiDesktop::ScopeGuards::ID id(&item);
+				if (ImGui::MenuItem(item.m_Name.c_str()))
+					Shell::OpenURL(item.CreateProfileURL(steamID));
+			}
+
+			if (settings.m_GotoProfileSites.size() > 1)
+			{
+				ImGui::Separator();
+				if (ImGui::MenuItem("Open All"))
+				{
+					for (const auto& item : settings.m_GotoProfileSites)
+						Shell::OpenURL(item.CreateProfileURL(steamID));
+				}
+			}
+		}
+		else
+		{
+			ImGui::MenuItem("No sites configured", nullptr, nullptr, false);
+		}
+
+		ImGui::EndMenu();
+	}
+
+	return true;
+}
+
 ImVec2 ImGui::CalcButtonSize(const char* label)
 {
 	const auto& style = ImGui::GetStyle();

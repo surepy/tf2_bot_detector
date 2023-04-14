@@ -191,6 +191,7 @@ namespace ImGui
 namespace tf2_bot_detector
 {
 	class SteamID;
+	class Settings;
 
 	bool InputTextSteamIDOverride(const char* label_id, SteamID& steamID, bool requireValid = true);
 	bool InputTextTFDirOverride(const std::string_view& label_id, std::filesystem::path& path,
@@ -200,6 +201,10 @@ namespace tf2_bot_detector
 	bool InputTextSteamAPIKey(const char* label_id, std::string& key, bool requireValid = false);
 	bool Combo(const char* label_id, std::optional<ReleaseChannel>& mode);
 	bool AutoLaunchTF2Checkbox(bool& value);
+
+
+	void DrawPlayerContextCopyMenu(const char* name, const SteamID& steamID);
+	bool DrawPlayerContextGoToMenu(const Settings& settings, const SteamID& steamID);
 }
 
 namespace ImPlot
