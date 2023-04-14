@@ -55,6 +55,8 @@ namespace
 		PlayerMarks HasPlayerAttributes(const SteamID& id, const PlayerAttributesList& attributes, AttributePersistence persistence) const override;
 		bool InitiateVotekick(const IPlayer& player, KickReason reason, const PlayerMarks* marks = nullptr) override;
 
+		std::string GenerateCheaterWarnMessage(const std::vector<std::string>& names) const;
+
 		bool SetPlayerAttribute(const IPlayer& id, PlayerAttribute markType, AttributePersistence persistence, bool set = true, std::string proof = "") override;
 		bool SetPlayerAttribute(const SteamID& id, std::string name, PlayerAttribute markType, AttributePersistence persistence, bool set = true, std::string proof = "") override;
 
@@ -117,12 +119,15 @@ namespace
 
 		void OnRuleMatch(const ModerationRule& rule, const IPlayer& player, std::string reason = "none");
 
-		// How long inbetween accusations
+		// How long inbetween accusations, unused as we pull from settings.
 		static constexpr duration_t CHEATER_WARNING_INTERVAL = std::chrono::seconds(20);
 
+		// How long inbetween accusations, for people that are not using a forked version of tf2bd.
+		static constexpr duration_t CHEATER_WARNING_INTERVAL_DEFAULT = std::chrono::seconds(20);
+
 		// The soonest we can make an accusation after having seen an accusation in chat from a bot leader.
-		// This must be longer than CHEATER_WARNING_INTERVAL.
-		static constexpr duration_t CHEATER_WARNING_INTERVAL_NONLOCAL = CHEATER_WARNING_INTERVAL + std::chrono::seconds(10);
+		// This must be longer than CHEATER_WARNING_INTERVAL_DEFAULT.
+		static constexpr duration_t CHEATER_WARNING_INTERVAL_NONLOCAL = CHEATER_WARNING_INTERVAL_DEFAULT + std::chrono::seconds(10);
 
 		// How long we wait between determining someone is cheating and actually accusing them.
 		// This delay exists to give a bot leader a chance to make an accusation.
@@ -276,7 +281,7 @@ void ModeratorLogic::OnPlayerStatusUpdate(IWorldState& world, const IPlayer& pla
 	}
 }
 
-static bool IsCheaterConnectedWarning(const std::string_view& msg)
+static bool IsBotDetectorMessage(const std::string_view& msg)
 {
 	static const std::regex s_IngameWarning(
 		R"regex(Attention! There (?:is a|are \d+) cheaters? on the other team named .*\. Please kick them!)regex",
@@ -290,7 +295,7 @@ static bool IsCheaterConnectedWarning(const std::string_view& msg)
 
 void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::string_view& msg)
 {
-	bool botMsgDetected = IsCheaterConnectedWarning(msg);
+	bool botMsgDetected = IsBotDetectorMessage(msg);
 
 	// Check if it is a moderation message from someone else
 	if (m_Settings->m_AutoTempMute &&
@@ -372,7 +377,7 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 				);
 				++markedPlayerCount;
 
-				// don't warn again, we're gona warn here.
+				// don't warn again, we've already warned about this here.
 				player.GetOrCreateData<PlayerExtraData>().m_PartyWarned = true;
 			}
 		}
@@ -539,43 +544,13 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 
 	if (chatMsgCheaterNames.size() > 0)
 	{
-		constexpr char FMT_ONE_CHEATER[] = "Attention! There is a cheater on the other team named \"{}\". Please kick them!";
-		constexpr char FMT_MULTIPLE_CHEATERS[] = "Attention! There are {} cheaters on the other team named {}. Please kick them!";
-
-		constexpr size_t MAX_CHATMSG_LENGTH = 127;
-		constexpr size_t MAX_NAMES_LENGTH_ONE = MAX_CHATMSG_LENGTH - std::size(FMT_ONE_CHEATER) - 1 - 2;
-		constexpr size_t MAX_NAMES_LENGTH_MULTIPLE = MAX_CHATMSG_LENGTH - std::size(FMT_MULTIPLE_CHEATERS) - 1 - 1 - 2;
-
-		static_assert(MAX_NAMES_LENGTH_ONE >= 32);
-		mh::fmtstr<MAX_CHATMSG_LENGTH + 1> chatMsg;
-		if (chatMsgCheaterNames.size() == 1)
-		{
-			chatMsg.fmt(FMT_ONE_CHEATER, chatMsgCheaterNames.front());
-		}
-		else
-		{
-			assert(chatMsgCheaterNames.size() > 0);
-			std::string cheaters;
-
-			for (std::string cheaterNameStr : GetJoinedStrings(chatMsgCheaterNames.begin(), chatMsgCheaterNames.end(), ", "sv))
-			{
-				if (cheaters.empty() || cheaterNameStr.size() <= MAX_NAMES_LENGTH_MULTIPLE)
-					cheaters = std::move(cheaterNameStr);
-				else if (cheaterNameStr.size() > MAX_NAMES_LENGTH_MULTIPLE)
-					break;
-			}
-
-			chatMsg.fmt(FMT_MULTIPLE_CHEATERS, chatMsgCheaterNames.size(), cheaters);
-		}
-
-		assert(chatMsg.size() <= 127);
-
 		if (now >= m_NextCheaterWarningTime)
 		{
-			if (m_Settings->m_AutoChatWarnings && m_ActionManager->QueueAction<ChatMessageAction>(chatMsg))
+			if (m_Settings->m_AutoChatWarnings && m_ActionManager->QueueAction<ChatMessageAction>(GenerateCheaterWarnMessage(chatMsgCheaterNames)))
 			{
 				Log({ 1, 0, 0, 1 }, logMsg);
-				m_NextCheaterWarningTime = now + CHEATER_WARNING_INTERVAL;
+				// used to be CHEATER_WARNING_INTERVAL
+				m_NextCheaterWarningTime = now + std::chrono::seconds(m_Settings->m_ChatWarningInterval);
 			}
 		}
 		else
@@ -583,6 +558,69 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 			DebugLog("HandleEnemyCheaters(): Skipping cheater warnings for "s << to_seconds(m_NextCheaterWarningTime - now) << " seconds");
 		}
 	}
+}
+
+std::string ModeratorLogic::GenerateCheaterWarnMessage(const std::vector<std::string>& names) const
+{
+	// TODO: have the defauts in a const somewhere else idk
+	std::string one_cheater_warning = "Attention! There is a cheater on the other team named \"{}\". Please kick them!";
+	std::string multiple_cheater_warning = "Attention! There are {} cheaters on the other team named {}. Please kick them!";
+
+	if (m_Settings->m_UseCustomChatWarnings) {
+		// check if they're empty for whatever reason
+		if (!m_Settings->m_OneCheaterWarningMessage.empty()) {
+			try {
+				fmt::format(m_Settings->m_OneCheaterWarningMessage, 1);
+				one_cheater_warning = m_Settings->m_OneCheaterWarningMessage;
+			}
+			catch (fmt::format_error err) {
+				LogError("Our custom one cheater warning message is invalid; falling back to default.");
+			}
+		}
+
+		if (!m_Settings->m_MultipleCheaterWarningMessage.empty()) {
+			try {
+				fmt::format(m_Settings->m_MultipleCheaterWarningMessage, fmt::arg("count", 2), fmt::arg("names", "a, b"));
+				one_cheater_warning = m_Settings->m_OneCheaterWarningMessage;
+			}
+			catch (fmt::format_error err) {
+				LogError("Our custom mutiple cheater warning message is invalid; falling back to default.");
+			}
+		}
+	}
+
+	constexpr size_t MAX_CHATMSG_LENGTH = 127;
+
+	size_t max_names_length_one = MAX_CHATMSG_LENGTH - one_cheater_warning.size() - 1 - 2;
+	size_t max_names_length_multiple = MAX_CHATMSG_LENGTH - multiple_cheater_warning.size() - 1 - 1 - 2;
+
+	assert(max_names_length_one >= 32);
+
+	mh::fmtstr<MAX_CHATMSG_LENGTH + 1> chatMsg;
+
+	if (names.size() == 1)
+	{
+		chatMsg.fmt(one_cheater_warning, names.front());
+	}
+	else
+	{
+		assert(names.size() > 0);
+		std::string cheaters;
+
+		for (std::string cheaterNameStr : GetJoinedStrings(names.begin(), names.end(), ", "sv))
+		{
+			if (cheaters.empty() || cheaterNameStr.size() <= max_names_length_multiple)
+				cheaters = std::move(cheaterNameStr);
+			else if (cheaterNameStr.size() > max_names_length_multiple)
+				break;
+		}
+
+		chatMsg.fmt(multiple_cheater_warning, fmt::arg("count", names.size()), fmt::arg("names", cheaters));
+	}
+
+	assert(chatMsg.size() <= 127);
+
+	return chatMsg.str();
 }
 
 void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& connectingEnemyCheaters)
@@ -646,12 +684,30 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 	mh::fmtstr<128> chatMsg;
 	if (connectingEnemyCheaters.size() == 1)
 	{
-		chatMsg.puts("Heads up! There is a known cheater joining the other team! Name unknown until they fully join.");
+		if (m_Settings->m_UseCustomChatWarnings && !m_Settings->m_OneCheaterConnectingMessage.empty()) {
+			chatMsg.puts(m_Settings->m_OneCheaterConnectingMessage);
+		}
+		else {
+			// move this string to a const somewhere else idk
+			chatMsg.puts("Heads up! There is a known cheater joining the other team! Name unknown until they fully join.");
+		}
 	}
 	else
 	{
-		chatMsg.fmt("Heads up! There are {} known cheaters joining the other team! Names unknown until they fully join.",
-			connectingEnemyCheaters.size());
+		// move this string to a const somewhere else idk
+		std::string mutli_cheater_connecting = "Heads up! There are {} known cheaters joining the other team! Names unknown until they fully join.";
+
+		if (m_Settings->m_UseCustomChatWarnings && !m_Settings->m_MultipleCheaterConnectingMessage.empty()) {
+			try {
+				fmt::format(m_Settings->m_MultipleCheaterConnectingMessage, 1);
+				mutli_cheater_connecting = m_Settings->m_MultipleCheaterConnectingMessage;
+			}
+			catch (fmt::format_error err) {
+				LogError("Our cheater connecting message is invalid; falling back to default.");
+			}
+		}
+
+		chatMsg.fmt(mutli_cheater_connecting, connectingEnemyCheaters.size());
 	}
 
 	Log("Telling other team about "s << connectingEnemyCheaters.size() << " cheaters currently connecting");

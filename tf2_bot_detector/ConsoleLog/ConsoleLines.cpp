@@ -538,7 +538,7 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 			chatColor = colorSettings.m_ChatLogFriendlyTeamFG;
 		}
 
-		// TODO: [POTENTIAL PERFORMANCE ISSUE] this is kind of a waste doing this same calculation over and over again, and might get out of hand pretty quickly.
+		// TODO: [POTENTIAL PERFORMANCE ISSUE/TECH DEBT] this is kind of a waste doing this same calculation over and over again, and might get out of hand pretty quickly.
 		// move into a seperate pre-calculated variable
 		// what this does is it just makes the color darker than the actual chat..
 		chatColor[0] = chatColor[0] / 2;
