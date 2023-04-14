@@ -581,7 +581,7 @@ std::string ModeratorLogic::GenerateCheaterWarnMessage(const std::vector<std::st
 		if (!m_Settings->m_MultipleCheaterWarningMessage.empty()) {
 			try {
 				fmt::format(m_Settings->m_MultipleCheaterWarningMessage, fmt::arg("count", 2), fmt::arg("names", "a, b"));
-				one_cheater_warning = m_Settings->m_OneCheaterWarningMessage;
+				multiple_cheater_warning = m_Settings->m_MultipleCheaterWarningMessage;
 			}
 			catch (fmt::format_error err) {
 				LogError("Our custom mutiple cheater warning message is invalid; falling back to default.");
@@ -703,7 +703,7 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 				mutli_cheater_connecting = m_Settings->m_MultipleCheaterConnectingMessage;
 			}
 			catch (fmt::format_error err) {
-				LogError("Our cheater connecting message is invalid; falling back to default.");
+				LogError("Our multi-cheater connecting message is invalid; falling back to default.");
 			}
 		}
 
