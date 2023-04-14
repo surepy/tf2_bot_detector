@@ -403,51 +403,12 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 	{
 		ImGuiDesktop::ScopeGuards::StyleColor textColor(ImGuiCol_Text, { 1, 1, 1, 1 });
 
-		// Just so we can be 100% sure of who we clicked on
-		ImGui::MenuItem(player.GetNameSafe().c_str(), nullptr, nullptr, false);
-		ImGui::MenuItem(player.GetSteamID().str().c_str(), nullptr, nullptr, false);
-		ImGui::Separator();
-
+		const auto name = player.GetNameSafe().c_str();
 		const auto steamID = player.GetSteamID();
-		if (ImGui::BeginMenu("Copy"))
-		{
-			if (ImGui::MenuItem("In-game Name"))
-				ImGui::SetClipboardText(player.GetNameUnsafe().c_str());
 
-			if (ImGui::MenuItem("Steam ID", nullptr, false, steamID.IsValid()))
-				ImGui::SetClipboardText(steamID.str().c_str());
+		tf2_bot_detector::DrawPlayerContextCopyMenu(player.GetNameUnsafe().c_str(), steamID);
 
-			ImGui::EndMenu();
-		}
-
-		if (ImGui::BeginMenu("Go To"))
-		{
-			if (!m_Settings.m_GotoProfileSites.empty())
-			{
-				for (const auto& item : m_Settings.m_GotoProfileSites)
-				{
-					ImGuiDesktop::ScopeGuards::ID id(&item);
-					if (ImGui::MenuItem(item.m_Name.c_str()))
-						Shell::OpenURL(item.CreateProfileURL(player));
-				}
-
-				if (m_Settings.m_GotoProfileSites.size() > 1)
-				{
-					ImGui::Separator();
-					if (ImGui::MenuItem("Open All"))
-					{
-						for (const auto& item : m_Settings.m_GotoProfileSites)
-							Shell::OpenURL(item.CreateProfileURL(player));
-					}
-				}
-			}
-			else
-			{
-				ImGui::MenuItem("No sites configured", nullptr, nullptr, false);
-			}
-
-			ImGui::EndMenu();
-		}
+		tf2_bot_detector::DrawPlayerContextGoToMenu(m_Settings, steamID);
 
 		const auto& world = GetWorld();
 		auto& modLogic = GetModLogic();
@@ -469,28 +430,10 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 		ImGui::Separator();
 
-		if (ImGui::BeginMenu("Mark"))
-		{
-			auto &data = player.GetOrCreateData<PlayerExtraData>(player);
 
-			ImGui::InputTextWithHint("", "Reason", &data.m_pendingReason, ImGuiInputTextFlags_CallbackAlways);
+		auto& data = player.GetOrCreateData<PlayerExtraData>(player);
 
-			for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
-			{
-				const auto attr = PlayerAttribute(i);
-				const bool existingMarked = (bool)modLogic.HasPlayerAttributes(player, attr, AttributePersistence::Saved);
-
-				if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
-				{
-					if (modLogic.SetPlayerAttribute(player, attr, AttributePersistence::Saved, !existingMarked, data.m_pendingReason)) {
-						Log("Manually marked {}{} {:v} | {}", player, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), data.m_pendingReason);
-						data.m_pendingReason = "";
-					}
-				}
-			}
-
-			ImGui::EndMenu();
-		}
+		DrawPlayerContextMarkMenu(player.GetSteamID(), player.GetNameSafe(), data.m_pendingReason);
 
 #ifdef _DEBUG
 		ImGui::Separator();
@@ -937,6 +880,31 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 			ImGui::TextFmt("  {}: {}", fileName, proofs);
 			ImGui::NewLine();
 		}
+	}
+}
+
+void MainWindow::DrawPlayerContextMarkMenu(const SteamID& steamid, const std::string& playername, std::string& reasons)
+{
+	if (ImGui::BeginMenu("Mark"))
+	{
+		IModeratorLogic& modLogic = GetModLogic();
+
+		ImGui::InputTextWithHint("", "Reason", &reasons, ImGuiInputTextFlags_CallbackAlways);
+
+		for (int i = 0; i < (int)PlayerAttribute::COUNT; i++)
+		{
+			const auto attr = PlayerAttribute(i);
+			const bool existingMarked = (bool)modLogic.HasPlayerAttributes(steamid, attr, AttributePersistence::Saved);
+
+			if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
+			{
+				if (modLogic.SetPlayerAttribute(steamid, playername, attr, AttributePersistence::Saved, !existingMarked, "")) {
+					Log("Manually marked {}{} {:v} | {}", playername, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), "");
+				}
+			}
+		}
+
+		ImGui::EndMenu();
 	}
 }
 
