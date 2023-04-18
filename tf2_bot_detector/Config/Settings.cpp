@@ -498,6 +498,7 @@ void Settings::Serialize(nlohmann::json& json) const
 							}
 						},
 						{ "auto_chat_warnings_connecting_party", m_AutoChatWarningsConnectingParty },
+						{ "kill_logs_in_chat", m_KillLogsInChat },
 						{ "chat_warning_interval", m_ChatWarningInterval },
 						{ "use_custom_chat_warnings", m_UseCustomChatWarnings },
 						{ "one_cheater_connecting", m_OneCheaterConnectingMessage },
