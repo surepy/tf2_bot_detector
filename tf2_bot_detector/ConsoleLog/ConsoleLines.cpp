@@ -209,6 +209,7 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 
 		if (m_PlayerSteamID.IsValid()) {
 			args.m_MainWindow.DrawPlayerContextMarkMenu(m_PlayerSteamID, m_PlayerName, m_PendingMarkReason);
+			m_PendingMarkReason = "";
 		}
 		else {
 			ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");
@@ -481,6 +482,9 @@ std::shared_ptr<IConsoleLine> KillNotificationLine::TryParse(const ConsoleLineTr
 	return nullptr;
 }
 
+// i promise, i will refactor
+std::string _killNotifMarkReasonBadFix = "todo";
+
 void KillNotificationLine::Print(const PrintArgs& args) const
 {
 	if (args.m_Settings.m_KillLogsInChat) {
@@ -535,9 +539,8 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 			tf2_bot_detector::DrawPlayerContextGoToMenu(args.m_Settings, m_Attacker);
 
 			if (m_Attacker.IsValid()) {
-				std::string mark_reason = "todo";
-
-				args.m_MainWindow.DrawPlayerContextMarkMenu(m_Attacker, m_AttackerName, mark_reason);
+				args.m_MainWindow.DrawPlayerContextMarkMenu(m_Attacker, m_AttackerName, _killNotifMarkReasonBadFix);
+				_killNotifMarkReasonBadFix = "";
 			}
 			else {
 				ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");

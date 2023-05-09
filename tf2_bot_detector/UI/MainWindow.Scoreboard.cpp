@@ -898,8 +898,8 @@ void MainWindow::DrawPlayerContextMarkMenu(const SteamID& steamid, const std::st
 
 			if (ImGui::MenuItem(mh::fmtstr<512>("{:v}", mh::enum_fmt(attr)).c_str(), nullptr, existingMarked))
 			{
-				if (modLogic.SetPlayerAttribute(steamid, playername, attr, AttributePersistence::Saved, !existingMarked, "")) {
-					Log("Manually marked {}{} {:v} | {}", playername, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), "");
+				if (modLogic.SetPlayerAttribute(steamid, playername, attr, AttributePersistence::Saved, !existingMarked, reasons)) {
+					Log("Manually marked {}{} {:v} | {}", playername, (existingMarked ? " NOT" : ""), mh::enum_fmt(attr), reasons);
 				}
 			}
 		}
