@@ -86,19 +86,9 @@ static constexpr const InvisCharsEntry INVISIBLE_CHARS[] =
 	INVIS_CHAR_SEQ("\u200B"),
 	INVIS_CHAR_SEQ("\u200C"),
 	INVIS_CHAR_SEQ("\u200D"),
-	INVIS_CHAR_SEQ("\u2060"),
 	INVIS_CHAR_SEQ("\uFEFF"),
-	INVIS_CHAR_SEQ("\u202C"), // pop directional formatting
+	INVIS_CHAR_SEQ("\u2060"),
 
-	// Potentially dangerous
-	INVIS_CHAR_SEQ("\u200E"), // left-to-right mark
-	INVIS_CHAR_SEQ("\u200F"), // right-to-left mark
-
-	//INVIS_CHAR_SEQ("\u2061"), // shows up in game, do not use, function application
-	//INVIS_CHAR_SEQ("\u2068"), // shows up in game, do not use, first-strong isolate
-	//INVIS_CHAR_SEQ("\u2069"), // shows up in game, do not use, pop directional isolate
-	//INVIS_CHAR_SEQ("\u2063"), // shows up in game, do not use
-	//INVIS_CHAR_SEQ("\u0082"), // shows up in game, do not use
 };
 
 #undef INVIS_CHAR_SEQ
@@ -204,7 +194,6 @@ static bool GetChatCategory(const std::string* src, std::string_view* name, Chat
 	}
 
 	static constexpr auto TF_CHAT_ROOT = "TF_Chat_"sv;
-	static constexpr auto ENGLISH_TF_CHAT_ROOT = "[english]TF_Chat_"sv;
 
 	std::string_view localName;
 	if (!name)
@@ -215,12 +204,6 @@ static bool GetChatCategory(const std::string* src, std::string_view* name, Chat
 		*name = std::string_view(*src).substr(TF_CHAT_ROOT.size());
 		if (isEnglish)
 			*isEnglish = false;
-	}
-	else if (src->starts_with(ENGLISH_TF_CHAT_ROOT))
-	{
-		*name = std::string_view(*src).substr(ENGLISH_TF_CHAT_ROOT.size());
-		if (isEnglish)
-			*isEnglish = true;
 	}
 	else
 	{
@@ -396,10 +379,10 @@ static constexpr std::string_view GetChatCategoryKey(ChatCategory cat, bool isEn
 	case ChatCategory::SpecTeam:  return "TF_Chat_Spec"sv;
 	case ChatCategory::Coach:     return "TF_Chat_Coach"sv;
 
-	case ChatCategory::COUNT:
-		LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown key for {} with isEnglish = {}", mh::enum_fmt(cat), isEnglish);
-		return "TF_Chat_UNKNOWN"sv;
+	case ChatCategory::COUNT:	  break;
 	}
+	LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown key for {} with isEnglish = {}", mh::enum_fmt(cat), isEnglish);
+	return "TF_Chat_UNKNOWN"sv;
 }
 
 static void PrintChatWrappers(const ChatWrappers& wrappers)
@@ -603,12 +586,7 @@ size_t ChatFmtStrLengths::Type::GetAvailableChars() const
 
 size_t ChatFmtStrLengths::Type::GetMaxWrapperLength() const
 {
-	const auto availableChars = GetAvailableChars();
-
-	constexpr size_t CHATWRAPPER_COUNT_PER_MSG = 6; // line start/end, name start/end, msg start/end
-	const auto maxWrapperLength = availableChars / CHATWRAPPER_COUNT_PER_MSG;
-
-	return maxWrapperLength;
+	return 3;
 }
 
 ChatWrappers tf2_bot_detector::RandomizeChatWrappers(const std::filesystem::path& tfdir,
