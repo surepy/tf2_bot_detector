@@ -386,39 +386,20 @@ static ChatFormatStrings FindExistingTranslations(const std::filesystem::path& t
 
 static constexpr std::string_view GetChatCategoryKey(ChatCategory cat, bool isEnglish)
 {
-	if (isEnglish)
+	switch (cat)
 	{
-		switch (cat)
-		{
-		case ChatCategory::All:       return "[english]TF_Chat_All"sv;
-		case ChatCategory::AllDead:   return "[english]TF_Chat_AllDead"sv;
-		case ChatCategory::Team:      return "[english]TF_Chat_Team"sv;
-		case ChatCategory::TeamDead:  return "[english]TF_Chat_Team_Dead"sv;
-		case ChatCategory::Spec:      return "[english]TF_Chat_AllSpec"sv;
-		case ChatCategory::SpecTeam:  return "[english]TF_Chat_Spec"sv;
-		case ChatCategory::Coach:     return "[english]TF_Chat_Coach"sv;
+	case ChatCategory::All:       return "TF_Chat_All"sv;
+	case ChatCategory::AllDead:   return "TF_Chat_AllDead"sv;
+	case ChatCategory::Team:      return "TF_Chat_Team"sv;
+	case ChatCategory::TeamDead:  return "TF_Chat_Team_Dead"sv;
+	case ChatCategory::Spec:      return "TF_Chat_AllSpec"sv;
+	case ChatCategory::SpecTeam:  return "TF_Chat_Spec"sv;
+	case ChatCategory::Coach:     return "TF_Chat_Coach"sv;
 
-		case ChatCategory::COUNT:     break;
-		}
+	case ChatCategory::COUNT:
+		LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown key for {} with isEnglish = {}", mh::enum_fmt(cat), isEnglish);
+		return "TF_Chat_UNKNOWN"sv;
 	}
-	else
-	{
-		switch (cat)
-		{
-		case ChatCategory::All:       return "TF_Chat_All"sv;
-		case ChatCategory::AllDead:   return "TF_Chat_AllDead"sv;
-		case ChatCategory::Team:      return "TF_Chat_Team"sv;
-		case ChatCategory::TeamDead:  return "TF_Chat_Team_Dead"sv;
-		case ChatCategory::Spec:      return "TF_Chat_AllSpec"sv;
-		case ChatCategory::SpecTeam:  return "TF_Chat_Spec"sv;
-		case ChatCategory::Coach:     return "TF_Chat_Coach"sv;
-
-		case ChatCategory::COUNT:     break;
-		}
-	}
-
-	LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown key for {} with isEnglish = {}", mh::enum_fmt(cat), isEnglish);
-	return "TF_Chat_UNKNOWN"sv;
 }
 
 static void PrintChatWrappers(const ChatWrappers& wrappers)
@@ -734,10 +715,6 @@ ChatWrappers tf2_bot_detector::RandomizeChatWrappers(const std::filesystem::path
 				tokens->attribs[std::string(key)] = translationsSet.m_English[i];
 			}
 			IncrementProgress();
-
-			// Not exactly a "chat wrapper"... oh well
-			tokens->get_or_add_attrib("GameUI_vote_failed_vote_in_progress") = "";
-			tokens->get_or_add_attrib("[english]GameUI_vote_failed_vote_in_progress") = "";
 
 			std::string outFile;
 			mh::strwrapperstream stream(outFile);
