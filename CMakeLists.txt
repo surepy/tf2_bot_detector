@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/submodules/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 
 option(TF2BD_ENABLE_DISCORD_INTEGRATION "Enable discord integration" on)
