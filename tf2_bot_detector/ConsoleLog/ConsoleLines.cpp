@@ -209,7 +209,6 @@ void ChatConsoleLine::Print(const PrintArgs& args) const
 
 		if (m_PlayerSteamID.IsValid()) {
 			args.m_MainWindow.DrawPlayerContextMarkMenu(m_PlayerSteamID, m_PlayerName, m_PendingMarkReason);
-			m_PendingMarkReason = "";
 		}
 		else {
 			ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");
@@ -483,7 +482,7 @@ std::shared_ptr<IConsoleLine> KillNotificationLine::TryParse(const ConsoleLineTr
 }
 
 // i promise, i will refactor
-std::string _killNotifMarkReasonBadFix = "todo";
+static std::string _killNotifMarkReasonBadFix = "";
 
 void KillNotificationLine::Print(const PrintArgs& args) const
 {
@@ -540,7 +539,6 @@ void KillNotificationLine::Print(const PrintArgs& args) const
 
 			if (m_Attacker.IsValid()) {
 				args.m_MainWindow.DrawPlayerContextMarkMenu(m_Attacker, m_AttackerName, _killNotifMarkReasonBadFix);
-				_killNotifMarkReasonBadFix = "";
 			}
 			else {
 				ImGui::TextFmt(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Marking Unavailable");
