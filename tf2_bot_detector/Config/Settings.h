@@ -66,7 +66,7 @@ namespace tf2_bot_detector
 	public:
 		virtual ~ISteamAPISettings() = default;
 
-		bool IsSteamAPIAvailable() const;
+		bool IsSteamAPISettingReady() const;
 		virtual std::string GetSteamAPIKey() const = 0;
 		virtual void SetSteamAPIKey(std::string key) = 0;
 		virtual SteamAPIMode GetSteamAPIMode() const = 0;
@@ -156,6 +156,8 @@ namespace tf2_bot_detector
 			std::unique_ptr<srcon::async_client> m_RCONClient;
 
 		} m_Unsaved;
+
+		bool IsSteamAPIAvailable() const;
 
 		std::optional<bool> m_AllowInternetUsage;
 		std::shared_ptr<const IHTTPClient> GetHTTPClient() const;

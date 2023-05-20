@@ -174,11 +174,10 @@ void tf2_bot_detector::SteamAPI::from_json(const nlohmann::json& j, PlayerSummar
 static std::string GenerateSteamAPIURL(const ISteamAPISettings& apiSettings,
 	const std::string_view& endpoint, std::string query = "") try
 {
-	assert(apiSettings.IsSteamAPIAvailable());
+	assert(apiSettings.IsSteamAPISettingReady());
 	assert(query.empty() || query.starts_with("?"));
 	assert(endpoint.starts_with("/"));
 	assert(!endpoint.ends_with("/"));
-	assert(apiSettings.GetSteamAPIMode() == SteamAPIMode::Direct);
 
 	if (!query.empty())
 		query[0] = '&';

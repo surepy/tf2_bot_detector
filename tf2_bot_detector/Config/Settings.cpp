@@ -194,7 +194,8 @@ namespace tf2_bot_detector
 	}
 }
 
-bool ISteamAPISettings::IsSteamAPIAvailable() const
+// is steam api settings ready to try to send requests?
+bool ISteamAPISettings::IsSteamAPISettingReady() const
 {
 	switch (GetSteamAPIMode())
 	{
@@ -206,6 +207,17 @@ bool ISteamAPISettings::IsSteamAPIAvailable() const
 
 	LogError("Unknown SteamAPIMode {}", +std::underlying_type_t<SteamAPIMode>(GetSteamAPIMode()));
 	return false;
+}
+
+// can we actually try to send requests to steam api (as far as we are concerned)?
+// (settings valid & allow internet useage = true)
+bool Settings::IsSteamAPIAvailable() const
+{
+	if (!m_AllowInternetUsage.value_or(false)) {
+		return false;
+	}
+
+	return IsSteamAPISettingReady();
 }
 
 std::string GeneralSettings::GetSteamAPIKey() const
