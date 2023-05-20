@@ -23,7 +23,14 @@ namespace tf2_bot_detector
 		{
 			std::optional<bool> m_AllowInternetUsage;
 			std::optional<ReleaseChannel> m_ReleaseChannel;
+			SteamAPIMode m_SteamAPIMode = SteamAPIMode::Disabled;
+			std::string m_SteamAPIKey;
 
+			inline std::string GetSteamAPIKey() const
+			{
+				return (m_SteamAPIMode == SteamAPIMode::Direct) ? m_SteamAPIKey : std::string();
+			}
 		} m_Settings;
+
 	};
 }

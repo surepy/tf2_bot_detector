@@ -105,6 +105,8 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			app.Update();
 	}
 
+	// TODO: delete empty logs or something idk
+
 	DebugLog("Graceful shutdown");
 	return 0;
 }

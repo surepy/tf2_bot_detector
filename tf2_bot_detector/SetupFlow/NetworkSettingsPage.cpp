@@ -16,6 +16,9 @@ static bool InternalValidateSettings(const T& settings)
 		return false;
 	if (!settings.m_ReleaseChannel.has_value())
 		return false;
+	if (settings.m_SteamAPIMode == SteamAPIMode::Direct && settings.GetSteamAPIKey().empty())
+		return false;
+
 #if 0
 	if (settings.m_ProgramUpdateCheckMode == ProgramUpdateCheckMode::Releases && VERSION.m_Preview != 0)
 		return false;
@@ -62,6 +65,52 @@ auto NetworkSettingsPage::OnDraw(const DrawState& ds) -> OnDrawResult
 			ImGui::EndGroup();
 		}, "Requires \"Allow Internet Connectivity\"");
 
+
+	ImGui::NewLine();
+	ImGui::Text("Steam API Integration:\nIt is *VERY strongly* recommended you use tf2 bot detector with the Steam API integration enabled as they provide much more information and utility.");
+
+	// copypasted from SettingsWindow.cpp#292, move somewhere else later.
+	const auto GetSteamAPIModeString = [](SteamAPIMode mode)
+	{
+		switch (mode)
+		{
+		case SteamAPIMode::Disabled:  return "Disabled";
+		case SteamAPIMode::Direct:    return "Enabled";
+		}
+
+		LogError("Unknown value {}", mh::enum_fmt(mode));
+		return "Disabled";
+	};
+
+	ImGui::Indent();
+
+	if (ImGui::BeginCombo("Steam API Mode", GetSteamAPIModeString(m_Settings.m_SteamAPIMode)))
+	{
+		const auto ModeSelectable = [&](SteamAPIMode mode)
+		{
+			if (ImGui::Selectable(GetSteamAPIModeString(mode), m_Settings.m_SteamAPIMode == mode))
+			{
+				m_Settings.m_SteamAPIMode = mode;
+			}
+		};
+
+		ModeSelectable(SteamAPIMode::Disabled);
+		ImGui::SetHoverTooltip("Disables the Steam API integration completely.");
+
+		ModeSelectable(SteamAPIMode::Direct);
+		ImGui::SetHoverTooltip("Communicates directly with the Steam API servers.");
+
+		ImGui::EndCombo();
+	}
+
+	ImGui::NewLine();
+
+	if (m_Settings.m_SteamAPIMode == SteamAPIMode::Direct) {
+		InputTextSteamAPIKey("Steam API Key", m_Settings.m_SteamAPIKey, true);
+	}
+
+	ImGui::Unindent();
+
 	return OnDrawResult::ContinueDrawing;
 }
 
@@ -92,4 +141,7 @@ void NetworkSettingsPage::Commit(const CommitState& cs)
 		if (mh_ensure(cs.m_UpdateManager))
 			cs.m_UpdateManager->QueueUpdateCheck();
 	}
+
+	cs.m_Settings.m_SteamAPIMode = m_Settings.m_SteamAPIMode;
+	cs.m_Settings.SetSteamAPIKey(m_Settings.m_SteamAPIKey);
 }

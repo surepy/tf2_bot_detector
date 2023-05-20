@@ -510,6 +510,11 @@ bool tf2_bot_detector::InputTextSteamAPIKey(const char* label_id, std::string& k
 		ImGui::SameLine();
 
 		if (ImGui::Button("Generate Steam API Key"))
+			Platform::Shell::OpenURL("steam://openurl/https://steamcommunity.com/dev/apikey");
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Generate Steam API Key (Open in Web Browser)"))
 			Platform::Shell::OpenURL("https://steamcommunity.com/dev/apikey");
 	}
 
