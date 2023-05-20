@@ -58,7 +58,6 @@ namespace tf2_bot_detector
 	enum class SteamAPIMode
 	{
 		Disabled,  // Totally opt out
-		Proxy,     // Through tf2bd-util.pazer.us (note: permanently down, so this option will be disabled and hidden)
 		Direct,    // Requires Steam API key
 	};
 
@@ -125,7 +124,7 @@ namespace tf2_bot_detector
 		std::string GetSteamAPIKey() const override;
 		void SetSteamAPIKey(std::string key) override;
 
-		SteamAPIMode m_SteamAPIMode = SteamAPIMode::Proxy;
+		SteamAPIMode m_SteamAPIMode = SteamAPIMode::Disabled;
 		SteamAPIMode GetSteamAPIMode() const override { return m_SteamAPIMode; }
 
 	protected:
@@ -254,6 +253,5 @@ MH_ENUM_REFLECT_END()
 
 MH_ENUM_REFLECT_BEGIN(tf2_bot_detector::SteamAPIMode)
 	MH_ENUM_REFLECT_VALUE(Disabled)
-	MH_ENUM_REFLECT_VALUE(Proxy)
 	MH_ENUM_REFLECT_VALUE(Direct)
 MH_ENUM_REFLECT_END()
