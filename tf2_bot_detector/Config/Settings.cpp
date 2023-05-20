@@ -209,7 +209,7 @@ bool ISteamAPISettings::IsSteamAPISettingReady() const
 	return false;
 }
 
-// can we actually try to send requests to steam api (as far as we are concerned)?
+// can we actually try to send requests to steam api (as far as we are c?
 // (settings valid & allow internet useage = true)
 bool Settings::IsSteamAPIAvailable() const
 {

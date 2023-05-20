@@ -294,7 +294,7 @@ void SettingsWindow::OnDrawServiceIntegrationSettings()
 					switch (mode)
 					{
 					case SteamAPIMode::Disabled:  return "Disabled";
-					case SteamAPIMode::Direct:    return "Direct";
+					case SteamAPIMode::Direct:    return "Enabled";
 					}
 
 					LogError("Unknown value {}", mh::enum_fmt(mode));
@@ -317,7 +317,7 @@ void SettingsWindow::OnDrawServiceIntegrationSettings()
 					ImGui::SetHoverTooltip("Disables the Steam API integration completely.");
 
 					ModeSelectable(SteamAPIMode::Direct);
-					ImGui::SetHoverTooltip("Communicates directly with the Steam API servers. Offers improved performance and privacy compared to Proxy, but requires entering a Steam API key.");
+					ImGui::SetHoverTooltip("Communicates directly with the Steam API servers.");
 
 					ImGui::EndCombo();
 				}
