@@ -162,12 +162,10 @@ namespace tf2_bot_detector
 		switch (d)
 		{
 		case SteamAPIMode::Direct:    j = "direct";   break;
-		case SteamAPIMode::Disabled:  j = "disabled"; break;
-
 		default:
-			LogError("Unknown SteamAPIMode {}, defaulting to proxy", +std::underlying_type_t<SteamAPIMode>(d));
+			LogError("Unknown SteamAPIMode {}, defaulting to disabled", +std::underlying_type_t<SteamAPIMode>(d));
 			[[fallthrough]];
-		case SteamAPIMode::Proxy:     j = "proxy";    break;
+		case SteamAPIMode::Disabled:     j = "disabled";    break;
 		}
 	}
 	void from_json(const nlohmann::json& j, SteamAPIMode& d)
@@ -175,14 +173,11 @@ namespace tf2_bot_detector
 		auto sv = j.get<std::string_view>();
 		if (sv == "direct")
 			d = SteamAPIMode::Direct;
-		else if (sv == "disabled")
-			d = SteamAPIMode::Disabled;
-		else
-		{
-			if (j != "proxy")
-				LogError("Unknown SteamAPIMode {}, defaulting to proxy", std::quoted(sv));
+		else {
+			if (j != "disabled")
+				LogError("Unknown SteamAPIMode {}, defaulting to disabled.", std::quoted(sv));
 
-			d = SteamAPIMode::Proxy;
+			d = SteamAPIMode::Disabled;
 		}
 	}
 
@@ -203,12 +198,10 @@ bool ISteamAPISettings::IsSteamAPIAvailable() const
 {
 	switch (GetSteamAPIMode())
 	{
-	case SteamAPIMode::Disabled:
-		return false;
-	case SteamAPIMode::Proxy:
-		return true;
 	case SteamAPIMode::Direct:
 		return !GetSteamAPIKey().empty();
+	case SteamAPIMode::Disabled:
+		return false;
 	}
 
 	LogError("Unknown SteamAPIMode {}", +std::underlying_type_t<SteamAPIMode>(GetSteamAPIMode()));
@@ -455,8 +448,7 @@ void Settings::Deserialize(const nlohmann::json& json)
 			SetSteamAPIKey(std::move(apiKey));
 		}
 
-		try_get_to_defaulted(*found, m_SteamAPIMode, "steam_api_mode",
-			GetSteamAPIKeyDirect().size() == 32 ? SteamAPIMode::Direct : SteamAPIMode::Proxy);
+		try_get_to_defaulted(*found, m_SteamAPIMode, "steam_api_mode", GetSteamAPIKeyDirect().size() == 32 ? SteamAPIMode::Direct : SteamAPIMode::Disabled);
 
 		if (auto foundDir = found->find("steam_dir_override"); foundDir != found->end())
 			m_SteamDirOverride = foundDir->get<std::string_view>();

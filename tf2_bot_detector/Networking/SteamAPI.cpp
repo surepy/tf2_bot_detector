@@ -178,22 +178,12 @@ static std::string GenerateSteamAPIURL(const ISteamAPISettings& apiSettings,
 	assert(query.empty() || query.starts_with("?"));
 	assert(endpoint.starts_with("/"));
 	assert(!endpoint.ends_with("/"));
+	assert(apiSettings.GetSteamAPIMode() == SteamAPIMode::Direct);
 
-	if (apiSettings.GetSteamAPIMode() == SteamAPIMode::Direct)
-	{
-		if (!query.empty())
-			query[0] = '&';
+	if (!query.empty())
+		query[0] = '&';
 
-		return mh::format(MH_FMT_STRING("https://api.steampowered.com{}/?key={}{}"), endpoint, apiSettings.GetSteamAPIKey(), query);
-	}
-	else if (apiSettings.GetSteamAPIMode() == SteamAPIMode::Proxy)
-	{
-		return mh::format(MH_FMT_STRING("https://tf2bd-util.pazer.us/SteamAPIProxy{}{}"), endpoint, query);
-	}
-	else
-	{
-		throw std::runtime_error(mh::format(MH_FMT_STRING("Should never get here: SteamAPIMode was {}"), mh::enum_fmt(apiSettings.GetSteamAPIMode())));
-	}
+	return mh::format(MH_FMT_STRING("https://api.steampowered.com{}/?key={}{}"), endpoint, apiSettings.GetSteamAPIKey(), query);
 }
 catch (...)
 {

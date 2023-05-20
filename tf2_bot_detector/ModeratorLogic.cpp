@@ -739,6 +739,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 	}
 
 	mh::fmtstr<128> chatMsg;
+
 	if (unwarnedCheaters.size() == 1)
 	{
 		auto& cheaterData = unwarnedCheaters.at(0)->GetOrCreateData<PlayerExtraData>();
@@ -749,29 +750,21 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 		PlayerMarks marks = unwarnedCheaters.at(0).m_Marks;
 		SteamID steamid = player.GetSteamID();
 
-		auto summary = player.GetPlayerSummary();
+		// this looks ugly, but realistically you shouldn't be using this software with steamapi disabled.
+		std::string username = "";
 
-		// steamapi didn't get the name yet, exit the function and this function will run again next loop.
-		if (!summary.has_value()) {
-			Log(steamid.str() + " - steamapi didnt recieve info, waiting.");
-			return;
+		// attempt to get a "true" username from steamapi, if enabled.
+		if (m_Settings->IsSteamAPIAvailable()) {
+			auto summary = player.GetPlayerSummary();
+
+			// steamapi didn't get the name yet, exit the function and this function will run again next loop.
+			if (!summary.has_value()) {
+				Log(steamid.str() + " - steamapi didnt recieve info, waiting until we receve data for this player.");
+				return;
+			}
+
+			username = (summary.value().m_Nickname);
 		}
-		std::string username = summary.value().m_Nickname;
-
-		/*
-		for (auto& [fileName, found] : m_PlayerList.FindPlayerData(steamid)) {
-			// personal: ignore bot list conifgs.
-			if (fileName == "playerlist.sleepy-bots.json" || fileName == "playerlist.sleepy-bots.vinesauce.json") {
-				break;
-			}
-
-			if (found.m_LastSeen.has_value() && !found.m_LastSeen.value().m_PlayerName.empty()) {
-				if (found.m_LastSeen.value().m_PlayerName != username) {
-					username += " aka " + found.m_LastSeen.value().m_PlayerName;
-					break;
-				}
-			}
-		}*/
 
 		// move this into a func
 		size_t pos;
@@ -794,16 +787,23 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			PlayerMarks marks = p.m_Marks;
 			SteamID steamid = player.GetSteamID();
 
-			//player.GetNameSafe();
-			auto summary = player.GetPlayerSummary();
+			// this looks ugly, but realistically you shouldn't be using this software with steamapi disabled.
+			std::string name = "";
 
-			// steamapi didn't get the name yet, exit the function and this function will run again next loop.
-			if (!summary.has_value()) {
-				Log(steamid.str() + " - steamapi didnt recieve info, waiting.");
-				return;
+			// attempt to get a "true" username from steamapi, if enabled.
+			if (m_Settings->IsSteamAPIAvailable()) {
+				auto summary = player.GetPlayerSummary();
+
+				// steamapi didn't get the name yet, exit the function and this function will run again next loop.
+				if (!summary.has_value()) {
+					Log(steamid.str() + " - steamapi didnt recieve info, waiting until we receve data for this player." );
+					return;
+				}
+
+				name = (summary.value().m_Nickname);
 			}
-			std::string name = (summary.value().m_Nickname);
 
+			// sanitize our name; 
 			// move this into a func
 			size_t pos;
 			while ((pos = name.find(";")) != std::string::npos) {
