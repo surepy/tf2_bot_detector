@@ -204,6 +204,28 @@ void SettingsWindow::OnDrawModerationSettings()
 			ImGui::SetHoverTooltip("Sends a party chat message notifying a marked player is joining.");
 		}
 
+		{
+			if (ImGui::Checkbox("Party Warnings: print a summary on join", &m_Settings.m_AutoChatWarningsConnectingPartyPrintSummary))
+				m_Settings.SaveFile();
+
+			ImGui::SetHoverTooltip("the [tf2bd] Currently x players are marked... message");
+		}
+
+		ImGui::NewLine();
+
+		/*
+		{
+			ImGui::TextFmt("Don't warn these marks to party: (This Setting Will NOT be saved)");
+
+			static bool selection[4] = { false, false, false, false };
+			ImGui::Selectable("Cheater", &m_Settings.m_AutoChatWarningsPartyIgnore[0]);
+			ImGui::Selectable("Suspicious", &m_Settings.m_AutoChatWarningsPartyIgnore[1]);
+			ImGui::Selectable("Exploiter", &m_Settings.m_AutoChatWarningsPartyIgnore[2]);
+			ImGui::Selectable("Racist", &m_Settings.m_AutoChatWarningsPartyIgnore[3]);
+		}
+		*/
+
+
 		/*
 		{
 			if (ImGui::Checkbox("(Party) Marked VS notifications", &m_Settings.m_AutoChatWarningsMarkedVSNotifications))

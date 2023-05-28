@@ -338,7 +338,7 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 	m_ActionManager->QueueAction<GenericCommandAction>("exec tf2bd/OnGameJoin");
 
 	// do our "onjoin" message
-	if (m_Settings->m_AutoChatWarningsConnectingParty) {
+	if (m_Settings->m_AutoChatWarningsConnectingParty && m_Settings->m_AutoChatWarningsConnectingPartyPrintSummary) {
 		mh::fmtstr<128> chatMsg;
 
 		int markedPlayerCount = 0;
