@@ -81,6 +81,10 @@ namespace tf2_bot_detector
 
 		// custom: print to party chat
 		bool m_AutoChatWarningsConnectingParty = true;
+		bool m_AutoChatWarningsConnectingPartyPrintSummary = true;
+
+		// bool m_AutoChatWarningsPartyIgnore[4] = { false, false, false, false };
+
 		// (unimplemented)
 		bool m_AutoChatWarningsMarkedVSNotifications = true;
 

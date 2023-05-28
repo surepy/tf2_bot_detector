@@ -415,6 +415,8 @@ void Settings::Deserialize(const nlohmann::json& json)
 			}
 
 			try_get_to_defaulted(*custom_values, m_AutoChatWarningsConnectingParty, "auto_chat_warnings_connecting_party", DEFAULTS.m_AutoChatWarningsConnectingParty);
+			try_get_to_defaulted(*custom_values, m_AutoChatWarningsConnectingPartyPrintSummary, "auto_chat_warnings_connecting_party_print_summary", DEFAULTS.m_AutoChatWarningsConnectingPartyPrintSummary);
+
 			try_get_to_defaulted(*custom_values, m_KillLogsInChat, "kill_logs_in_chat", DEFAULTS.m_KillLogsInChat);
 
 			try_get_to_defaulted(*custom_values, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
@@ -502,6 +504,7 @@ void Settings::Serialize(nlohmann::json& json) const
 							}
 						},
 						{ "auto_chat_warnings_connecting_party", m_AutoChatWarningsConnectingParty },
+						{ "auto_chat_warnings_connecting_party_print_summary", m_AutoChatWarningsConnectingPartyPrintSummary },
 						{ "kill_logs_in_chat", m_KillLogsInChat },
 						{ "chat_warning_interval", m_ChatWarningInterval },
 						{ "use_custom_chat_warnings", m_UseCustomChatWarnings },
