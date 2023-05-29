@@ -26,6 +26,7 @@
 #include <map>
 #include <regex>
 #include <unordered_set>
+#include <fstream>
 
 using namespace tf2_bot_detector;
 using namespace std::chrono_literals;
@@ -772,7 +773,17 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			username.replace(pos, 1, "");
 		}
 
-		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining ({} - {}).", username, marksToString(marks), marks.m_Marks.front().m_FileName);
+		// TODO: cite multiple files?
+		tf2_bot_detector::ConfigFileName fileName = marks.m_Marks.front().m_FileName;
+
+		// FIXME: if "title" isn't set, configfilename is a FULL PATH. we don't want that.
+		// is there a better way to write this?
+		std::ifstream testPath(fileName);
+		if (testPath) {
+			fileName = fileName.substr(fileName.find_last_of("playerlist."));
+		}
+
+		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining ({} - {}).", username, marksToString(marks), fileName);
 	}
 	else
 	{
@@ -814,8 +825,18 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 				name.resize(8, '.');
 				name += "..";
 			}
-			
-			msg += mh::format("{} - {}, ", name, marksToString(marks), marks.m_Marks.front().m_FileName);
+
+			// TODO: cite multiple files?
+			tf2_bot_detector::ConfigFileName fileName = marks.m_Marks.front().m_FileName;
+
+			// FIXME: if "title" isn't set, configfilename is a FULL PATH. we don't want that.
+			// is there a better way to write this?
+			std::ifstream testPath(fileName);
+			if (testPath) {
+				fileName = fileName.substr(fileName.find_last_of("playerlist."));
+			}
+
+			msg += mh::format("{} - {}, ", name, marksToString(marks), fileName);
 		}
 
 		msg.pop_back();
