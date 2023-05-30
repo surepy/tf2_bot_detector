@@ -132,3 +132,43 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(HINSTANCE hInstance, HI
 	return RunProgram(argc, argv.data());
 }
 #endif
+
+
+/// <summary>
+/// Run program into an overlay mode (directx/gl/vk* - endscene hook)
+///
+/// TODO: if we ever make a linux build or whatever, we should probably consider that first.
+/// </summary>
+/// <param name="ignored"></param>
+void tf2_bot_detector::RunProgramHook(void* ignored) {
+	// game isn't running
+	while (FindWindowA("Valve001", 0) == 0)
+		Sleep(100);
+
+	// 
+	while (GetModuleHandleA("client.dll") == 0 || GetModuleHandleA("engine.dll") == 0)
+		Sleep(100);
+
+}
+
+
+/// <summary>
+/// tf2bd: overlay (hook) entrypoint
+/// </summary>
+/// <param name="hinstDLL"></param>
+/// <param name="fdwReason"></param>
+/// <param name="lpReserved"></param>
+/// <returns></returns>
+BOOL WINAPI DllMain(
+	HINSTANCE hinstDLL,  // handle to DLL module.
+	DWORD fdwReason,     // reason for calling function.
+	LPVOID lpReserved)  // reserved.
+{
+	// Perform actions based on the reason for calling.
+	switch (fdwReason) {
+	case DLL_PROCESS_ATTACH:
+		_beginthread(tf2_bot_detector::RunProgramHook, 0, NULL);
+		break;
+	}
+	return TRUE;  // Successful DLL_PROCESS_ATTACH.
+}
