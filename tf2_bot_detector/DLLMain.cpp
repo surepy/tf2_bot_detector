@@ -73,7 +73,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			app.Update();
 	}
 
-	// TODO: delete empty logs or something idk
+	ILogManager::GetInstance().CleanupEmptyLogs();
 
 	DebugLog("Graceful shutdown");
 	return 0;
@@ -135,7 +135,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(HINSTANCE hInstance, HI
 
 
 /// <summary>
-/// Run program into an overlay mode (directx/gl/vk* - endscene hook)
+/// Run program into an overlay mode (directx/gl/vk* - endscene)
 ///
 /// TODO: if we ever make a linux build or whatever, we should probably consider that first.
 /// </summary>
@@ -153,7 +153,7 @@ void tf2_bot_detector::RunProgramHook(void* ignored) {
 
 
 /// <summary>
-/// tf2bd: overlay (hook) entrypoint
+/// tf2bd: overlay entrypoint (experimental)
 /// </summary>
 /// <param name="hinstDLL"></param>
 /// <param name="fdwReason"></param>

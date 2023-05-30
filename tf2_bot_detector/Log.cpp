@@ -52,6 +52,8 @@ namespace
 
 		void LogConsoleOutput(const std::string_view& consoleOutput) override;
 
+		void CleanupEmptyLogs() override;
+
 		void CleanupLogFiles() override;
 
 		void AddSecret(std::string value, std::string replace) override;
@@ -80,10 +82,12 @@ namespace
 
 		mutable std::recursive_mutex m_ConsoleLogMutex;
 		std::ofstream m_ConsoleLogFile;
+		std::filesystem::path m_ConsoleLogFileName;
 
 		// not pasted from ConsoleLog
 		mutable std::recursive_mutex m_ChatLogMutex;
 		std::ofstream m_ChatLogFile;
+		std::filesystem::path m_ChatLogFileName;
 	};
 
 	static LogManager& GetLogState()
@@ -162,6 +166,7 @@ void LogManager::Init()
 			else
 			{
 				auto logPath = logDir / mh::fmtstr<128>("console_{}.log", timestampStr).view();
+				m_ConsoleLogFileName = logPath;
 				m_ConsoleLogFile = std::ofstream(logPath, std::ofstream::ate | std::ofstream::binary);
 				if (!m_ConsoleLogFile.good())
 					::LogWarning("Failed to open console log file {}. Console output will not be logged.", logPath);
@@ -182,6 +187,7 @@ void LogManager::Init()
 			{
 				// doing chat_(blah) is repetitive, but it's how is formatted on console so i cry about it (for consistancy sake)
 				auto logPath = logDir / mh::fmtstr<128>("chat_{}.log", timestampStr).view();
+				m_ChatLogFileName = logPath;
 				m_ChatLogFile = std::ofstream(logPath, std::ofstream::ate | std::ofstream::binary);
 				if (!m_ChatLogFile.good())
 					::LogWarning("Failed to open Chat log file {}. Chat output will not be logged.", logPath);
@@ -401,6 +407,26 @@ void LogManager::LogChat(const std::string_view & chatMessage)
 	time_point_t timestamp = tfbd_clock_t::now();
 	tm tm_timestamp = ToTM(timestamp);
 	m_ChatLogFile << '[' << std::put_time(&tm_timestamp, "%T") << "] " << chatMessage << std::flush;
+}
+
+void LogManager::CleanupEmptyLogs() try
+{
+	EnsureInit();
+
+	m_ConsoleLogFile.close();
+	m_ChatLogFile.close();
+
+	if (std::filesystem::file_size(m_ConsoleLogFileName) < 1) {
+		std::filesystem::remove(m_ConsoleLogFileName);
+	}
+
+	if (std::filesystem::file_size(m_ChatLogFileName) < 1) {
+		std::filesystem::remove(m_ChatLogFileName);
+	}
+}
+catch (const std::filesystem::filesystem_error& e)
+{
+	LogError(MH_SOURCE_LOCATION_CURRENT(), e.what());
 }
 
 void LogManager::CleanupLogFiles() try
