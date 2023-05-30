@@ -89,6 +89,16 @@ std::u16string tf2_bot_detector::ReadWideFile(const std::filesystem::path& filen
 		file.exceptions(std::ios::badbit | std::ios::failbit);
 		file.open(filename, std::ios::binary);
 
+		// read BOM.
+		char bom[3];
+		file.read(bom, 3);
+
+		// UTF-8 bom, we should probably NOT use this function.
+		if (bom[0] == '\xEF' && bom[1] == '\xBB' && bom[2] == '\xBF') {
+			LogException("UTF8 BOM detected in file {}", filename.string());
+			throw std::runtime_error("UTF8 BOM detected");
+		}
+
 		file.seekg(0, std::ios::end);
 
 		// Length, minus BOM

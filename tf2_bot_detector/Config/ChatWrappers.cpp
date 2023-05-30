@@ -19,6 +19,7 @@
 #include <random>
 #include <regex>
 #include <set>
+#include <Filesystem.h>
 
 #undef min
 #undef max
@@ -357,12 +358,25 @@ static std::filesystem::path FindExistingChatTranslationFile(
 	return {};
 }
 
+#include <stdio.h>
+
 static ChatFormatStrings FindExistingTranslations(const std::filesystem::path& tfdir, const std::string_view& language)
 {
 	ChatFormatStrings retVal;
 
-	for (const auto& filename : GetLocalizationFiles(tfdir, language))
-		GetChatMsgFormats(filename.string(), ToMB(ReadWideFile(filename)), retVal);
+	for (const auto& filename : GetLocalizationFiles(tfdir, language)) {
+		std::string translationData;
+
+		try {
+			translationData = ToMB(ReadWideFile(filename));
+		}
+		catch (std::runtime_error) {
+			LogException("Attempting to parse as-is");
+			translationData = IFilesystem::Get().ReadFile(filename);
+		}
+
+		GetChatMsgFormats(filename.string(), translationData, retVal);
+	}
 
 	return retVal;
 }
