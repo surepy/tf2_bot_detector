@@ -209,8 +209,10 @@ bool ISteamAPISettings::IsSteamAPISettingReady() const
 	return false;
 }
 
-// can we actually try to send requests to steam api (as far as we are c?
-// (settings valid & allow internet useage = true)
+/// <summary>
+/// can we actually try to send requests to steam api? (settings are valid and allow internet usage)
+/// </summary>
+/// <returns>boolean</returns>
 bool Settings::IsSteamAPIAvailable() const
 {
 	if (!m_AllowInternetUsage.value_or(false)) {
@@ -440,6 +442,9 @@ void Settings::Deserialize(const nlohmann::json& json)
 			}
 
 			try_get_to_defaulted(*custom_values, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
+
+			// XVF's SteamHistory Service.
+			try_get_to_defaulted(*found, m_SteamAPIMode, "steam_history_api_key", GetSteamAPIKeyDirect().size() == 32 ? SteamAPIMode::Direct : SteamAPIMode::Disabled);
 		}
 
 		try_get_to_defaulted(*found, m_LocalSteamIDOverride, "local_steamid_override");

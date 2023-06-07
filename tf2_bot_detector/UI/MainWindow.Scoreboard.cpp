@@ -5,6 +5,7 @@
 #include "BaseTextures.h"
 #include "IPlayer.h"
 #include "Networking/SteamAPI.h"
+#include "Networking/SteamHistoryAPI.h"
 #include "Networking/LogsTFAPI.h"
 #include "TextureManager.h"
 
@@ -716,6 +717,43 @@ static void PrintPlayerBans(const IPlayer& player)
 			});
 }
 
+static void PrintPlayerSourceBans(const IPlayer& player)
+{
+	// TODO: notify feature disabled.
+
+	player.GetPlayerSourceBanState()
+		.or_else([&](std::error_condition err)
+			{
+				ImGui::TextFmt("   SourceBans : ");
+				ImGui::SameLineNoPad();
+
+				if (err == std::errc::operation_in_progress)
+					ImGui::PacifierText();
+				else if (err == SteamAPI::ErrorCode::EmptyAPIKey)
+					EnterAPIKeyText();
+				else
+					ImGui::TextFmt(COLOR_RED, "{}", err);
+			})
+		.map([&](const SteamHistoryAPI::PlayerSourceBanState& banState)
+			{
+				// Ban Count:
+				{
+					const ImVec4 banColor = banState.size() > 0 ? COLOR_YELLOW : ImVec4{ 1, 1, 1, 1 };
+					ImGui::TextFmt(banColor, "SourceBans : {} bans", banState.size());
+				}
+
+				for (const auto& [server, ban] : banState) {
+					ImGui::TextFmt("  {} (as {}) : Ban State = ", server, ban.m_UserName);
+					ImGui::SameLineNoPad();
+
+					const ImVec4 banStateColor = ban.m_BanState >= tf2_bot_detector::SteamHistoryAPI::Current ? COLOR_YELLOW : ImVec4{ 1, 1, 1, 1 };
+					ImGui::TextFmt(banStateColor, "{:v}", mh::enum_fmt(ban.m_BanState));
+
+					ImGui::TextFmt("  - {} / reason: {}", ban.m_BanTimestamp, ban.m_BanReason);
+				}
+			});
+}
+
 static void PrintPlayerPlaytime(const IPlayer& player)
 {
 	ImGui::TextFmt("  TF2 Playtime : ");
@@ -847,8 +885,6 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 	PrintPlayerLogsCount(player);
 	PrintPlayerInventoryInfo(player);
 
-	ImGui::NewLine();
-
 #ifdef _DEBUG
 	ImGui::TextFmt("   Active time : {}", HumanDuration(player.GetActiveTime()));
 #endif
@@ -860,6 +896,11 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 		//ImGui::Text("Your Thirst: %1.0f%%", kills == 0 ? float(deaths) * 100 : float(deaths) / kills * 100);
 		ImGui::TextFmt("  Their Thirst : {}%", int(deaths == 0 ? float(kills) * 100 : float(kills) / deaths * 100));
 	}
+
+	ImGui::NewLine();
+
+	PrintPlayerSourceBans(player);
+
 
 	if (playerAttribs)
 	{
@@ -874,11 +915,10 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 
 			std::string proofs = "";
 			for (auto p : data.m_Proof) {
-				proofs += p.dump() + " ";
+				proofs += p.get<std::string>() + "\n ";
 			}
 
 			ImGui::TextFmt("  {}: {}", fileName, proofs);
-			ImGui::NewLine();
 		}
 	}
 }

@@ -144,4 +144,6 @@ namespace tf2_bot_detector::SteamAPI
 		uint32_t m_Slots = 0;
 	};
 	mh::task<PlayerInventoryInfo> GetTF2InventoryInfoAsync(const ISteamAPISettings& apiSettings, const SteamID& steamID, const IHTTPClient& client);
+
+	std::string GenerateSteamIDsQueryParam(const std::vector<SteamID>& steamIDs, size_t max, MH_SOURCE_LOCATION_AUTO(location));
 }

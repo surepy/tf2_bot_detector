@@ -8,6 +8,7 @@
 #include "GameData/UserMessageType.h"
 #include "Networking/HTTPHelpers.h"
 #include "Networking/SteamAPI.h"
+#include "Networking/SteamHistoryAPI.h"
 #include "Networking/LogsTFAPI.h"
 #include "Util/RegexUtils.h"
 #include "Util/TextUtils.h"
@@ -91,6 +92,7 @@ namespace
 
 		void QueuePlayerSummaryUpdate(const SteamID& id);
 		void QueuePlayerBansUpdate(const SteamID& id);
+		void QueuePlayerSourceBansUpdate(const SteamID& id);
 
 		const Settings& GetSettings() const { return m_Settings; }
 		const std::vector<LobbyMember>& GetCurrentLobbyMembers() const { return m_CurrentLobbyMembers; }
@@ -137,6 +139,16 @@ namespace
 			void OnDataReady(state_type& state, const response_type& response,
 				queue_collection_type& collection) override;
 		} m_PlayerBansUpdates;
+
+		struct PlayerSourceBansUpdateAction final :
+			BatchedAction<WorldState*, SteamID, SteamHistoryAPI::PlayerSourceBansResponse>
+		{
+			using BatchedAction::BatchedAction;
+		protected:
+			response_future_type SendRequest(state_type& state, queue_collection_type& collection) override;
+			void OnDataReady(state_type& state, const response_type& response,
+				queue_collection_type& collection) override;
+		} m_PlayerSourceBansUpdates;
 
 		std::vector<LobbyMember> m_CurrentLobbyMembers;
 		std::vector<LobbyMember> m_PendingLobbyMembers;
@@ -205,6 +217,9 @@ namespace
 		time_point_t GetLastStatusUpdateTime() const override { return m_LastStatusUpdateTime; }
 		const mh::expected<SteamAPI::PlayerSummary>& GetPlayerSummary() const override;
 		const mh::expected<SteamAPI::PlayerBans>& GetPlayerBans() const override;
+		const mh::expected<SteamHistoryAPI::PlayerSourceBanState>& GetPlayerSourceBanState() const override;
+		//const mh::expected<SteamHistoryAPI::PlayerSourceBans>& GetPlayerSourceBans() const override;
+
 		mh::expected<duration_t> GetTF2Playtime() const override;
 		bool IsFriend() const override;
 		duration_t GetActiveTime() const override;
@@ -219,6 +234,9 @@ namespace
 		uint8_t m_ClientIndex{};
 		mutable mh::expected<SteamAPI::PlayerSummary> m_PlayerSummary = ErrorCode::LazyValueUninitialized;
 		mutable mh::expected<SteamAPI::PlayerBans> m_PlayerSteamBans = ErrorCode::LazyValueUninitialized;
+
+		mutable mh::expected<SteamHistoryAPI::PlayerSourceBans> m_PlayerSourceBans = ErrorCode::LazyValueUninitialized;
+		mutable mh::expected<SteamHistoryAPI::PlayerSourceBanState> m_PlayerSourceBanState = ErrorCode::LazyValueUninitialized;
 
 		void SetStatus(PlayerStatus status, time_point_t timestamp);
 		const PlayerStatus& GetStatus() const { return m_Status; }
@@ -263,6 +281,7 @@ WorldState::WorldState(const Settings& settings) :
 	m_Settings(settings),
 	m_PlayerSummaryUpdates(this),
 	m_PlayerBansUpdates(this),
+	m_PlayerSourceBansUpdates(this),
 	m_ConsoleLineListenerBroadcaster(*this)
 {
 	AddConsoleLineListener(this);
@@ -277,6 +296,7 @@ void WorldState::Update()
 {
 	m_PlayerSummaryUpdates.Update();
 	m_PlayerBansUpdates.Update();
+	m_PlayerSourceBansUpdates.Update();
 
 	UpdateFriends();
 }
@@ -534,6 +554,11 @@ void WorldState::QueuePlayerSummaryUpdate(const SteamID& id)
 void WorldState::QueuePlayerBansUpdate(const SteamID& id)
 {
 	return m_PlayerBansUpdates.Queue(id);
+}
+
+void WorldState::QueuePlayerSourceBansUpdate(const SteamID& id)
+{
+	return m_PlayerSourceBansUpdates.Queue(id);
 }
 
 template<typename TMap>
@@ -1031,6 +1056,17 @@ const mh::expected<SteamAPI::PlayerBans>& Player::GetPlayerBans() const
 	return m_PlayerSteamBans;
 }
 
+const mh::expected<SteamHistoryAPI::PlayerSourceBanState>& Player::GetPlayerSourceBanState() const
+{
+	if (!m_PlayerSourceBanState && m_PlayerSourceBanState.error() == ErrorCode::LazyValueUninitialized)
+	{
+		m_PlayerSourceBanState = std::errc::operation_in_progress;
+		m_World->QueuePlayerSourceBansUpdate(GetSteamID());
+	}
+
+	return m_PlayerSourceBanState;
+}
+
 template<typename T, typename TFunc>
 const mh::expected<T>& Player::GetOrFetchDataAsync(mh::expected<T>& var, TFunc&& updateFunc,
 	std::initializer_list<std::error_condition> silentErrors, const mh::source_location& location) const
@@ -1285,4 +1321,70 @@ void WorldState::PlayerBansUpdateAction::OnDataReady(state_type& state,
 		state->FindOrCreatePlayer(bans.m_SteamID).m_PlayerSteamBans = bans;
 		collection.erase(bans.m_SteamID);
 	}
+}
+
+auto WorldState::PlayerSourceBansUpdateAction::SendRequest(state_type& state,
+	queue_collection_type& collection) -> response_future_type
+{
+	auto client = state->GetSettings().GetHTTPClient();
+	if (!client)
+		return {};
+
+	if (!state->GetSettings().m_AllowInternetUsage)
+	{
+		for (auto& entry : collection)
+		{
+			// TODO: no steamhistory api key
+			if (auto found = state->FindPlayer(entry))
+				static_cast<Player*>(found)->m_PlayerSourceBans = ErrorCode::InternetConnectivityDisabled;
+		}
+		return {};
+	}
+
+	std::vector<SteamID> steamIDs = Take100(collection);
+
+	// TODO: api key
+	return SteamHistoryAPI::GetPlayerSourceBansAsync("APIKEY TODO", std::move(steamIDs), *client);
+}
+
+void WorldState::PlayerSourceBansUpdateAction::OnDataReady(state_type& state,
+	const response_type& response, queue_collection_type& collection)
+{
+	DebugLog("[SteamHistory] Received {} player's bans", response.size());
+
+	for (const auto& steamID : collection) {
+		auto& player = state->FindOrCreatePlayer(steamID);
+		// SteamHistoryAPI::PlayerSourceBans
+
+		SteamHistoryAPI::PlayerSourceBanState banState;
+
+		// we have a ban.
+		if (response.find(steamID) != response.end()) {
+			const auto& bans = response.at(steamID);
+
+			DebugLog("[SteamHistory] user {} has {} ban records", steamID, bans.size());
+
+			// set our entire history of bans (remove?)
+			player.m_PlayerSourceBans = bans;
+
+			// set our latest ban state for this user.
+			for (const auto& ban : bans) {
+				// we didn't store this server, or this ban is newer than the one we already stored.
+				if (banState.find(ban.m_Server) == banState.end() || banState.at(ban.m_Server).m_BanTimestamp < ban.m_BanTimestamp) {
+					banState.insert(std::pair(ban.m_Server, ban));
+				}
+			}
+
+			player.m_PlayerSourceBanState = banState;
+		}
+		else {
+			player.m_PlayerSourceBanState = banState;
+			player.m_PlayerSourceBans = SteamHistoryAPI::PlayerSourceBans();
+		}
+	}
+
+	// any other users are either errors (and we should reattempt)
+	// or doesn't have a ban, so we can safely clear our queue.
+	// FIXME: ask XVF so it returns keys at least for users with no bans
+	collection.clear();
 }

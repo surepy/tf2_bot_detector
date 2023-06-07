@@ -190,7 +190,7 @@ catch (...)
 	throw;
 }
 
-static std::string GenerateSteamIDsQueryParam(const std::vector<SteamID>& steamIDs, size_t max, MH_SOURCE_LOCATION_AUTO(location))
+std::string tf2_bot_detector::SteamAPI::GenerateSteamIDsQueryParam(const std::vector<SteamID>& steamIDs, size_t max, const ::mh::source_location& location)
 {
 	if (steamIDs.size() > max)
 		LogError(location, "Attempted to fetch {} steamIDs at once (max {}). Clamping to {}.", steamIDs.size(), max, max);

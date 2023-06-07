@@ -133,9 +133,11 @@ namespace tf2_bot_detector
 
 	protected:
 		const std::string& GetSteamAPIKeyDirect() const { return m_SteamAPIKey; }
+		const std::string& GetSteamHistoryAPIKeyDirect() const { return m_SteamHistoryAPIKey; }
 
 	private:
 		std::string m_SteamAPIKey;
+		std::string m_SteamHistoryAPIKey;
 	};
 
 	class Settings final : public AutoDetectedSettings, public GeneralSettings, ConfigFileBase

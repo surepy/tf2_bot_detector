@@ -92,6 +92,8 @@ target_sources(tf2_bot_detector PRIVATE
 	"Networking/NetworkHelpers.cpp"
 	"Networking/SteamAPI.h"
 	"Networking/SteamAPI.cpp"
+	"Networking/SteamHistoryAPI.h"
+	"Networking/SteamHistoryAPI.cpp"
 	"Platform/Platform.h"
 	"SetupFlow/AddonManagerPage.h"
 	"SetupFlow/AddonManagerPage.cpp"

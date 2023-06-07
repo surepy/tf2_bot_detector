@@ -460,7 +460,10 @@ void MainWindow::OnDrawServerStats()
 
 	//OnDrawNetGraph();
 }
-
+/*
+#include <nlohmann/json.hpp>
+#include "Networking/SteamHistoryAPI.h"
+*/
 void MainWindow::OnDraw()
 {
 	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
@@ -471,6 +474,19 @@ void MainWindow::OnDraw()
 
 	OnDrawUpdateCheckPopup();
 	OnDrawAboutPopup();
+
+	/*
+	std::string data = R"(
+		{"response":{"76561197961279983":[{"SteamID":"76561197961279983","Name":"sq","CurrentState":"Unbanned","BanReason":"LINKED: New IP from banned STEAMID","UnbanReason":"VPN IP Ban","BanTimestamp":"1653240480","UnbanTimestamp":"0","Server":"Skial"},{"SteamID":"76561197961279983","Name":"SQU1RRELLY","CurrentState":"Unbanned","BanReason":"LINKED: New STEAMID from banned IP","UnbanReason":"no reason present","BanTimestamp":"1627355760","UnbanTimestamp":"0","Server":"Skial"}],"76561197992870439":[{"SteamID":"76561197992870439","Name":"-={SS}=- camp3r101","CurrentState":"Expired","BanReason":"Racism","UnbanReason":null,"BanTimestamp":"1356643260","UnbanTimestamp":"1357248060","Server":"Skial"},{"SteamID":"76561197992870439","Name":"-={SS}=- le camp3r101","CurrentState":"Expired","BanReason":"Racism/Voteabuse","UnbanReason":null,"BanTimestamp":"1356154140","UnbanTimestamp":"1356413340","Server":"Skial"}],"76561198073445815":[{"SteamID":"76561198073445815","Name":"lobster","CurrentState":"Expired","BanReason":"false report","UnbanReason":null,"BanTimestamp":"1532396222","UnbanTimestamp":"1534988222","Server":"DISC-FF"},{"SteamID":"76561198073445815","Name":"Bofa","CurrentState":"Expired","BanReason":"False Report","UnbanReason":null,"BanTimestamp":"1493490151","UnbanTimestamp":"1494094951","Server":"DISC-FF"},{"SteamID":"76561198073445815","Name":"upgamers","CurrentState":"Permanent","BanReason":"Cheat detected","UnbanReason":null,"BanTimestamp":"1501055160","UnbanTimestamp":"0","Server":"FirePowered Gaming"},{"SteamID":"76561198073445815","Name":"crayfish","CurrentState":"Expired","BanReason":"Inappropriate Language","UnbanReason":null,"BanTimestamp":"1572478440","UnbanTimestamp":"1572564840","Server":"SG-Gaming"}],"76561198115957085":[{"SteamID":"76561198115957085","Name":"h₂0verdrive","CurrentState":"Expired","BanReason":"Voteban: freekill","UnbanReason":null,"BanTimestamp":"1441587720","UnbanTimestamp":"1441589520","Server":"Skial"}],"76561198174666786":[{"SteamID":"76561198174666786","Name":"DylanM345","CurrentState":"Permanent","BanReason":"exploiting","UnbanReason":null,"BanTimestamp":"1677857280","UnbanTimestamp":"0","Server":"LBGaming"},{"SteamID":"76561198174666786","Name":null,"CurrentState":"Expired","BanReason":"Voteban: griefing","UnbanReason":null,"BanTimestamp":"1588388820","UnbanTimestamp":"1588390620","Server":"Skial"},{"SteamID":"76561198174666786","Name":"DylanM345","CurrentState":"Expired","BanReason":"Voteban: griefing","UnbanReason":null,"BanTimestamp":"1588357860","UnbanTimestamp":"1588359660","Server":"Skial"}],"76561199016646295":[{"SteamID":"76561199016646295","Name":"âœªTYP!CAL-Sarge","CurrentState":"Expired","BanReason":"ghosting","UnbanReason":null,"BanTimestamp":"1606020603","UnbanTimestamp":"1606625403","Server":"GFLClan"}],"76561199480755634":[{"SteamID":"76561199480755634","Name":"Sydenious","CurrentState":"Permanent","BanReason":"[SourceSleuth] Duplicate account","UnbanReason":null,"BanTimestamp":"1683080706","UnbanTimestamp":"0","Server":"BlackWonder"}]}}
+	)";
+
+	nlohmann::json json;
+
+	json = nlohmann::json::parse(data);
+
+	Log(json.at("response").dump());
+	*/
+
 
 	{
 		ISetupFlowPage::DrawState ds;

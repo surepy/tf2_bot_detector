@@ -26,6 +26,14 @@ namespace tf2_bot_detector
 		struct PlayerInventoryInfo;
 	}
 
+	namespace SteamHistoryAPI
+	{
+		struct PlayerSourceBan;
+		typedef std::vector<PlayerSourceBan> PlayerSourceBans;
+		typedef std::unordered_map<SteamID, PlayerSourceBans> PlayerSourceBansResponse;
+		typedef std::unordered_map<std::string, PlayerSourceBan> PlayerSourceBanState;
+	}
+
 	namespace LogsTFAPI
 	{
 		struct PlayerLogsInfo;
@@ -58,6 +66,7 @@ namespace tf2_bot_detector
 		virtual SteamID GetSteamID() const = 0;
 		virtual const mh::expected<SteamAPI::PlayerSummary>& GetPlayerSummary() const = 0;
 		virtual const mh::expected<SteamAPI::PlayerBans>& GetPlayerBans() const = 0;
+		virtual const mh::expected<SteamHistoryAPI::PlayerSourceBanState>& GetPlayerSourceBanState() const = 0;
 		virtual mh::expected<duration_t> GetTF2Playtime() const = 0;
 		virtual bool IsFriend() const = 0;
 		virtual std::optional<UserID_t> GetUserID() const = 0;
