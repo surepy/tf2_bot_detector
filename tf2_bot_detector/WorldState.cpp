@@ -1061,6 +1061,7 @@ const mh::expected<SteamHistoryAPI::PlayerSourceBanState>& Player::GetPlayerSour
 	if (!m_PlayerSourceBanState && m_PlayerSourceBanState.error() == ErrorCode::LazyValueUninitialized)
 	{
 		m_PlayerSourceBanState = std::errc::operation_in_progress;
+		m_PlayerSourceBans = std::errc::operation_in_progress;
 		m_World->QueuePlayerSourceBansUpdate(GetSteamID());
 	}
 
@@ -1335,8 +1336,11 @@ auto WorldState::PlayerSourceBansUpdateAction::SendRequest(state_type& state,
 		for (auto& entry : collection)
 		{
 			// TODO: make your own custom error... lol.. don't repurpose errors like this...
-			if (auto found = state->FindPlayer(entry))
+			if (auto found = state->FindPlayer(entry)) {
+				static_cast<Player*>(found)->m_PlayerSourceBanState = ErrorCode::InternetConnectivityDisabled;
 				static_cast<Player*>(found)->m_PlayerSourceBans = ErrorCode::InternetConnectivityDisabled;
+			}
+
 		}
 		return {};
 	}
