@@ -725,7 +725,7 @@ static void PrintPlayerSourceBans(const IPlayer& player)
 	player.GetPlayerSourceBanState()
 		.or_else([&](std::error_condition err)
 			{
-				ImGui::TextFmt("   SourceBans : ");
+				ImGui::TextFmt("    SourceBans : ");
 				ImGui::SameLineNoPad();
 
 				if (err == std::errc::operation_in_progress)
@@ -740,7 +740,7 @@ static void PrintPlayerSourceBans(const IPlayer& player)
 				// Ban Count:
 				{
 					const ImVec4 banColor = banState.size() > 0 ? COLOR_YELLOW : ImVec4{ 1, 1, 1, 1 };
-					ImGui::TextFmt(banColor, "   SourceBans : {} bans", banState.size());
+					ImGui::TextFmt(banColor, "    SourceBans : {} bans", banState.size());
 				}
 
 				for (const auto& [server, ban] : banState) {

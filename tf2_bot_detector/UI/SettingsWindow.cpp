@@ -4,6 +4,7 @@
 #include "SetupFlow/AddonManagerPage.h"
 #include "UI/MainWindow.h"
 #include "Util/PathUtils.h"
+#include "Platform/Platform.h"
 
 #include <mh/algorithm/algorithm.hpp>
 #include <mh/error/ensure.hpp>
@@ -368,8 +369,8 @@ void SettingsWindow::OnDrawServiceIntegrationSettings()
 						m_Settings.SaveFile();
 					}
 
-					//if (ImGui::Button("Generate API Key"))
-					//	tf2_bot_detector::Platform::Shell::OpenURL("https://steamhistory.net/api");
+					if (ImGui::Button("Generate API Key"))
+						tf2_bot_detector::Platform::Shell::OpenURL("https://steamhistory.net/api");
 				}
 
 				ImGui::NewLine();
