@@ -111,6 +111,22 @@ auto NetworkSettingsPage::OnDraw(const DrawState& ds) -> OnDrawResult
 
 	ImGui::Unindent();
 
+	ImGui::Text("SteamHistory Integration:\nOptionally, you can use SteamHistory's service to get all sourcebans for users.");
+
+
+
+	ImGui::Indent();
+
+	ImGui::Checkbox("Enable SteamHistory Integration", &m_Settings.m_EnableSteamHistoryIntegration);
+
+	if (m_Settings.m_EnableSteamHistoryIntegration) {
+		ImGui::InputText("SteamHistory API Key", &m_Settings.m_SteamHistoryAPIKey);
+
+		if (ImGui::Button("Generate API Key"))
+			Platform::Shell::OpenURL("https://steamhistory.net/api");
+	}
+	ImGui::Unindent();
+
 	return OnDrawResult::ContinueDrawing;
 }
 
@@ -144,4 +160,7 @@ void NetworkSettingsPage::Commit(const CommitState& cs)
 
 	cs.m_Settings.m_SteamAPIMode = m_Settings.m_SteamAPIMode;
 	cs.m_Settings.SetSteamAPIKey(m_Settings.m_SteamAPIKey);
+
+	cs.m_Settings.m_EnableSteamHistoryIntegration = m_Settings.m_EnableSteamHistoryIntegration;
+	cs.m_Settings.SetSteamHistoryAPIKey(m_Settings.m_SteamHistoryAPIKey);
 }

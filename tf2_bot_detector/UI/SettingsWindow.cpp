@@ -356,6 +356,23 @@ void SettingsWindow::OnDrawServiceIntegrationSettings()
 				}
 
 				ImGui::NewLine();
+
+				if (ImGui::Checkbox("SteamHistory Integration", &m_Settings.m_EnableSteamHistoryIntegration))
+					m_Settings.SaveFile();
+				if (m_Settings.m_EnableSteamHistoryIntegration) {
+
+					if (std::string key = m_Settings.GetSteamHistoryAPIKey();
+						ImGui::InputText("SteamHistory API Key", &key))
+					{
+						m_Settings.SetSteamHistoryAPIKey(key);
+						m_Settings.SaveFile();
+					}
+
+					//if (ImGui::Button("Generate API Key"))
+					//	tf2_bot_detector::Platform::Shell::OpenURL("https://steamhistory.net/api");
+				}
+
+				ImGui::NewLine();
 				if (auto mode = enabled ? m_Settings.m_ReleaseChannel : ReleaseChannel::None;
 					Combo("Automatic update checking", mode))
 				{

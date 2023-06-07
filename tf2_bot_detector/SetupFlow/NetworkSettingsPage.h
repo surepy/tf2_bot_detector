@@ -30,6 +30,9 @@ namespace tf2_bot_detector
 			{
 				return (m_SteamAPIMode == SteamAPIMode::Direct) ? m_SteamAPIKey : std::string();
 			}
+
+			bool m_EnableSteamHistoryIntegration = false;
+			std::string m_SteamHistoryAPIKey;
 		} m_Settings;
 
 	};
