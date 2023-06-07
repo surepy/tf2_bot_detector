@@ -780,7 +780,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 		// is there a better way to write this?
 		std::ifstream testPath(fileName);
 		if (testPath) {
-			fileName = fileName.substr(fileName.find_last_of("playerlist."));
+			fileName = fileName.substr(fileName.rfind("playerlist."));
 		}
 
 		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining ({} - {}).", username, marksToString(marks), fileName);
@@ -833,7 +833,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			// is there a better way to write this?
 			std::ifstream testPath(fileName);
 			if (testPath) {
-				fileName = fileName.substr(fileName.find_last_of("playerlist."));
+				fileName = fileName.substr(fileName.rfind("playerlist."));
 			}
 
 			msg += mh::format("{} - {}, ", name, marksToString(marks), fileName);
