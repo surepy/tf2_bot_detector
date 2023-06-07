@@ -1330,11 +1330,11 @@ auto WorldState::PlayerSourceBansUpdateAction::SendRequest(state_type& state,
 	if (!client)
 		return {};
 
-	if (!state->GetSettings().m_AllowInternetUsage)
+	if (!state->GetSettings().m_AllowInternetUsage || !state->GetSettings().m_EnableSteamHistoryIntegration || state->GetSettings().GetSteamHistoryAPIKey().empty())
 	{
 		for (auto& entry : collection)
 		{
-			// TODO: no steamhistory api key
+			// TODO: make your own custom error... lol.. don't repurpose errors like this...
 			if (auto found = state->FindPlayer(entry))
 				static_cast<Player*>(found)->m_PlayerSourceBans = ErrorCode::InternetConnectivityDisabled;
 		}
@@ -1343,8 +1343,7 @@ auto WorldState::PlayerSourceBansUpdateAction::SendRequest(state_type& state,
 
 	std::vector<SteamID> steamIDs = Take100(collection);
 
-	// TODO: api key
-	return SteamHistoryAPI::GetPlayerSourceBansAsync("APIKEY TODO", std::move(steamIDs), *client);
+	return SteamHistoryAPI::GetPlayerSourceBansAsync(state->GetSettings().GetSteamHistoryAPIKey(), std::move(steamIDs), *client);
 }
 
 void WorldState::PlayerSourceBansUpdateAction::OnDataReady(state_type& state,

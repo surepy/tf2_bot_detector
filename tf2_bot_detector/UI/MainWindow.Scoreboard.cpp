@@ -8,6 +8,7 @@
 #include "Networking/SteamHistoryAPI.h"
 #include "Networking/LogsTFAPI.h"
 #include "TextureManager.h"
+#include "GenericErrors.h"
 
 #include <imgui_desktop/ScopeGuards.h>
 #include <imgui_desktop/StorageHelper.h>
@@ -729,8 +730,8 @@ static void PrintPlayerSourceBans(const IPlayer& player)
 
 				if (err == std::errc::operation_in_progress)
 					ImGui::PacifierText();
-				else if (err == SteamAPI::ErrorCode::EmptyAPIKey)
-					EnterAPIKeyText();
+				else if (err == tf2_bot_detector::ErrorCode::InternetConnectivityDisabled)
+					ImGui::TextFmt(COLOR_UNAVAILABLE, "Enable in Settings");
 				else
 					ImGui::TextFmt(COLOR_RED, "{}", err);
 			})
@@ -739,7 +740,7 @@ static void PrintPlayerSourceBans(const IPlayer& player)
 				// Ban Count:
 				{
 					const ImVec4 banColor = banState.size() > 0 ? COLOR_YELLOW : ImVec4{ 1, 1, 1, 1 };
-					ImGui::TextFmt(banColor, "SourceBans : {} bans", banState.size());
+					ImGui::TextFmt(banColor, "   SourceBans : {} bans", banState.size());
 				}
 
 				for (const auto& [server, ban] : banState) {

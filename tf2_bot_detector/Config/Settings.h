@@ -131,6 +131,10 @@ namespace tf2_bot_detector
 		SteamAPIMode m_SteamAPIMode = SteamAPIMode::Disabled;
 		SteamAPIMode GetSteamAPIMode() const override { return m_SteamAPIMode; }
 
+		bool m_EnableSteamHistoryIntegration = false;
+		std::string GetSteamHistoryAPIKey() const { return m_SteamHistoryAPIKey; };
+		void SetSteamHistoryAPIKey(std::string key) { m_SteamHistoryAPIKey = key; };
+
 	protected:
 		const std::string& GetSteamAPIKeyDirect() const { return m_SteamAPIKey; }
 		const std::string& GetSteamHistoryAPIKeyDirect() const { return m_SteamHistoryAPIKey; }

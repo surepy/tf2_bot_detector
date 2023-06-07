@@ -443,8 +443,15 @@ void Settings::Deserialize(const nlohmann::json& json)
 
 			try_get_to_defaulted(*custom_values, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
 
-			// XVF's SteamHistory Service.
-			try_get_to_defaulted(*found, m_SteamAPIMode, "steam_history_api_key", GetSteamAPIKeyDirect().size() == 32 ? SteamAPIMode::Direct : SteamAPIMode::Disabled);
+			// XVF's SteamHistory Service. (used for SourceBans)
+			if (auto integrations = custom_values.value().find("integrations"); integrations != custom_values.value().end()) {
+				try_get_to_defaulted(*integrations, m_EnableSteamHistoryIntegration, "enable_steam_history_integration", DEFAULTS.m_EnableSteamHistoryIntegration);
+				{
+					std::string apiKey;
+					try_get_to_defaulted(*integrations, apiKey, "steam_history_api_key", DEFAULTS.GetSteamHistoryAPIKey());
+					SetSteamHistoryAPIKey(std::move(apiKey));
+				}
+			}
 		}
 
 		try_get_to_defaulted(*found, m_LocalSteamIDOverride, "local_steamid_override");
@@ -506,6 +513,12 @@ void Settings::Serialize(nlohmann::json& json) const
 								// { "save_application_logs", m_SaveApplicationLogs },
 								{ "save_console_logs", m_SaveConsoleLogs },
 								{ "save_chat_history", m_SaveChatHistory }
+							}
+						},
+						{ "integrations",
+							{
+								{ "enable_steam_history_integration", m_EnableSteamHistoryIntegration },
+								{ "steam_history_api_key", GetSteamHistoryAPIKeyDirect() }
 							}
 						},
 						{ "auto_chat_warnings_connecting_party", m_AutoChatWarningsConnectingParty },
