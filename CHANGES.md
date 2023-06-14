@@ -8,6 +8,7 @@ what's different from normal tf2bd?
 ![onjoin print](https://user-images.githubusercontent.com/24486494/214842253-a60d3d58-be67-484f-bc11-3d7f1072a85a.png)
 * Custom All-chat warning messages!  
 ![custom warnings](https://user-images.githubusercontent.com/24486494/232056440-5793e7e6-70f9-47ef-a879-ef9accc975da.png)
+* Neuter chat wrappers (3 characters long, might break // makes copy-pasting from chat less painful.)
 
 ### Marking
 * ability to mark people that left/disconnected on chat log.  
@@ -26,6 +27,10 @@ format ``unmarked (unmarked_connected) vs marked (marked_connected)``
 ![verifying the reason](https://user-images.githubusercontent.com/24486494/216663482-7fa5ea6c-690d-4182-bd83-c2956fffd044.jpg)
 * kill logs in chat _(default disabled)_  
 ![killogs](https://user-images.githubusercontent.com/24486494/232056583-ba99f610-423d-4096-879c-a4eb0cfea8ba.png)
+* Added SteamHistory SourceBans integration
+![steamhistory integration](https://github.com/surepy/tf2_bot_detector/assets/24486494/c0ea2102-df0d-4767-a24f-fc6a0f57c23f)
+ * first time setup now shows to setup the steam api (generate api key button opens on steam app)
+ ![first time setup](https://github.com/surepy/tf2_bot_detector/assets/24486494/38bab41a-24af-4f82-af45-968236e04adc) 
 
 ### Misc
 * **Dropped support for all installation methods that aren't the portable one**  
@@ -43,4 +48,7 @@ format ``unmarked (unmarked_connected) vs marked (marked_connected)``
 * less painful building process  
     * don't have to set [CMAKE_TOOLCHAIN_FILE](https://github.com/surepy/tf2_bot_detector/commit/011ac8f4a656ff3406fa9a8ead268122cf0c2930) manually.
     * all the dependency version should be locked, so no stupid fmt breaking everything...
+ * completely removed pazer's proxy service 
+ * Fixed crash with huds that have chat wrappers already, were saved in utf8 (#6)
+     * budhud crashed cuz of this (credit: name)
 * more todo...
