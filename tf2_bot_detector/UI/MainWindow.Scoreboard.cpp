@@ -10,6 +10,8 @@
 #include "TextureManager.h"
 #include "GenericErrors.h"
 
+#include "Networking/HTTPHelpers.h"
+
 #include <imgui_desktop/ScopeGuards.h>
 #include <imgui_desktop/StorageHelper.h>
 #include <mh/math/interpolation.hpp>
@@ -812,6 +814,54 @@ static void PrintPlayerLogsCount(const IPlayer& player)
 			});
 }
 
+static void PrintPlayerMarkedFriendsCount(IPlayer& player, const IModeratorLogic& modLogic)
+{
+	ImGui::TextFmt("Friends Marked : ");
+	ImGui::SameLineNoPad();
+
+	player.GetFriendsInfo()
+		.or_else([&](std::error_condition err)
+			{
+				if (err == std::errc::operation_in_progress)
+				{
+					ImGui::PacifierText();
+				}
+				else if (err == HTTPResponseCode::Unauthorized) {
+					// should i just wait for getplayersummary?
+					ImGui::TextFmt(COLOR_UNAVAILABLE, "Private", err);
+				}
+				else
+				{
+					ImGui::TextFmt(COLOR_RED, "{}", err);
+				}
+			})
+		.map([&](const SteamAPI::PlayerFriends& info)
+			{
+				auto markedFriends = modLogic.GetMarkedFriendsCount(player);
+
+				if (markedFriends.m_MarkedFriendsCountTotal == 0) {
+					ImGui::TextFmt("0");
+				}
+				else {
+					int markedRatio = int(markedFriends.m_MarkedFriendsCountTotal == 0 ? 0 : float(markedFriends.m_MarkedFriendsCountTotal) / markedFriends.m_FriendsCountTotal * 100);
+
+					ImGui::TextFmt(COLOR_YELLOW, "{} ", markedFriends.m_MarkedFriendsCountTotal);
+					ImGui::SameLineNoPad();
+					ImGui::TextFmt("({}% Marked out of {})", markedRatio, markedFriends.m_FriendsCountTotal);
+
+					for (const auto& [attrib, count] : markedFriends.m_MarkedFriendsCount) {
+						if (count == 0) {
+							continue;
+						}
+
+						ImGui::TextFmt(COLOR_YELLOW, "    {} ", count);
+						ImGui::SameLineNoPad();
+						ImGui::TextFmt(COLOR_YELLOW, "{:v}", mh::enum_fmt(attrib));
+					}
+				}
+			});
+}
+
 static void PrintPlayerInventoryInfo(const IPlayer& player)
 {
 	ImGui::TextFmt("Inventory Size : ");
@@ -885,6 +935,7 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 	PrintPlayerPlaytime(player);
 	PrintPlayerLogsCount(player);
 	PrintPlayerInventoryInfo(player);
+	PrintPlayerMarkedFriendsCount(player, GetModLogic());
 
 #ifdef _DEBUG
 	ImGui::TextFmt("   Active time : {}", HumanDuration(player.GetActiveTime()));

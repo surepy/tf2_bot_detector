@@ -18,6 +18,8 @@ namespace tf2_bot_detector
 {
 	class IHTTPClient;
 	class ISteamAPISettings;
+
+	enum class PlayerAttribute;
 }
 
 namespace tf2_bot_detector::SteamAPI
@@ -134,6 +136,17 @@ namespace tf2_bot_detector::SteamAPI
 
 	mh::task<duration_t> GetTF2PlaytimeAsync(const ISteamAPISettings& apiSettings,
 		const SteamID& steamID, const IHTTPClient& client);
+
+
+	struct PlayerFriends {
+		std::unordered_set<SteamID> m_Friends;
+
+		// mark source : mark count?
+		// std::unordered_map<std::string, uint32_t> m_MarkedCheaterCount;
+		// bool m_Processed = false;
+		// std::unordered_map<PlayerAttribute, uint32_t> m_MarkedCheaterCount;
+		// uint32_t m_MarkedFriendsTotal = 0;
+	};
 
 	mh::task<std::unordered_set<SteamID>> GetFriendList(const ISteamAPISettings& apiSettings,
 		const SteamID& steamID, const IHTTPClient& client);

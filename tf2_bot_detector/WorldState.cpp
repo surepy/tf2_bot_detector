@@ -225,7 +225,9 @@ namespace
 		duration_t GetActiveTime() const override;
 
 		std::optional<time_point_t> GetEstimatedAccountCreationTime() const override;
+
 		const mh::expected<LogsTFAPI::PlayerLogsInfo>& GetLogsInfo() const override;
+		const mh::expected<SteamAPI::PlayerFriends>& GetFriendsInfo() const override;
 		const mh::expected<SteamAPI::PlayerInventoryInfo>& GetInventoryInfo() const override;
 
 		PlayerScores m_Scores{};
@@ -268,6 +270,7 @@ namespace
 
 		mutable mh::expected<duration_t> m_TF2Playtime = ErrorCode::LazyValueUninitialized;
 		mutable mh::expected<LogsTFAPI::PlayerLogsInfo> m_LogsInfo = ErrorCode::LazyValueUninitialized;
+		mutable mh::expected<SteamAPI::PlayerFriends> m_FriendsInfo = ErrorCode::LazyValueUninitialized;
 		mutable mh::expected<SteamAPI::PlayerInventoryInfo> m_InventoryInfo = ErrorCode::LazyValueUninitialized;
 	};
 }
@@ -975,7 +978,9 @@ Player& WorldState::FindOrCreatePlayer(const SteamID& id)
 			data->GetPlayerBans();
 			data->GetTF2Playtime();
 			data->GetLogsInfo();
+			data->GetFriendsInfo();
 			data->GetInventoryInfo();
+			data->GetPlayerSourceBanState();
 		}
 	}
 
@@ -1145,6 +1150,24 @@ const mh::expected<LogsTFAPI::PlayerLogsInfo>& Player::GetLogsInfo() const
 				});
 
 			co_return cacheInfo;
+		});
+}
+
+const mh::expected<SteamAPI::PlayerFriends>& Player::GetFriendsInfo() const
+{
+	// TODO: use tempdb?
+	return GetOrFetchDataAsync(m_FriendsInfo,
+		[&](std::shared_ptr<const Player> pThis, auto client) -> mh::task< mh::expected<SteamAPI::PlayerFriends>>
+		{
+			const auto& settings = pThis->GetWorld().GetSettings();
+			if (!settings.IsSteamAPIAvailable())
+				co_return SteamAPI::ErrorCode::SteamAPIDisabled;
+
+			SteamAPI::PlayerFriends data;
+
+			data.m_Friends = co_await SteamAPI::GetFriendList(settings, pThis->GetSteamID(), *client);
+
+			co_return data;
 		});
 }
 

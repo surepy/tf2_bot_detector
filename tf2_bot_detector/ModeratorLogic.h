@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 
 namespace tf2_bot_detector
 {
@@ -39,6 +40,13 @@ namespace tf2_bot_detector
 		Any = Saved | Transient,
 	};
 
+	struct MarkedFriends
+	{
+		std::unordered_map<PlayerAttribute, uint32_t> m_MarkedFriendsCount;
+		uint32_t m_MarkedFriendsCountTotal = 0;
+		uint32_t m_FriendsCountTotal = 0;
+	};
+
 	class IModeratorLogic
 	{
 	public:
@@ -66,6 +74,8 @@ namespace tf2_bot_detector
 
 		virtual size_t GetBlacklistedPlayerCount() const = 0;
 		virtual size_t GetRuleCount() const = 0;
+
+		virtual MarkedFriends GetMarkedFriendsCount(IPlayer& id) const = 0;
 
 		virtual void ReloadConfigFiles() = 0;
 

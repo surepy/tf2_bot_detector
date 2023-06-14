@@ -52,6 +52,15 @@ namespace tf2_bot_detector::DB
 		duration_t GetCacheLiveTime() const override { return day_t(7); }
 	};
 
+	struct AccountFriendsListInfo final : detail::BaseCacheInfo_SteamID, detail::BaseCacheInfo_Expiration, SteamAPI::PlayerFriends
+	{
+		AccountFriendsListInfo() = default;
+		using SteamAPI::PlayerFriends::PlayerFriends;
+		using SteamAPI::PlayerFriends::operator=;
+
+		duration_t GetCacheLiveTime() const override { return day_t(7); }
+	};
+
 	struct LogsTFCacheInfo final : detail::BaseCacheInfo_Expiration, LogsTFAPI::PlayerLogsInfo
 	{
 		LogsTFCacheInfo() = default;

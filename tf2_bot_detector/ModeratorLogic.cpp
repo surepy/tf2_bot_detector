@@ -79,6 +79,8 @@ namespace
 		size_t GetBlacklistedPlayerCount() const override { return m_PlayerList.GetPlayerCount(); }
 		size_t GetRuleCount() const override { return m_Rules.GetRuleCount(); }
 
+		MarkedFriends GetMarkedFriendsCount(IPlayer& id) const override;
+
 		void ReloadConfigFiles() override;
 
 		PlayerListJSON* GetPlayerList() { return &m_PlayerList; }
@@ -90,6 +92,9 @@ namespace
 
 		struct PlayerExtraData
 		{
+			bool m_FriendsProcessed = false;
+			MarkedFriends m_MarkedFriends;
+
 			// If this is a known cheater, warn them ahead of time that the player is connecting, but only once
 			// (we don't know the cheater's name yet, so don't spam if they can't do anything about it yet)
 			bool m_PreWarnedOtherTeam = false;
@@ -1060,6 +1065,61 @@ void ModeratorLogic::SetUserRunningTool(const SteamID& id, bool isRunningTool)
 		m_PlayersRunningTool.insert(id);
 	else
 		m_PlayersRunningTool.erase(id);
+}
+
+// why is this "unordered_map<PlayerAttribute, uint32_t>" ?
+// in the event that i make PlayerAttribute more flexible or something idk
+// this code isnt ready though LMAO
+MarkedFriends ModeratorLogic::GetMarkedFriendsCount(IPlayer& player) const
+{
+	auto& data = player.GetOrCreateData<PlayerExtraData>();
+	if (data.m_FriendsProcessed) {
+		return data.m_MarkedFriends;
+	}
+	
+	auto friendsInfo = player.GetFriendsInfo();
+
+	// steamapi didn't get friends data yet; exit the function and this function will run again next loop.
+	if (!friendsInfo.has_value()) {
+		Log(player.GetSteamID().str() + " waiting until we receive friends list data for this player.");
+		return data.m_MarkedFriends;
+	}
+
+	uint32_t totalCount = 0;
+	uint32_t cheaterCount = 0;
+	uint32_t suspiciousCount = 0;
+	uint32_t exploiterCount = 0;
+	uint32_t racistCount = 0;
+
+	for (const SteamID& id : friendsInfo.value().m_Friends) {
+		auto playerAttributes = GetPlayerAttributes(id);
+
+		if (!playerAttributes.empty())
+		{
+			// TODO: dont do this ig
+			if (playerAttributes.Has(PlayerAttribute::Cheater))
+				cheaterCount++;
+			if (playerAttributes.Has(PlayerAttribute::Suspicious))
+				suspiciousCount++;
+			if (playerAttributes.Has(PlayerAttribute::Exploiter))
+				exploiterCount++;
+			if (playerAttributes.Has(PlayerAttribute::Racist))
+				racistCount++;
+
+			totalCount++;
+		}
+	}
+
+	data.m_MarkedFriends.m_FriendsCountTotal = static_cast<uint32_t>(friendsInfo.value().m_Friends.size());
+
+	data.m_MarkedFriends.m_MarkedFriendsCount.insert(std::pair<PlayerAttribute, uint32_t>(PlayerAttribute::Cheater, cheaterCount));
+	data.m_MarkedFriends.m_MarkedFriendsCount.insert(std::pair<PlayerAttribute, uint32_t>(PlayerAttribute::Suspicious, suspiciousCount));
+	data.m_MarkedFriends.m_MarkedFriendsCount.insert(std::pair<PlayerAttribute, uint32_t>(PlayerAttribute::Exploiter, exploiterCount));
+	data.m_MarkedFriends.m_MarkedFriendsCount.insert(std::pair<PlayerAttribute, uint32_t>(PlayerAttribute::Racist, racistCount));
+	data.m_MarkedFriends.m_MarkedFriendsCountTotal = totalCount;
+	data.m_FriendsProcessed = true;
+
+	return data.m_MarkedFriends;
 }
 
 void ModeratorLogic::ReloadConfigFiles()
