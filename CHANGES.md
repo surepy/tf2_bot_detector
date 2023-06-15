@@ -27,10 +27,14 @@ format ``unmarked (unmarked_connected) vs marked (marked_connected)``
 ![verifying the reason](https://user-images.githubusercontent.com/24486494/216663482-7fa5ea6c-690d-4182-bd83-c2956fffd044.jpg)
 * kill logs in chat _(default disabled)_  
 ![killogs](https://user-images.githubusercontent.com/24486494/232056583-ba99f610-423d-4096-879c-a4eb0cfea8ba.png)
-* Added SteamHistory SourceBans integration
+* Added SteamHistory SourceBans integration  
 ![steamhistory integration](https://github.com/surepy/tf2_bot_detector/assets/24486494/c0ea2102-df0d-4767-a24f-fc6a0f57c23f)
- * first time setup now shows to setup the steam api (generate api key button opens on steam app)
+ * first time setup now shows to setup the steam api (generate api key button opens on steam app)  
  ![first time setup](https://github.com/surepy/tf2_bot_detector/assets/24486494/38bab41a-24af-4f82-af45-968236e04adc) 
+ - Added "Marked Friends" section (will not load if private)  
+![marked friends](https://github.com/surepy/tf2_bot_detector/assets/24486494/1a85a00d-44db-448a-b6c4-9ab09e469f59)
+- "Has SourceBans Entries" tooltip on playerlist  
+![has sourcebans tooltip](https://github.com/surepy/tf2_bot_detector/assets/24486494/793fbf8b-cce9-4bf9-96f3-b6c3ab6682a0)
 
 ### Misc
 * **Dropped support for all installation methods that aren't the portable one**  
