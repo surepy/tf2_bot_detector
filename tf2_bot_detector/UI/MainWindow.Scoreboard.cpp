@@ -312,6 +312,24 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 				icons.push_back({ (ImTextureID)(intptr_t)icon->GetHandle(), { 1, 0, 0, 1 }, "Steam Friends" });
 			});
 
+		if (auto sourceBans = player.GetPlayerSourceBanState()) {
+			// They are SourceBanned
+			std::invoke([&]
+				{
+					if constexpr (!DEBUG_ALWAYS_DRAW_ICONS)
+					{
+						if (sourceBans->size() <= 0)
+							return;
+					}
+
+					auto icon = m_BaseTextures->GetSourceBansIcon_16();
+					if (!icon)
+						return;
+
+					icons.push_back({ (ImTextureID)(intptr_t)icon->GetHandle(), { 1, 1, 1, 1 }, "Has SourceBans Entries" });
+				});
+		}
+
 		if (!icons.empty())
 		{
 			// We have at least one icon to draw
