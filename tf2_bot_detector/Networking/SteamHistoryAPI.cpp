@@ -28,9 +28,8 @@ mh::task<tf2_bot_detector::SteamHistoryAPI::PlayerSourceBansResponse>
 	std::string requestSteamIDs = tf2_bot_detector::SteamAPI::GenerateSteamIDsQueryParam(steamIDs, 100);
 	requestSteamIDs.at(0) = '&';
 
-	// copied segments of GenerateSteamAPIURL; consolidate later.
-	// TODO: shouldKey=1 ?
-	URL requestURL = URL(mh::format(MH_FMT_STRING("https://steamhistory.net/api/sourcebans?shouldKey=1&key={}{}"), apiKey, requestSteamIDs));
+	// copied segments of GenerateSteamAPIURL; consolidate later?
+	URL requestURL = URL(mh::format(MH_FMT_STRING("https://steamhistory.net/api/sourcebans?shouldkey=1&key={}{}"), apiKey, requestSteamIDs));
 
 	auto clientPtr = client.shared_from_this();
 	const std::string data = co_await clientPtr->GetStringAsync(requestURL);
@@ -71,7 +70,7 @@ void tf2_bot_detector::SteamHistoryAPI::from_json(const nlohmann::json& j, Playe
 
 	// HOW CAN NAME BE NULL WTF
 	if (j.at("Name").is_string()) {
-		d.m_BanReason = j.at("Name");
+		d.m_UserName = j.at("Name");
 	}
 
 	d.m_BanState = j.at("CurrentState").get<BanState>();
@@ -86,13 +85,11 @@ void tf2_bot_detector::SteamHistoryAPI::from_json(const nlohmann::json& j, Playe
 
 	// it's epoch time.... in string format.
 	if (auto found = j.find("BanTimestamp"); found != j.end()) {
-		std::string timestampStr = found->get<std::string>();
-		d.m_BanTimestamp = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoi(timestampStr)));
+		d.m_BanTimestamp = std::chrono::system_clock::time_point(std::chrono::seconds(found->get<std::int64_t>()));
 	}
 
 	if (auto found = j.find("UnbanTimestamp"); found != j.end()) {
-		std::string timestampStr = found->get<std::string>();
-		d.m_UnbanTimestamp = std::chrono::system_clock::time_point(std::chrono::seconds(std::stoi(timestampStr)));
+		d.m_UnbanTimestamp = std::chrono::system_clock::time_point(std::chrono::seconds(found->get<std::int64_t>()));
 	}
 
 	d.m_Server = j.at("Server");
