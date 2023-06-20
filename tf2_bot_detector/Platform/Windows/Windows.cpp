@@ -132,7 +132,7 @@ std::filesystem::path tf2_bot_detector::Platform::GetCurrentExeDir()
 	if (length == 0)
 		throw std::runtime_error("Call to GetModuleFileNameW() failed: return value was 0");
 
-	return std::filesystem::path(path, path + length).remove_filename();
+	return std::filesystem::path(path, path + length).parent_path();
 }
 
 std::filesystem::path tf2_bot_detector::Platform::GetLegacyAppDataDir()
