@@ -19,7 +19,7 @@ ECHO Compiling TF2 Bot Detector...
 	RMDIR /S /Q build
 	MKDIR build
 	CD build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=..\submodules\vcpkg\scripts\buildsystems\vcpkg.cmake ../
+	cmake -DCMAKE_BUILD_TYPE=Release ../
 	IF %ERRORLEVEL% NEQ 0 EXIT /B
 	cmake --build . --config Release
 	IF %ERRORLEVEL% NEQ 0 EXIT /B
