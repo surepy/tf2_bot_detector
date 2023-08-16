@@ -625,35 +625,4 @@ namespace tf2_bot_detector
 		std::string m_PlayerName;
 		std::string m_Reason;
 	};
-
-	class MatchmakingBannedTimeLine final : public ConsoleLineBase<MatchmakingBannedTimeLine>
-	{
-		using BaseClass = ConsoleLineBase;
-
-	public:
-		enum class LadderType
-		{
-			Casual,
-			Competitive,
-		};
-
-		MatchmakingBannedTimeLine(time_point_t timestamp, LadderType ladderType, uint64_t bannedTime);
-		static std::shared_ptr<IConsoleLine> TryParse(const ConsoleLineTryParseArgs& args);
-
-		ConsoleLineType GetType() const override { return ConsoleLineType::MatchmakingBannedTime; }
-		bool ShouldPrint() const override { return false; }
-		void Print(const PrintArgs& args) const override;
-
-		const LadderType GetLadderType() const { return m_LadderType; }
-		const uint64_t GetBannedTime() const { return m_BannedTime; }
-
-	private:
-		LadderType m_LadderType;
-		uint64_t m_BannedTime;
-	};
 }
-
-MH_ENUM_REFLECT_BEGIN(tf2_bot_detector::MatchmakingBannedTimeLine::LadderType)
-	MH_ENUM_REFLECT_VALUE(Casual)
-	MH_ENUM_REFLECT_VALUE(Competitive)
-MH_ENUM_REFLECT_END()

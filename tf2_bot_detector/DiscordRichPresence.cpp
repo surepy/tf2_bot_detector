@@ -377,7 +377,6 @@ namespace
 		void SetInParty(bool inParty);
 		void SetMapName(std::string mapName);
 		void UpdateParty(const TFParty& party);
-		void UpdatePartyMatchmakingBanTime(MatchmakingBannedTimeLine::LadderType type, uint64_t banTime);
 		void OnLocalPlayerSpawned(TFClassType classType);
 		void OnConnectionCountUpdate(unsigned connectionCount);
 
@@ -746,22 +745,6 @@ void DiscordGameState::UpdateParty(const TFParty& party)
 	}
 }
 
-void DiscordGameState::UpdatePartyMatchmakingBanTime(MatchmakingBannedTimeLine::LadderType ladderType, uint64_t banTime)
-{
-	using LadderType = MatchmakingBannedTimeLine::LadderType;
-	switch (ladderType)
-	{
-	case LadderType::Casual:
-		m_PartyInfo.m_CasualBanTime = banTime;
-		return;
-	case LadderType::Competitive:
-		m_PartyInfo.m_RankedBanTime = banTime;
-		return;
-	}
-
-	LogError("Unknown ladderType {}", mh::enum_fmt(ladderType));
-}
-
 void DiscordGameState::OnLocalPlayerSpawned(TFClassType classType)
 {
 	DiscordDebugLog(MH_SOURCE_LOCATION_CURRENT());
@@ -845,13 +828,6 @@ void DiscordState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& line)
 		QueueUpdate();
 		auto& partyLine = static_cast<const PartyHeaderLine&>(line);
 		m_GameState.UpdateParty(partyLine.GetParty());
-		break;
-	}
-	case ConsoleLineType::MatchmakingBannedTime:
-	{
-		QueueUpdate();
-		auto& banLine = static_cast<const MatchmakingBannedTimeLine&>(line);
-		m_GameState.UpdatePartyMatchmakingBanTime(banLine.GetLadderType(), banLine.GetBannedTime());
 		break;
 	}
 	case ConsoleLineType::LobbyHeader:
