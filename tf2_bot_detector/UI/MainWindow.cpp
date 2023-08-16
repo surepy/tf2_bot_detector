@@ -1,6 +1,5 @@
 #include "MainWindow.h"
 #include "DiscordRichPresence.h"
-#include "ConsoleLog/ConsoleLines.h"
 #include "Networking/GithubAPI.h"
 #include "Networking/SteamAPI.h"
 #include "ConsoleLog/NetworkStatus.h"
@@ -20,6 +19,10 @@
 #include "GlobalDispatcher.h"
 #include "Networking/HTTPClient.h"
 #include "SettingsWindow.h"
+
+#include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
+#include "ConsoleLog/ConsoleLines/EdictUsageLine.h"
+
 
 #include <imgui_desktop/Application.h>
 #include <imgui_desktop/ScopeGuards.h>

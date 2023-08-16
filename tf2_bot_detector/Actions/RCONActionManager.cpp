@@ -1,7 +1,6 @@
 #include "RCONActionManager.h"
 #include "Actions/ActionGenerators.h"
 #include "Config/Settings.h"
-#include "ConsoleLog/ConsoleLines.h"
 #include "Actions.h"
 #include "Log.h"
 #include "WorldEventListener.h"

@@ -1,12 +1,13 @@
 #include "ConsoleLogParser.h"
 #include "Config/ChatWrappers.h"
 #include "ConsoleLog/ConsoleLineListener.h"
-#include "ConsoleLines.h"
 #include "Log.h"
 #include "Util/RegexUtils.h"
 #include "Config/Settings.h"
 #include "WorldState.h"
 #include "Platform/Platform.h"
+
+#include "ConsoleLines/ChatConsoleLine.h"
 
 #include <mh/text/format.hpp>
 #include <mh/text/formatters/error_code.hpp>

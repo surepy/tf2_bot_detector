@@ -11,6 +11,15 @@
 #include "WorldEventListener.h"
 #include "WorldState.h"
 
+#include "ConsoleLog/ConsoleLines/SVCUserMessageLine.h"
+#include "ConsoleLog/ConsoleLines/PartyHeaderLine.h"
+#include "ConsoleLog/ConsoleLines/ServerStatusPlayerIPLine.h"
+#include "ConsoleLog/ConsoleLines/QueueStateChangeLine.h"
+#include "ConsoleLog/ConsoleLines/InQueueLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
+
+
+
 #include <mh/concurrency/thread_sentinel.hpp>
 #include <mh/text/charconv_helper.hpp>
 #include <mh/text/fmtstr.hpp>

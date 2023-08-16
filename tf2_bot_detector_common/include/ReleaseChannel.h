@@ -8,7 +8,6 @@ namespace tf2_bot_detector
 	enum class ReleaseChannel
 	{
 		None = -1, // Don't auto update
-
 		Public,
 		Preview,
 		Nightly,

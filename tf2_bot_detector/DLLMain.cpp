@@ -134,6 +134,8 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(HINSTANCE hInstance, HI
 #endif
 
 
+////// FROM HERE IS UNUSED HELL
+
 /// <summary>
 /// Run program into an overlay mode (directx/gl/vk* - endscene)
 ///

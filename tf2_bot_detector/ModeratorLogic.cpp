@@ -7,7 +7,6 @@
 #include "Config/Settings.h"
 #include "ConsoleLog/ConsoleLineListener.h"
 #include "ConsoleLog/IConsoleLine.h"
-#include "ConsoleLog/ConsoleLines.h"
 #include "GameData/UserMessageType.h"
 #include "IPlayer.h"
 #include "Log.h"

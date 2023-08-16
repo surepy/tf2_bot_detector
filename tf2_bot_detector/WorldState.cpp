@@ -2,7 +2,6 @@
 #include "Actions/Actions.h"
 #include "Config/Settings.h"
 #include "ConsoleLog/ConsoleLineListener.h"
-#include "ConsoleLog/ConsoleLines.h"
 #include "ConsoleLog/ConsoleLogParser.h"
 #include "GameData/TFClassType.h"
 #include "GameData/UserMessageType.h"
@@ -21,6 +20,20 @@
 #include "GlobalDispatcher.h"
 #include "Application.h"
 #include "DB/TempDB.h"
+
+#include "ConsoleLog/ConsoleLines/ChatConsoleLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyHeaderLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyMemberLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyStatusFailedLine.h"
+#include "ConsoleLog/ConsoleLines/ServerStatusPlayerLine.h"
+#include "ConsoleLog/ConsoleLines/KillNotificationLine.h"
+#include "ConsoleLog/ConsoleLines/ConfigExecLine.h"
+#include "ConsoleLog/ConsoleLines/SVCUserMessageLine.h"
+#include "ConsoleLog/ConsoleLines/ServerStatusShortPlayerLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
+#include "ConsoleLog/ConsoleLines/ServerDroppedPlayerLine.h"
+#include "ConsoleLog/ConsoleLines/PingLine.h"
+
 
 #include <mh/algorithm/algorithm.hpp>
 #include <mh/concurrency/dispatcher.hpp>
@@ -781,28 +794,6 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		OnConfigExecLineParsed(static_cast<const ConfigExecLine&>(parsed));
 		break;
 	}
-
-#if 0
-	case ConsoleLineType::VoiceReceive:
-	{
-		auto& voiceReceiveLine = static_cast<const VoiceReceiveLine&>(parsed);
-		for (auto& player : m_CurrentPlayerData)
-		{
-			if (player.second.m_ClientIndex == (voiceReceiveLine.GetEntIndex() + 1))
-			{
-				auto& voice = player.second.m_Voice;
-				if (voice.m_LastTransmission != parsed.GetTimestamp())
-				{
-					voice.m_TotalTransmissions += 1s; // This is fine because we know the resolution of our timestamps is 1 second
-					voice.m_LastTransmission = parsed.GetTimestamp();
-				}
-
-				break;
-			}
-		}
-		break;
-	}
-#endif
 
 	case ConsoleLineType::LobbyMember:
 	{
