@@ -3,7 +3,6 @@
 #include "Config/DRPInfo.h"
 #include "Config/Settings.h"
 #include "ConsoleLog/ConsoleLineListener.h"
-#include "ConsoleLog/ConsoleLines.h"
 #include "ConsoleLog/NetworkStatus.h"
 #include "GameData/MatchmakingQueue.h"
 #include "GameData/TFClassType.h"
@@ -17,8 +16,9 @@
 #include "ConsoleLog/ConsoleLines/QueueStateChangeLine.h"
 #include "ConsoleLog/ConsoleLines/InQueueLine.h"
 #include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
-
-
+#include "ConsoleLog/ConsoleLines/ServerJoinLine.h"
+#include "ConsoleLog/ConsoleLines/ConnectingLine.h"
+#include "ConsoleLog/ConsoleLines/ServerStatusMapLine.h"
 
 #include <mh/concurrency/thread_sentinel.hpp>
 #include <mh/text/charconv_helper.hpp>
