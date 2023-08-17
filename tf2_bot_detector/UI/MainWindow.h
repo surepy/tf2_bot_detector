@@ -8,7 +8,6 @@
 #include "ConsoleLog/ConsoleLogParser.h"
 #include "Config/PlayerListJSON.h"
 #include "Config/Settings.h"
-#include "Config/SponsorsList.h"
 #include "DiscordRichPresence.h"
 #include "Networking/GithubAPI.h"
 #include "ModeratorLogic.h"
@@ -183,7 +182,6 @@ namespace tf2_bot_detector
 
 			MainWindow* m_Parent = nullptr;
 			std::unique_ptr<IModeratorLogic> m_ModeratorLogic;
-			SponsorsList m_SponsorsList;
 
 			ConsoleLogParser m_Parser;
 			std::list<std::shared_ptr<const IConsoleLine>> m_PrintingLines;  // newest to oldest order
@@ -200,8 +198,6 @@ namespace tf2_bot_detector
 	public:
 		IModeratorLogic& GetModLogic() { return *m_MainState.value().m_ModeratorLogic; }
 		const IModeratorLogic& GetModLogic() const { return *m_MainState.value().m_ModeratorLogic; }
-		SponsorsList& GetSponsorsList() { return m_MainState.value().m_SponsorsList; }
-		const SponsorsList& GetSponsorsList() const { return m_MainState.value().m_SponsorsList; }
 
 		time_point_t GetLastStatusUpdateTime() const;
 	};

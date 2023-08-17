@@ -328,36 +328,6 @@ void MainWindow::OnDrawAboutPopup()
 
 		ImGui::NewLine();
 		ImGui::Separator();
-		ImGui::NewLine();
-
-		if (m_MainState)
-		{
-			if (const auto sponsors = GetSponsorsList().GetSponsors(); !sponsors.empty())
-			{
-				ImGui::TextFmt("Sponsors\n"
-					"Huge thanks to the people sponsoring this project via GitHub Sponsors:");
-
-				ImGui::NewLine();
-
-				for (const auto& sponsor : sponsors)
-				{
-					ImGui::Bullet();
-					ImGui::TextFmt(sponsor.m_Name);
-
-					if (!sponsor.m_Message.empty())
-					{
-						ImGui::SameLineNoPad();
-						ImGui::TextFmt(" - {}", sponsor.m_Message);
-					}
-				}
-
-				ImGui::NewLine();
-			}
-		}
-
-		ImGui::TextFmt("If you're feeling generous, you can make a small donation to help support my work.");
-		if (ImGui::Button("GitHub Sponsors"))
-			Shell::OpenURL("https://github.com/sponsors/PazerOP");
 
 		ImGui::EndPopup();
 	}
@@ -1065,7 +1035,6 @@ mh::expected<std::shared_ptr<ITexture>, std::error_condition> MainWindow::TryGet
 MainWindow::PostSetupFlowState::PostSetupFlowState(MainWindow& window) :
 	m_Parent(&window),
 	m_ModeratorLogic(IModeratorLogic::Create(window.GetWorld(), window.m_Settings, window.GetActionManager())),
-	m_SponsorsList(window.m_Settings),
 	m_Parser(window.GetWorld(), window.m_Settings, window.m_Settings.GetTFDir() / "console.log")
 {
 #ifdef TF2BD_ENABLE_DISCORD_INTEGRATION

@@ -61,8 +61,6 @@ target_sources(tf2_bot_detector PRIVATE
 	"Config/Rules.h"
 	"Config/Settings.cpp"
 	"Config/Settings.h"
-	"Config/SponsorsList.h"
-	"Config/SponsorsList.cpp"
 	"ConsoleLog/ConsoleLogParser.h"
 	"ConsoleLog/ConsoleLogParser.cpp"
 	"ConsoleLog/ConsoleLines.cpp"
