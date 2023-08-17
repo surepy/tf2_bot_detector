@@ -2,7 +2,7 @@
 
 #include "Clock.h"
 #include "SteamID.h"
-#include "TFConstants.h"
+#include "GameData/TFConstants.h"
 
 #include <cstdint>
 #include <string>

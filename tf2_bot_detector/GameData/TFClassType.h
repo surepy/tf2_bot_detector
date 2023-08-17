@@ -2,6 +2,9 @@
 
 namespace tf2_bot_detector
 {
+	/// <summary>
+	/// see: https://sm.alliedmods.net/new-api/tf2/TFClassType
+	/// </summary>
 	enum class TFClassType
 	{
 		Undefined = 0,

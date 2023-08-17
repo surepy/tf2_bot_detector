@@ -16,7 +16,7 @@
 #include "WorldState.h"
 #include "LobbyMember.h"
 #include "PlayerStatus.h"
-#include "TFConstants.h"
+#include "GameData/TFConstants.h"
 
 #include <imgui_desktop/Window.h>
 #include <mh/error/expected.hpp>

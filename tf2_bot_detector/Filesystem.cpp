@@ -100,30 +100,6 @@ void Filesystem::Init()
 				m_SearchPaths.insert(m_SearchPaths.begin(), m_WorkingDir);
 
 			{
-				auto legacyPath = Platform::GetLegacyAppDataDir();
-				try
-				{
-					if (std::filesystem::exists(legacyPath))
-					{
-						legacyPath /= APPDATA_SUBFOLDER;
-						if (std::filesystem::exists(legacyPath))
-						{
-							Log("Found legacy appdata folder {}, copying to {}...", legacyPath, m_RoamingAppDataDir);
-							std::filesystem::copy(legacyPath, m_RoamingAppDataDir,
-								std::filesystem::copy_options::recursive | std::filesystem::copy_options::skip_existing);
-
-							Log("Copy complete. Deleting {}...", legacyPath);
-							std::filesystem::remove_all(legacyPath);
-						}
-					}
-				}
-				catch (...)
-				{
-					LogException("Failed to transfer legacy appdata during filesystem init");
-				}
-			}
-
-			{
 				std::string initMsg = "Filesystem initialized. Search paths:";
 				for (const auto& searchPath : m_SearchPaths)
 					initMsg << "\n\t" << searchPath;

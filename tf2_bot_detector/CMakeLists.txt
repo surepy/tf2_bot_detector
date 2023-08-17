@@ -212,7 +212,7 @@ target_sources(tf2_bot_detector PRIVATE
 	"SteamID.h"
 	"TextureManager.h"
 	"TextureManager.cpp"
-	"TFConstants.h"
+	"GameData/TFConstants.h"
 	"UpdateManager.h"
 	"UpdateManager.cpp"
 	"Version.h"
