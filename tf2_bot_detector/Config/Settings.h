@@ -105,6 +105,13 @@ namespace tf2_bot_detector
 		std::string m_OneCheaterWarningMessage = "Attention! There is a cheater on the other team named \"{}\". Please kick them!";
 		std::string m_MultipleCheaterWarningMessage = "Attention! There are {} cheaters on the other team named {}. Please kick them!";
 
+		/// <summary>
+		/// use a static password, if wanted by the user (not really recommended)
+		/// </summary>
+		bool m_UseRconStaticParams = false;
+		std::string m_RconStaticPassword = "changeme";
+		uint16_t m_RconStaticPort = 40001;
+
 		// end custom
 
 		bool m_AutoChatWarnings = true;

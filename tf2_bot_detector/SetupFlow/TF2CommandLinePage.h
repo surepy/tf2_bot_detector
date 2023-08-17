@@ -47,6 +47,7 @@ namespace tf2_bot_detector
 
 		void DrawAutoLaunchTF2Checkbox(const DrawState& ds);
 		void DrawLaunchTF2Button(const DrawState& ds);
+		void DrawRconStaticParamsCheckbox(const DrawState& ds);
 		void DrawCommandLineArgsInvalid(const DrawState& ds, const TF2CommandLine& args);
 
 		struct RCONClientData

@@ -443,6 +443,8 @@ void Settings::Deserialize(const nlohmann::json& json)
 
 			try_get_to_defaulted(*custom_values, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
 
+			// 
+
 			// XVF's SteamHistory Service. (used for SourceBans)
 			if (auto integrations = custom_values.value().find("integrations"); integrations != custom_values.value().end()) {
 				try_get_to_defaulted(*integrations, m_EnableSteamHistoryIntegration, "enable_steam_history_integration", DEFAULTS.m_EnableSteamHistoryIntegration);
@@ -452,7 +454,12 @@ void Settings::Deserialize(const nlohmann::json& json)
 					SetSteamHistoryAPIKey(std::move(apiKey));
 				}
 			}
+
+			try_get_to_defaulted(*custom_values, m_UseRconStaticParams, "rcon_use_static_values", DEFAULTS.m_UseRconStaticParams);
+			try_get_to_defaulted(*custom_values, m_RconStaticPort, "rcon_static_port", DEFAULTS.m_RconStaticPort);
+			try_get_to_defaulted(*custom_values, m_RconStaticPassword, "rcon_static_password", DEFAULTS.m_RconStaticPassword);
 		}
+		// 
 
 		try_get_to_defaulted(*found, m_LocalSteamIDOverride, "local_steamid_override");
 		try_get_to_defaulted(*found, m_SleepWhenUnfocused, "sleep_when_unfocused");
@@ -529,7 +536,10 @@ void Settings::Serialize(nlohmann::json& json) const
 						{ "one_cheater_connecting", m_OneCheaterConnectingMessage },
 						{ "muti_cheater_connecting", m_MultipleCheaterConnectingMessage },
 						{ "one_cheater_warning", m_OneCheaterWarningMessage },
-						{ "muti_cheater_warning", m_MultipleCheaterWarningMessage }
+						{ "muti_cheater_warning", m_MultipleCheaterWarningMessage },
+						{ "rcon_use_static_values", m_UseRconStaticParams },
+						{ "rcon_static_port", m_RconStaticPort },
+						{ "rcon_static_password", m_RconStaticPassword }
 					}
 				},
 				{ "sleep_when_unfocused", m_SleepWhenUnfocused },

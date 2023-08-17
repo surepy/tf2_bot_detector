@@ -457,6 +457,34 @@ void tf2_bot_detector::SettingsWindow::OnDrawMiscSettings()
 		if (ImGui::Checkbox("Show kill logs on chat", &m_Settings.m_KillLogsInChat))
 			m_Settings.SaveFile();
 
+		// PASTED: see TF2CommandLinePage.cpp
+		if (ImGui::Checkbox("Use Static Rcon Launch Parameters (Not Recommended)", &m_Settings.m_UseRconStaticParams))
+			m_Settings.SaveFile();
+
+		if (m_Settings.m_UseRconStaticParams) {
+			if (ImGui::InputText("password", &m_Settings.m_RconStaticPassword)) {
+				m_Settings.SaveFile();
+			}
+
+			// imgui stuff so it's not a scalar input for ports
+			std::string port = std::to_string(m_Settings.m_RconStaticPort);
+
+			// this code has some flaws,
+			// 1. it doesn't check if the port given is even a valid port
+			// 2. it doesnt check if that port is available
+			// however, we can blame the user for using this option so lol
+			if (ImGui::InputText("port", &port, ImGuiInputTextFlags_CharsDecimal)) {
+				for (size_t i = 0; i < port.size(); ++i) {
+					if (!isdigit(port.at(i))) {
+						port.erase(i);
+					}
+				}
+
+				m_Settings.m_RconStaticPort = std::stoi(port);
+				m_Settings.SaveFile();
+			}
+		}
+
 		ImGui::NewLine();
 		ImGui::TreePop();
 	}

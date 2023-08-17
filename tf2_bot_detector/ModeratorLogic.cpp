@@ -780,10 +780,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 		// TODO: cite multiple files?
 		tf2_bot_detector::ConfigFileName fileName = marks.m_Marks.front().m_FileName;
 
-		// FIXME: if "title" isn't set, configfilename is a FULL PATH. we don't want that.
-		// is there a better way to write this?
-		std::ifstream testPath(fileName);
-		if (testPath) {
+		if (std::filesystem::exists(fileName)) {
 			fileName = fileName.substr(fileName.rfind("playerlist."));
 		}
 
@@ -833,10 +830,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			// TODO: cite multiple files?
 			tf2_bot_detector::ConfigFileName fileName = marks.m_Marks.front().m_FileName;
 
-			// FIXME: if "title" isn't set, configfilename is a FULL PATH. we don't want that.
-			// is there a better way to write this?
-			std::ifstream testPath(fileName);
-			if (testPath) {
+			if (std::filesystem::exists(fileName)) {
 				fileName = fileName.substr(fileName.rfind("playerlist."));
 			}
 

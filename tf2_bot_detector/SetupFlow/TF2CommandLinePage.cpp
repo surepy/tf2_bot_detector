@@ -215,15 +215,15 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 		" -steam -secure"  // One or both of these is needed when launching the game directly
 		" -usercon"
 		" +developer 1 +alias developer"
-		" +contimes 0 +alias contimes"   // the text in the top left when developer >= 1
+		" +contimes 0" // the text in the top left when developer >= 1
 		" +ip 0.0.0.0 +alias ip"
-		" +sv_rcon_whitelist_address 127.0.0.1 +alias sv_rcon_whitelist_address"
-		" +sv_quota_stringcmdspersecond 1000000 +alias sv_quota_stringcmdspersecond" // workaround for mastercomfig causing crashes on local servers
-		" +rcon_password " << rconPassword << " +alias rcon_password"
-		" +hostport " << rconPort << " +alias hostport"
+		" +sv_rcon_whitelist_address 127.0.0.1"
+		" +sv_quota_stringcmdspersecond 1000000" // workaround for mastercomfig causing crashes on local servers
+		" +rcon_password " << rconPassword <<
+		" +hostport " << rconPort <<
 		" +alias cl_reload_localization_files" // This command reloads files in backwards order, so any customizations get overwritten by stuff from the base game
 		" +net_start"
-		" +con_timestamp 1 +alias con_timestamp"
+		" +con_timestamp 1"
 		" -condebug"
 		" -conclearlog"
 		;
@@ -308,6 +308,37 @@ void TF2CommandLinePage::DrawAutoLaunchTF2Checkbox(const DrawState& ds)
 		ds.m_Settings->SaveFile();
 }
 
+void TF2CommandLinePage::DrawRconStaticParamsCheckbox(const DrawState& ds)
+{
+	if (ImGui::Checkbox("Use Static Rcon Launch Parameters (Not Recommended)", &ds.m_Settings->m_UseRconStaticParams))
+		ds.m_Settings->SaveFile();
+
+	if (ds.m_Settings->m_UseRconStaticParams) {
+		if (ImGui::InputText("password", &ds.m_Settings->m_RconStaticPassword, ImGuiInputTextFlags_CharsNoBlank)) {
+			ds.m_Settings->SaveFile();
+		}
+
+		// imgui stuff so it's not a scalar input for ports
+		std::string port = std::to_string(ds.m_Settings->m_RconStaticPort);
+
+		// this code has some flaws,
+		// 1. it doesn't check if the port given is even a valid port
+		// 2. it doesnt check if that port is available
+		// however, we can blame the user for using this option so lol
+		if (ImGui::InputText("port", &port, ImGuiInputTextFlags_CharsDecimal)) {
+			for (size_t i = 0; i < port.size(); ++i) {
+				if (!isdigit(port.at(i))) {
+					port.erase(i);
+				}
+			}
+
+			ds.m_Settings->m_RconStaticPort = std::stoi(port);
+
+			ds.m_Settings->SaveFile();
+		}
+	}
+}
+
 void TF2CommandLinePage::DrawLaunchTF2Button(const DrawState& ds)
 {
 	const auto curTime = clock_t::now();
@@ -321,8 +352,14 @@ void TF2CommandLinePage::DrawLaunchTF2Button(const DrawState& ds)
 				if (Platform::Processes::IsTF2Running())
 					LogError("TF2 already running!");
 
-				m_Data.m_RandomRCONPassword = GenerateRandomRCONPassword();
-				m_Data.m_RandomRCONPort = ds.m_Settings->m_TF2Interface.GetRandomRCONPort();
+				if (ds.m_Settings->m_UseRconStaticParams) {
+					m_Data.m_RandomRCONPassword = ds.m_Settings->m_RconStaticPassword;
+					m_Data.m_RandomRCONPort = ds.m_Settings->m_RconStaticPort;
+				}
+				else {
+					m_Data.m_RandomRCONPassword = GenerateRandomRCONPassword();
+					m_Data.m_RandomRCONPort = ds.m_Settings->m_TF2Interface.GetRandomRCONPort();
+				}
 
 				OpenTF2(*ds.m_Settings, m_Data.m_RandomRCONPassword, m_Data.m_RandomRCONPort);
 				m_Data.m_LastTF2LaunchTime = curTime;
@@ -334,6 +371,7 @@ void TF2CommandLinePage::DrawLaunchTF2Button(const DrawState& ds)
 
 	ImGui::NewLine();
 	DrawAutoLaunchTF2Checkbox(ds);
+	DrawRconStaticParamsCheckbox(ds);
 }
 
 void TF2CommandLinePage::DrawCommandLineArgsInvalid(const DrawState& ds, const TF2CommandLine& args)
