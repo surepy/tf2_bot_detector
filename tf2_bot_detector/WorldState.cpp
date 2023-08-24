@@ -13,7 +13,7 @@
 #include "Util/TextUtils.h"
 #include "BatchedAction.h"
 #include "GenericErrors.h"
-#include "IPlayer.h"
+#include "GameData/IPlayer.h"
 #include "Log.h"
 #include "WorldEventListener.h"
 #include "Config/AccountAges.h"

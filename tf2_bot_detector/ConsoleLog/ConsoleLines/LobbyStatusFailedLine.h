@@ -5,7 +5,7 @@
 #include "LobbyMember.h"
 #include "PlayerStatus.h"
 #include "ConsoleLog/IConsoleLine.h"
-#include "IPlayer.h"
+#include "GameData/IPlayer.h"
 
 #include <mh/reflection/enum.hpp>
 

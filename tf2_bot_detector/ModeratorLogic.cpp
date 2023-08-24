@@ -8,7 +8,7 @@
 #include "ConsoleLog/ConsoleLineListener.h"
 #include "ConsoleLog/IConsoleLine.h"
 #include "GameData/UserMessageType.h"
-#include "IPlayer.h"
+#include "GameData/IPlayer.h"
 #include "Log.h"
 #include "PlayerStatus.h"
 #include "WorldEventListener.h"

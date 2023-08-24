@@ -4,7 +4,7 @@
 #include "Util/JSONUtils.h"
 #include "Util/PathUtils.h"
 #include "Filesystem.h"
-#include "IPlayer.h"
+#include "GameData/IPlayer.h"
 #include "Log.h"
 #include "PlayerListJSON.h"
 #include "Platform/Platform.h"

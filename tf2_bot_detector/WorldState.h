@@ -9,6 +9,24 @@
 
 #include <optional>
 
+#include "GameData/Player.h"
+
+#include "ConsoleLog/ConsoleLineListener.h"
+#include "ConsoleLog/ConsoleLogParser.h"
+
+#include "ConsoleLog/ConsoleLines/ChatConsoleLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyHeaderLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyMemberLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyStatusFailedLine.h"
+#include "ConsoleLog/ConsoleLines/ServerStatusPlayerLine.h"
+#include "ConsoleLog/ConsoleLines/KillNotificationLine.h"
+#include "ConsoleLog/ConsoleLines/ConfigExecLine.h"
+#include "ConsoleLog/ConsoleLines/SVCUserMessageLine.h"
+#include "ConsoleLog/ConsoleLines/ServerStatusShortPlayerLine.h"
+#include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
+#include "ConsoleLog/ConsoleLines/ServerDroppedPlayerLine.h"
+#include "ConsoleLog/ConsoleLines/PingLine.h"
+
 #undef GetCurrentTime
 
 namespace tf2_bot_detector

@@ -3,7 +3,7 @@
 #include "Platform/Platform.h"
 #include "UI/ImGui_TF2BotDetector.h"
 #include "BaseTextures.h"
-#include "IPlayer.h"
+#include "GameData/IPlayer.h"
 #include "Networking/SteamAPI.h"
 #include "Networking/SteamHistoryAPI.h"
 #include "Networking/LogsTFAPI.h"

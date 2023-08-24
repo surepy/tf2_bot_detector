@@ -1,7 +1,7 @@
 #include "Rules.h"
 #include "Networking/SteamAPI.h"
 #include "Util/JSONUtils.h"
-#include "IPlayer.h"
+#include "GameData/IPlayer.h"
 #include "Log.h"
 #include "PlayerListJSON.h"
 #include "Settings.h"

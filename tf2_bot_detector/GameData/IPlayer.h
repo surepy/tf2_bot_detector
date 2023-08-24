@@ -14,6 +14,7 @@
 
 namespace tf2_bot_detector
 {
+	// fwd declarations
 	struct LobbyMember;
 	enum class PlayerStatusState : uint8_t;
 	enum class TFTeam : uint8_t;

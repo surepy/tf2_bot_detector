@@ -10,7 +10,7 @@
 #include "Filesystem.h"
 #include "GenericErrors.h"
 #include "Log.h"
-#include "IPlayer.h"
+#include "GameData/IPlayer.h"
 #include "ReleaseChannel.h"
 #include "TextureManager.h"
 #include "UpdateManager.h"
