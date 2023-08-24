@@ -1137,7 +1137,7 @@ void MainWindow::OnDrawTeamStats()
 		// total MarkedVS
 
 		// colors are kind of bad, whatever
-		ImGuiDesktop::ScopeGuards::StyleColor markedFG(ImGuiCol_PlotHistogram, { 0, 1, 0, 1 });
+		ImGuiDesktop::ScopeGuards::StyleColor markedFG(ImGuiCol_PlotHistogram, { 0.419607843f, 0.415686275f, 0.396078431f, 1 });
 		ImGuiDesktop::ScopeGuards::StyleColor markedBG(ImGuiCol_FrameBg, themeCols.m_ScoreboardCheaterBG);
 
 		if (totalMarkedActive > 0 && totalMarkedActive != totalMarked)

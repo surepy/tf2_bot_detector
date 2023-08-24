@@ -150,10 +150,18 @@ namespace
 		void HandleConnectingEnemyCheaters(const std::vector<Cheater>& connectingEnemyCheaters);
 		void HandleConnectingMarkedPlayers(const std::vector<Cheater>& connectingEnemyCheaters);
 
-		// Minimum interval between callvote commands (the 150 comes from the default value of sv_vote_creation_timer)
-		static constexpr duration_t MIN_VOTEKICK_INTERVAL = std::chrono::seconds(150);
+		// Minimum interval between callvote commands
+		// this should be 150 seconds, which is the default of sv_vote_creation_timer;
+		// however because we can't actually tell how many seconds left until votekick, i'm making it 75.
+		static constexpr duration_t MIN_VOTEKICK_INTERVAL = std::chrono::seconds(75);
 		time_point_t m_LastVoteCallTime{}; // Last time we called a votekick on someone
 		duration_t GetTimeSinceLastCallVote() const { return tfbd_clock_t::now() - m_LastVoteCallTime; }
+
+		/// <summary>
+		/// can we call a votekick?
+		/// </summary>
+		/// <returns></returns>
+		bool CanCallVoteKick() { return GetTimeSinceLastCallVote() > MIN_VOTEKICK_INTERVAL; }
 
 		PlayerListJSON m_PlayerList;
 		ModerationRules m_Rules;
@@ -1148,6 +1156,11 @@ bool ModeratorLogic::InitiateVotekick(const IPlayer& player, KickReason reason, 
 	if (!userID)
 	{
 		Log("Wanted to kick {}, but could not find userid", player);
+		return false;
+	}
+
+	// wait until we can call a votekick.
+	if (CanCallVoteKick()) {
 		return false;
 	}
 
