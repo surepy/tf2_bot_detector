@@ -191,6 +191,11 @@ void RCONActionManager::ProcessRunningCommands()
 	}
 }
 
+/// <summary>
+/// should we send this command to rcon?
+/// </summary>
+/// <param name="cmd">the command</param>
+/// <returns>true if we should discard this command</returns>
 bool RCONActionManager::ShouldDiscardCommand(const std::string_view& cmd) const
 {
 	if (!m_IsDiscardingServerCommands || !m_Settings.m_ConfigCompatibilityMode)

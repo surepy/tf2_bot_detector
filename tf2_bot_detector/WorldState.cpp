@@ -34,7 +34,6 @@
 #include "ConsoleLog/ConsoleLines/ServerDroppedPlayerLine.h"
 #include "ConsoleLog/ConsoleLines/PingLine.h"
 
-
 #include <mh/algorithm/algorithm.hpp>
 #include <mh/concurrency/dispatcher.hpp>
 #include <mh/concurrency/main_thread.hpp>

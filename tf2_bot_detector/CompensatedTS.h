@@ -6,9 +6,11 @@
 
 namespace tf2_bot_detector
 {
-	// A compensated timestamp. Allows time to appear to progress normally
-	// (with all the sub-second precision offered by clock_t) despite the uneven
-	// pacing of the output from the log file.
+	/// <summary>
+	/// A compensated timestamp. Allows time to appear to progress normally
+	/// (with all the sub-second precision offered by clock_t) despite the uneven 
+	/// pacing of the output from the log file.
+	/// </summary>
 	struct CompensatedTS
 	{
 	public:

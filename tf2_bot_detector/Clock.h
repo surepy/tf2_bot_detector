@@ -21,7 +21,7 @@ namespace tf2_bot_detector
 	using second_t = std::chrono::seconds;
 	using minute_t = std::chrono::minutes;
 	using hour_t = std::chrono::hours;
-	//using test = hour_t::
+
 	using day_t = std::chrono::duration<hour_t::rep, std::ratio_multiply<hour_t::period, std::ratio<24>>>;
 	using week_t = std::chrono::duration<day_t::rep, std::ratio_multiply<day_t::period, std::ratio<7>>>;
 	using year_t = std::chrono::duration<day_t::rep, std::ratio_multiply<day_t::period, std::ratio<365>>>;

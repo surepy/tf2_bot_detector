@@ -80,7 +80,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 }
 
 #ifdef WIN32
-TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram()
 {
 	int argc;
 	auto argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
