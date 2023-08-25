@@ -80,6 +80,18 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 }
 
 #ifdef WIN32
+/// <summary>
+/// workaround so SmartScreen-signed exe works
+/// </summary>
+/// <param name="hInstance">unused</param>
+/// <param name="hPrevInstance">unused</param>
+/// <param name="pCmdLine">unused</param>
+/// <param name="nCmdShow">unused</param>
+/// <returns></returns>
+TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow) {
+	return tf2_bot_detector::RunProgram();
+}
+
 TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram()
 {
 	int argc;

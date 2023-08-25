@@ -119,7 +119,12 @@ namespace
 		void OnPlayerStatusUpdate(IWorldState& world, const IPlayer& player) override;
 		void OnChatMsg(IWorldState& world, IPlayer& player, const std::string_view& msg) override;
 
-		// FIXME: move to a different file, this really shouldn't be here.
+		/// <summary>
+		/// event catcher of OnLocalPlayerInitialized (WorldEventListener),
+		/// called on player first spawn on server.
+		/// </summary>
+		/// <param name="world"></param>
+		/// <param name="initialized"></param>
 		void OnLocalPlayerInitialized(IWorldState& world, bool initialized);
 
 		void OnRuleMatch(const ModerationRule& rule, const IPlayer& player, std::string reason = "none");
@@ -141,6 +146,7 @@ namespace
 		time_point_t m_NextConnectingCheaterWarningTime{};  // The soonest we can warn about cheaters connecting to the server
 		time_point_t m_NextCheaterWarningTime{};            // The soonest we can warn about connected cheaters on the other team
 		time_point_t m_LastPlayerActionsUpdate{};
+
 		void ProcessPlayerActions();
 		void HandleFriendlyCheaters(uint8_t friendlyPlayerCount, uint8_t connectedFriendlyPlayerCount,
 			const std::vector<Cheater>& friendlyCheaters);
