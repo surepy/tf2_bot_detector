@@ -204,6 +204,7 @@ target_sources(tf2_bot_detector PRIVATE
 	"GameData/IPlayer.cpp"
 	"GameData/IPlayer.h"
 	"GameData/Player.h"
+	"GameData/Player.cpp"
 	"Log.cpp"
 	"Log.h"
 	"ModeratorLogic.cpp"
