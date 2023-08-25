@@ -23,15 +23,6 @@ namespace tf2_bot_detector
 	class IWorldState;
 	class PlayerListJSON;
 
-	struct VoteCooldown
-	{
-		duration_t m_Elapsed;
-		duration_t m_Total;
-
-		duration_t GetRemainingDuration() const;
-		float GetProgress() const;
-	};
-
 	enum class AttributePersistence
 	{
 		Saved = (1 << 0),
@@ -42,6 +33,7 @@ namespace tf2_bot_detector
 
 	struct MarkedFriends
 	{
+		// std::unordered_map<PlayerAttribute, std::vector<SteamID>> m_MarkedFriendsData;
 		std::unordered_map<PlayerAttribute, uint32_t> m_MarkedFriendsCount;
 		uint32_t m_MarkedFriendsCountTotal = 0;
 		uint32_t m_FriendsCountTotal = 0;

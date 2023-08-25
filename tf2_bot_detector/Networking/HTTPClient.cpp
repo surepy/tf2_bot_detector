@@ -75,7 +75,7 @@ static duration_t GetMinRequestInterval(const URL& url)
 	{
 		return 0ms;
 	}
-	else if (url.m_Host == "api.steampowered.com" || url.m_Host == "tf2bd-util.pazer.us")
+	else if (url.m_Host == "api.steampowered.com")
 	{
 		if (mh::case_insensitive_view(url.m_Path).find("/GetPlayerItems/") != url.m_Path.npos)
 			return 1000ms; // This is a slow/heavily throttled api

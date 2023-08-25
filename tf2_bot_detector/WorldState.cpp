@@ -52,7 +52,6 @@ using namespace std::string_literals;
 using namespace std::string_view_literals;
 using namespace tf2_bot_detector;
 
-
 std::shared_ptr<IWorldState> IWorldState::Create(const Settings& settings)
 {
 	return std::make_shared<WorldState>(settings);

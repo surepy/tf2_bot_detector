@@ -282,6 +282,7 @@ void Player::SetStatus(PlayerStatus status, time_point_t timestamp)
 	m_Status = std::move(status);
 	m_LastStatusUpdateTime = m_LastPingUpdateTime = timestamp;
 }
+
 void Player::SetPing(uint16_t ping, time_point_t timestamp)
 {
 	m_Status.m_Ping = ping;

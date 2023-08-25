@@ -1179,16 +1179,3 @@ bool ModeratorLogic::InitiateVotekick(const IPlayer& player, KickReason reason, 
 
 	return true;
 }
-
-duration_t VoteCooldown::GetRemainingDuration() const
-{
-	return m_Total - m_Elapsed;
-}
-
-float VoteCooldown::GetProgress() const
-{
-	if (m_Elapsed >= m_Total)
-		return 1;
-
-	return static_cast<float>(to_seconds(m_Elapsed) / to_seconds(m_Total));
-}

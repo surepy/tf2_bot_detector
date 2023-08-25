@@ -17,6 +17,12 @@ namespace tf2_bot_detector
 {
 	class Settings;
 
+	/// <summary>
+	/// a player's attributes:
+	/// exploiter, cheater, etc.
+	///
+	/// TODO: custom attributes defined by user?
+	/// </summary>
 	enum class PlayerAttribute
 	{
 		Cheater,
