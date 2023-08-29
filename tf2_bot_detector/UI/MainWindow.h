@@ -100,9 +100,16 @@ namespace tf2_bot_detector
 		float TimeSine(float interval = 1.0f, float min = 0, float max = 1) const;
 
 		void SetupFonts();
+
+		// these fonts do not support unicode.
 		ImFont* m_ProggyTiny10Font{};
 		ImFont* m_ProggyTiny20Font{};
+		/* m_ProggyClean13Font managed by imgui */
 		ImFont* m_ProggyClean26Font{};
+
+		// this font supports unicode.
+		ImFont* m_Unifont14Font{};
+		ImFont* m_Unifont24Font{};
 
 		// IConsoleLineListener
 		void OnConsoleLineParsed(IWorldState& world, IConsoleLine& line) override;

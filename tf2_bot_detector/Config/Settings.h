@@ -21,9 +21,11 @@ namespace tf2_bot_detector
 	enum class Font
 	{
 		ProggyTiny_10px,
-		ProggyClean_13px,
+		ProggyClean_13px, // managed by IMGUI itself
 		ProggyTiny_20px,
 		ProggyClean_26px,
+		UniFont_14px,
+		UniFont_24px
 	};
 
 	void to_json(nlohmann::json& j, const Font& d);
@@ -210,7 +212,7 @@ namespace tf2_bot_detector
 		struct Theme
 		{
 			float m_GlobalScale = 1.0f;
-			Font m_Font = Font::ProggyClean_13px;
+			Font m_Font = Font::UniFont_14px;
 
 			struct Colors
 			{
@@ -268,6 +270,8 @@ MH_ENUM_REFLECT_BEGIN(tf2_bot_detector::Font)
 	MH_ENUM_REFLECT_VALUE(ProggyClean_13px)
 	MH_ENUM_REFLECT_VALUE(ProggyTiny_20px)
 	MH_ENUM_REFLECT_VALUE(ProggyClean_26px)
+	MH_ENUM_REFLECT_VALUE(UniFont_14px)
+	MH_ENUM_REFLECT_VALUE(UniFont_24px)
 MH_ENUM_REFLECT_END()
 
 MH_ENUM_REFLECT_BEGIN(tf2_bot_detector::SteamAPIMode)

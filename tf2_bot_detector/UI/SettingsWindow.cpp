@@ -416,6 +416,8 @@ void SettingsWindow::OnDrawUISettings()
 			case Font::ProggyClean_26px: return "Proggy Clean, 26px";
 			case Font::ProggyTiny_10px:  return "Proggy Tiny, 10px";
 			case Font::ProggyTiny_20px:  return "Proggy Tiny, 20px";
+			case Font::UniFont_14px:  return "UniFont, 14px";
+			case Font::UniFont_24px:  return "UniFont, 24px";
 			}
 		};
 
@@ -436,11 +438,14 @@ void SettingsWindow::OnDrawUISettings()
 				}
 			};
 
-			// FIXME
+			// FIXME <- fix what please elaborate
+			// what did he mean by this
 			FontSelectable(Font::ProggyTiny_10px);
 			FontSelectable(Font::ProggyTiny_20px);
 			FontSelectable(Font::ProggyClean_13px);
 			FontSelectable(Font::ProggyClean_26px);
+			FontSelectable(Font::UniFont_14px);
+			FontSelectable(Font::UniFont_24px);
 
 			ImGui::EndCombo();
 		}

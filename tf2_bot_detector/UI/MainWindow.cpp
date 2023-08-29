@@ -92,7 +92,39 @@ void MainWindow::SetupFonts()
 
 	ImFontConfig config{};
 	config.OversampleV = config.OversampleH = 1; // Bitmap fonts look bad with oversampling
+	//config.MergeMode = true;
 
+	// https://github.com/ocornut/imgui/blob/master/docs/FONTS.md#using-custom-glyph-ranges
+	ImFontGlyphRangesBuilder builder;
+
+	// Latin default (a-z)
+	builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesDefault());
+
+	// Cyrillic support
+	// Cyrillic & Cyrillic Extended-A & Cyrillic Extended-B has some funky characters
+	// like "Combining Cyrillic Letter I" (U+A675)
+	// but u can see it so it should be fine?
+	builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesCyrillic());
+
+	// CJK support
+	// we're using ChineseSimplified because
+	// A. it's unlikely we will see someone that is using traditional Chinese
+	// B. and that their name is not completely a meme.
+	builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesChineseSimplifiedCommon());
+	builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesJapanese());
+	builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesKorean());
+
+	// I'm not including Thai/Viet as I am too unfamiliar with the language to know what
+	// character points are "safe" (you can see) and what isn't. sorry.
+	// builder.AddRanges(ImGui::GetIO().Fonts->GetGlyphRangesThai());
+
+	ImVector<ImWchar> ranges;
+	builder.BuildRanges(&ranges);
+
+	// load into config so our glyph loads for all fonts in this config.
+	config.GlyphRanges = ranges.Data;
+
+	// instead of having two copies of ProggyClean, we can just pull from the IMGUI library.
 	if (!m_ProggyTiny10Font)
 	{
 		m_ProggyTiny10Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
@@ -107,13 +139,38 @@ void MainWindow::SetupFonts()
 			20, &config);
 	}
 
+	// ProggyClean13 is loaded by ImGuiDesktop::Application::Application() constructor.
+
 	if (!m_ProggyClean26Font)
 	{
 		config.GlyphOffset.y = 1;
-		m_ProggyClean26Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
-			IFilesystem::Get().ResolvePath("fonts/ProggyClean.ttf", PathUsage::Read).string().c_str(),
-			26, &config);
+		config.SizePixels = 26;
+		// ProggyClean is embedded in imgui, no need to have two files.
+		m_ProggyClean26Font = ImGui::GetIO().Fonts->AddFontDefault(&config);
 	}
+
+	// reset so we use defaults
+	config.OversampleH = 3;
+	config.GlyphOffset.y = 0;
+	config.SizePixels = 0.0f;
+	config.PixelSnapH = true;
+	// idk why it looks kinda dark with default
+	// not sure if im loading it wrong, but this works for now.
+	config.RasterizerMultiply = 2.f;
+	
+	if (!m_Unifont14Font) {
+		m_Unifont14Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
+			IFilesystem::Get().ResolvePath("fonts/unifont_jp-15.0.06.ttf", PathUsage::Read).string().c_str(),
+			14, &config);
+	}
+
+	if (!m_Unifont24Font) {
+		m_Unifont24Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
+			IFilesystem::Get().ResolvePath("fonts/unifont_jp-15.0.06.ttf", PathUsage::Read).string().c_str(),
+			24, &config);
+	}
+
+	ImGui::GetIO().Fonts->Build();
 }
 
 void MainWindow::OnImGuiInit()
@@ -148,6 +205,10 @@ ImFont* MainWindow::GetFontPointer(Font f) const
 		return m_ProggyTiny10Font ? m_ProggyTiny10Font : defaultFont;
 	case Font::ProggyTiny_20px:
 		return m_ProggyTiny20Font ? m_ProggyTiny20Font : defaultFont;
+	case Font::UniFont_14px:
+		return m_Unifont14Font ? m_Unifont14Font : defaultFont;
+	case Font::UniFont_24px:
+		return m_Unifont24Font ? m_Unifont24Font : defaultFont;
 	}
 }
 

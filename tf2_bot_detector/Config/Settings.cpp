@@ -242,6 +242,8 @@ void tf2_bot_detector::to_json(nlohmann::json& j, const Font& d)
 	case Font::ProggyTiny_20px:   j = "proggy_tiny_20px"; break;
 	case Font::ProggyClean_13px:  j = "proggy_clean_13px"; break;
 	case Font::ProggyClean_26px:  j = "proggy_clean_26px"; break;
+	case Font::UniFont_14px:  j = "unifont_14px"; break;
+	case Font::UniFont_24px:  j = "unifont_28px"; break;
 	}
 }
 
@@ -256,6 +258,10 @@ void tf2_bot_detector::from_json(const nlohmann::json& j, Font& d)
 		d = Font::ProggyClean_13px;
 	else if (value == "proggy_clean_26px")
 		d = Font::ProggyClean_26px;
+	else if (value == "unifont_14px")
+		d = Font::UniFont_14px;
+	else if (value == "unifont_24px")
+		d = Font::UniFont_24px;
 	else
 		throw std::invalid_argument(mh::format("{}: Unknown font {}", mh::source_location::current(), std::quoted(value)));
 }
