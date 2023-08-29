@@ -158,8 +158,8 @@ namespace
 
 		// Minimum interval between callvote commands
 		// this should be 150 seconds, which is the default of sv_vote_creation_timer;
-		// however because we can't actually tell how many seconds left until votekick, i'm making it 75.
-		static constexpr duration_t MIN_VOTEKICK_INTERVAL = std::chrono::seconds(75);
+		// however because we can't actually tell how many seconds left until votekick, i'm making it 30. (5 attempts/cooldown)
+		static constexpr duration_t MIN_VOTEKICK_INTERVAL = std::chrono::seconds(30);
 		time_point_t m_LastVoteCallTime{}; // Last time we called a votekick on someone
 		duration_t GetTimeSinceLastCallVote() const { return tfbd_clock_t::now() - m_LastVoteCallTime; }
 
@@ -375,7 +375,7 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 				if (username == "") {
 					auto summary = player.GetPlayerSummary();
 
-					
+
 					if (summary.has_value()) {
 						username = summary.value().m_Nickname;
 					}
@@ -829,7 +829,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 				name = (summary.value().m_Nickname);
 			}
 
-			// sanitize our name; 
+			// sanitize our name;
 			// move this into a func
 			size_t pos;
 			while ((pos = name.find(";")) != std::string::npos) {
@@ -1083,7 +1083,7 @@ MarkedFriends ModeratorLogic::GetMarkedFriendsCount(IPlayer& player) const
 	if (data.m_FriendsProcessed) {
 		return data.m_MarkedFriends;
 	}
-	
+
 	auto friendsInfo = player.GetFriendsInfo();
 
 	// steamapi didn't get friends data yet; exit the function and this function will run again next loop.
@@ -1166,7 +1166,7 @@ bool ModeratorLogic::InitiateVotekick(const IPlayer& player, KickReason reason, 
 	}
 
 	// wait until we can call a votekick.
-	if (CanCallVoteKick()) {
+	if (!CanCallVoteKick()) {
 		return false;
 	}
 
