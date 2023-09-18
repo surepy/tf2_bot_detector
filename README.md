@@ -23,7 +23,11 @@
   <h3 align="center">TF2 Bot Detector</h3>
 
   <p align="center">
-    Automatically detects and votekicks cheaters/bots in TF2 casual.
+    <s>Automatically detects and votekicks cheaters/bots in TF2 casual.</s>
+    <br />
+    Attempts to improve the gameplay experience of playing in casual valve matchmaking servers.  
+    <br />
+    <i>sleepy's personal build.</i>    
     <!-- commented until there is documentation at the wiki
     <br />
     <a href="https://github.com/PazerOP/tf2_bot_detector/wiki"><strong>Explore the docs »</strong></a>
@@ -32,9 +36,9 @@
     <br />
     <a href="#installation">Install</a>
     ·
-    <a href="https://github.com/PazerOP/tf2_bot_detector/issues/new?assignees=&labels=Priority%3A+Medium%2C+Type%3A+Bug&template=bug_report.md&title=%5BBUG%5D">Report a Bug</a>
+    <a href="https://github.com/surepy/tf2_bot_detector/issues/new?assignees=&labels=Priority%3A+Medium%2C+Type%3A+Bug&template=bug_report.md&title=%5BBUG%5D">Report a Bug</a>
     ·
-    <a href="https://github.com/PazerOP/tf2_bot_detector/issues/new?assignees=&labels=Priority%3A+Low%2C+Type%3A+Enhancement&template=feature_request.md&title=">Request a Feature</a>
+    <a href="https://github.com/surepy/tf2_bot_detector/issues/new?assignees=&labels=Priority%3A+Low%2C+Type%3A+Enhancement&template=feature_request.md&title=">Request a Feature</a>
     ·
     <a href="https://discord.gg/W8ZSh3Z">Join the Discord</a>
   </p>

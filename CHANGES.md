@@ -19,8 +19,11 @@ what's different from normal tf2bd?
 ![reasons for automatic mark](https://user-images.githubusercontent.com/24486494/215061544-6d00de40-514d-4b60-af3c-a9f86ce784c5.png)
 
 ### UI
+* limited unicode support when using unifont font (new default, set in settings->UI if still question marks and u want unicode)  
+currently cyrillic/chinese (simplified)/japanese/korean is added.  
+![japanese (kanji) and korean](https://github.com/surepy/tf2_bot_detector/assets/24486494/21845fae-634e-4666-864a-2337e67436c1)
 * "MarkedVS" to look at marked player count vs marked count (probably bots)  
-format ``unmarked (unmarked_connected) vs marked (marked_connected)``
+format ``unmarked (unmarked_connected) vs marked (marked_connected)``   
   ![image](https://user-images.githubusercontent.com/24486494/224540394-b2612d24-30d4-4852-9e21-b90f78670cc4.png) 
 * a working "reasons/proof" field (both on scoreboard and chat)  
 ![marking the user with reason](https://user-images.githubusercontent.com/24486494/216663458-589da5e6-9780-411b-8317-741b9c79e8b9.jpg)  
@@ -52,7 +55,11 @@ format ``unmarked (unmarked_connected) vs marked (marked_connected)``
 * less painful building process  
     * don't have to set [CMAKE_TOOLCHAIN_FILE](https://github.com/surepy/tf2_bot_detector/commit/011ac8f4a656ff3406fa9a8ead268122cf0c2930) manually.
     * all the dependency version should be locked, so no stupid fmt breaking everything...
- * completely removed pazer's proxy service 
- * Fixed crash with huds that have chat wrappers already, were saved in utf8 (#6)
+* completely removed pazer's proxy service 
+* Fixed crash with huds that have chat wrappers already, were saved in utf8 (#6)
      * budhud crashed cuz of this (credit: name)
+* Fix double loading of playerlist(s) (no more duplicate entries)
+* having a private profile won't cause you to have like [1gb log files by the end of your session](https://github.com/surepy/tf2_bot_detector/issues/17)
+* static rcon launch parameter settings (not really recommended but if u _need_ them here u go)   
+![image](https://github.com/surepy/tf2_bot_detector/assets/24486494/205c0fa4-59e5-4217-b2db-b337da32db54)
 * more todo...
