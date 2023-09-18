@@ -613,6 +613,8 @@ std::string ModeratorLogic::GenerateCheaterWarnMessage(const std::vector<std::st
 	size_t max_names_length_one = MAX_CHATMSG_LENGTH - one_cheater_warning.size() - 1 - 2;
 	size_t max_names_length_multiple = MAX_CHATMSG_LENGTH - multiple_cheater_warning.size() - 1 - 1 - 2;
 
+	// FIXME: multiple potential crashes if user puts a really long custom chat message
+	// or simply multiple offending players have too long of a name.
 	assert(max_names_length_one >= 32);
 
 	mh::fmtstr<MAX_CHATMSG_LENGTH + 1> chatMsg;
@@ -626,6 +628,10 @@ std::string ModeratorLogic::GenerateCheaterWarnMessage(const std::vector<std::st
 		assert(names.size() > 0);
 		std::string cheaters;
 
+		// create a copy, in case we need to drop some names and replace with +n
+		// std::vector<std::string> cheaterNames = names;
+
+		// make our list of cheaters, separated by commas
 		for (std::string cheaterNameStr : GetJoinedStrings(names.begin(), names.end(), ", "sv))
 		{
 			if (cheaters.empty() || cheaterNameStr.size() <= max_names_length_multiple)

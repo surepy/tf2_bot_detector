@@ -179,6 +179,7 @@ void MainWindow::OnImGuiInit()
 
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
 	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
+	//ImGui::PushFont
 
 	SetupFonts();
 }

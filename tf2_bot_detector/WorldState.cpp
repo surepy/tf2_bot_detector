@@ -83,11 +83,16 @@ void WorldState::Update()
 
 void WorldState::UpdateFriends()
 {
+	// only warn about our friends list failing to update warning once.
+	static bool s_HasWarnedFriendsUpdateFailure = false;
+
 	if (auto client = GetSettings().GetHTTPClient();
 		client && GetSettings().IsSteamAPIAvailable() && (tfbd_clock_t::now() - 5min) > m_LastFriendsUpdate)
 	{
 		m_LastFriendsUpdate = tfbd_clock_t::now();
 		m_FriendsFuture = SteamAPI::GetFriendList(GetSettings(), GetSettings().GetLocalSteamID(), *client);
+		// we can warn about our friends list failing again because this is a new api request.
+		s_HasWarnedFriendsUpdateFailure = false;
 	}
 
 	if (m_FriendsFuture.is_ready())
@@ -104,19 +109,16 @@ void WorldState::UpdateFriends()
 		}
 		catch (const http_error& e)
 		{
+			// TODO: investigate if there's a way to get friends list on private profiles
+			// easiest: call functions directly from tf2's steam_api.dll (a ton of resources)
 			if (e.code() == HTTPResponseCode::Unauthorized)
 			{
-				static bool s_HasWarned = false;
-				constexpr const char WARNING_MSG[] = "Failed to access our friends list (our friends list is private/friends only, and the Steam API is bugged). The tool will not be able to show who is friends with you.";
+				constexpr const char WARNING_MSG[] = "Failed to access our friends list (our friends list is private/friends only). The tool will not be able to show who is friends with you.";
 
-				if (!s_HasWarned)
+				if (!s_HasWarnedFriendsUpdateFailure)
 				{
 					LogWarning(WARNING_MSG);
-					s_HasWarned = true;
-				}
-				else
-				{
-					DebugLogWarning(WARNING_MSG);
+					s_HasWarnedFriendsUpdateFailure = true;
 				}
 			}
 			else
