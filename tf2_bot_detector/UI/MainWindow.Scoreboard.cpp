@@ -488,30 +488,6 @@ static const ImVec4 COLOR_GREEN = { 0, 1, 0, 1 };
 static const ImVec4 COLOR_UNAVAILABLE = { 1, 1, 1, 0.5 };
 static const ImVec4 COLOR_PRIVATE = COLOR_YELLOW;
 
-static void PrintPersonaState(SteamAPI::PersonaState state)
-{
-	using SteamAPI::PersonaState;
-	switch (state)
-	{
-	case PersonaState::Offline:
-		return ImGui::TextFmt({ 0.4f, 0.4f, 0.4f, 1 }, "Offline");
-	case PersonaState::Online:
-		return ImGui::TextFmt(COLOR_GREEN, "Online");
-	case PersonaState::Busy:
-		return ImGui::TextFmt({ 1, 135 / 255.0f, 135 / 255.0f, 1 }, "Busy");
-	case PersonaState::Away:
-		return ImGui::TextFmt({ 92 / 255.0f, 154 / 255.0f, 245 / 255.0f, 0.5f }, "Away");
-	case PersonaState::Snooze:
-		return ImGui::TextFmt({ 92 / 255.0f, 154 / 255.0f, 245 / 255.0f, 0.35f }, "Snooze");
-	case PersonaState::LookingToTrade:
-		return ImGui::TextFmt({ 0, 1, 1, 1 }, "Looking to Trade");
-	case PersonaState::LookingToPlay:
-		return ImGui::TextFmt({ 0, 1, 0.5f, 1 }, "Looking to Play");
-	}
-
-	ImGui::TextFmt(COLOR_RED, "Unknown ({})", int(state));
-}
-
 namespace ImGui
 {
 	struct Span
@@ -605,7 +581,9 @@ static void PrintPlayerSummary(const IPlayer& player)
 		.map([&](const SteamAPI::PlayerSummary& summary)
 			{
 				using namespace SteamAPI;
-				ImGui::TextFmt("    Steam Name : \"{}\"", summary.m_Nickname);
+				if (player.GetNameSafe() != summary.m_Nickname) {
+					ImGui::TextFmt(COLOR_YELLOW, "    Steam Name : \"{}\"", summary.m_Nickname);
+				}
 
 				ImGui::TextFmt("     Real Name : ");
 				ImGui::SameLineNoPad();
@@ -645,10 +623,6 @@ static void PrintPlayerSummary(const IPlayer& player)
 #endif
 				}
 
-				ImGui::TextFmt("        Status : ");
-				ImGui::SameLineNoPad();
-				PrintPersonaState(summary.m_Status);
-
 				ImGui::TextFmt(" Profile State : ");
 				ImGui::SameLineNoPad();
 				switch (summary.m_Visibility)
@@ -674,15 +648,6 @@ static void PrintPlayerSummary(const IPlayer& player)
 					ImGui::SameLineNoPad();
 					ImGui::TextFmt(COLOR_RED, "Not Configured");
 				}
-
-#if 0 // decreed as useless information by overlord czechball
-				ImGui::TextFmt("Comment Permissions: ");
-				ImGui::SameLineNoPad();
-				if (summary->m_CommentPermissions)
-					ImGui::TextColoredUnformatted({ 0, 1, 0, 1 }, "You can comment");
-				else
-					ImGui::TextColoredUnformatted(COLOR_PRIVATE, "You cannot comment");
-#endif
 			});
 }
 
