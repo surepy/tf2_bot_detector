@@ -38,6 +38,8 @@ target_include_directories(tf2_bot_detector PRIVATE
 	"${CMAKE_CURRENT_BINARY_DIR}"
 )
 
+add_subdirectory(Renderer)
+
 configure_file(Version.base.h Version.h)
 
 target_sources(tf2_bot_detector PRIVATE
