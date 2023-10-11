@@ -384,7 +384,12 @@ void MainWindow::OnDrawAboutPopup()
 		}
 		if (ImGui::TreeNode("Other Attributions"))
 		{
+			if (ImGui::Selectable("SourceBans information made possible by xzf from SteamHistory.net", false, ImGuiSelectableFlags_DontClosePopups))
+				Shell::OpenURL("https://steamhistory.net");
+
 			ImGui::TextFmt("\"Game Ban\" icon made by Freepik from www.flaticon.com");
+
+			ImGui::TextFmt("\"Source Bans\" icon made by minein4");
 			ImGui::TreePop();
 		}
 
@@ -770,7 +775,7 @@ void MainWindow::OnDrawMenuBar()
 	if (ImGui::BeginMenu("Help"))
 	{
 		if (ImGui::MenuItem("Open GitHub"))
-			Shell::OpenURL("https://github.com/PazerOP/tf2_bot_detector");
+			Shell::OpenURL("https://github.com/surepy/tf2_bot_detector");
 		if (ImGui::MenuItem("Open Discord"))
 			Shell::OpenURL("https://discord.gg/W8ZSh3Z");
 
