@@ -27,6 +27,8 @@ else()
 	)
 endif()
 
+target_link_libraries(tf2_bot_detector PRIVATE tf2_bot_detector_renderer)
+
 target_compile_features(tf2_bot_detector PUBLIC cxx_std_20)
 set_target_properties(tf2_bot_detector PROPERTIES
 	VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/staging"
@@ -37,8 +39,6 @@ target_include_directories(tf2_bot_detector PRIVATE
 	"."
 	"${CMAKE_CURRENT_BINARY_DIR}"
 )
-
-add_subdirectory(Renderer)
 
 configure_file(Version.base.h Version.h)
 
@@ -290,6 +290,7 @@ find_package(cpprestsdk CONFIG REQUIRED)
 target_link_libraries(tf2_bot_detector PRIVATE
 	tf2_bot_detector::common
 	imgui_desktop
+	tf2_bot_detector_renderer
 	ValveFileVDF
 	libzip::zip
 	libzippp::libzippp
