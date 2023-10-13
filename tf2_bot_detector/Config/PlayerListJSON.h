@@ -250,7 +250,7 @@ struct mh::formatter<tf2_bot_detector::PlayerAttributesList, CharT>
 			if (printed)
 				it = mh::format_to(it, MH_FMT_STRING(", "));
 
-			it = mh::format_to(it, MH_FMT_STRING("{}"), mh::enum_fmt(thisAttr));
+			it = mh::format_to(it, MH_FMT_STRING("{:v}"), mh::enum_fmt(thisAttr));
 			printed = true;
 		}
 

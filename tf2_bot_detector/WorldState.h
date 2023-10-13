@@ -108,6 +108,7 @@ namespace tf2_bot_detector
 
 		virtual const IPlayer* FindPlayer(const SteamID& id) const = 0;
 		IPlayer* FindPlayer(const SteamID& id) { return const_cast<IPlayer*>(std::as_const(*this).FindPlayer(id)); }
+		virtual const IPlayer* LocalPlayer() const = 0;
 
 		virtual size_t GetApproxLobbyMemberCount() const = 0;
 		virtual mh::generator<const IPlayer&> GetLobbyMembers() const = 0;
@@ -168,6 +169,7 @@ namespace tf2_bot_detector
 
 		using IWorldState::FindPlayer;
 		const IPlayer* FindPlayer(const SteamID& id) const override;
+		const IPlayer* LocalPlayer() const override;
 
 		mh::generator<const IPlayer&> GetLobbyMembers() const;
 		mh::generator<const IPlayer&> GetPlayers() const;

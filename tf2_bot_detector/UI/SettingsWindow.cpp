@@ -476,8 +476,8 @@ void tf2_bot_detector::SettingsWindow::OnDrawMiscSettings()
 
 			// this code has some flaws,
 			// 1. it doesn't check if the port given is even a valid port
-			// 2. it doesnt check if that port is available
-			// however, we can blame the user for using this option so lol
+			// 2. it doesn't check if that port is available
+			// however, we can just blame the user for using this option so lol
 			if (ImGui::InputText("port", &port, ImGuiInputTextFlags_CharsDecimal)) {
 				for (size_t i = 0; i < port.size(); ++i) {
 					if (!isdigit(port.at(i))) {

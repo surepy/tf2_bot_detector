@@ -273,6 +273,11 @@ const IPlayer* WorldState::FindPlayer(const SteamID& id) const
 	return nullptr;
 }
 
+const IPlayer* tf2_bot_detector::WorldState::LocalPlayer() const
+{
+	return FindPlayer(m_Settings.GetLocalSteamID());
+}
+
 size_t WorldState::GetApproxLobbyMemberCount() const
 {
 	return m_CurrentLobbyMembers.size() + m_PendingLobbyMembers.size();
