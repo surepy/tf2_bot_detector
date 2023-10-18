@@ -167,7 +167,7 @@ void SettingsWindow::OnDrawModerationSettings()
 			ImGui::InputText("Cheater Joining", &m_Settings.m_OneCheaterConnectingMessage);
 			ImGui::InputText("Multiple Cheater Joining", &m_Settings.m_MultipleCheaterConnectingMessage);
 			try {
-				fmt::format(m_Settings.m_MultipleCheaterConnectingMessage, 1);
+				ImGui::Text(fmt::format(fmt::runtime(m_Settings.m_MultipleCheaterConnectingMessage), "3").c_str());
 			}
 			catch (fmt::format_error err) {
 				ImGui::TextFmt({ 1, 0, 0, 1 }, "Invalid string format! this takes 1 arguments maximum! (player count)");
@@ -177,14 +177,16 @@ void SettingsWindow::OnDrawModerationSettings()
 
 			ImGui::InputText("Cheater Warning", &m_Settings.m_OneCheaterWarningMessage);
 			try {
-				fmt::format(m_Settings.m_OneCheaterWarningMessage, 1);
+
+				ImGui::Text(fmt::format(fmt::runtime(m_Settings.m_OneCheaterWarningMessage), 1).c_str());
 			}
 			catch (fmt::format_error err) {
-				ImGui::TextFmt( { 1, 0, 0, 1 }, "Invalid string format! this takes 1 arguments maximum! (player count)");
+				ImGui::TextFmt( { 1, 0, 0, 1 }, "Invalid string format! this takes 1 arguments maximum! (player name)");
 			}
+
 			ImGui::InputText("Multiple Cheater Warning", &m_Settings.m_MultipleCheaterWarningMessage);
 			try {
-				fmt::format(m_Settings.m_MultipleCheaterWarningMessage, fmt::arg("count", 2), fmt::arg("names", "a, b"));
+				ImGui::Text(fmt::format(fmt::runtime(m_Settings.m_MultipleCheaterWarningMessage), fmt::arg("count", 2), fmt::arg("names", "a, b")).c_str());
 			}
 			catch (fmt::format_error err) {
 				ImGui::TextFmt({ 1, 0, 0, 1 }, "Invalid string format! this takes 2 arguments maximum! ({count}, {names})");

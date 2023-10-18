@@ -19,10 +19,10 @@ namespace ImGui
 {
 	template<typename... TArgs>
 	inline auto TextFmt(const std::string_view& fmtStr, const TArgs&... args) ->
-		decltype(mh::format(fmtStr, args...), void())
+		decltype(mh::format(fmt::runtime(fmtStr), args...), void())
 	{
 		if constexpr (sizeof...(TArgs) > 0)
-			return TextFmt(mh::fmtstr<3073>(fmtStr, args...));
+			return TextFmt(mh::fmtstr<3073>(fmt::runtime(fmtStr), args...));
 		else
 			return TextUnformatted(fmtStr.data(), fmtStr.data() + fmtStr.size());
 	}

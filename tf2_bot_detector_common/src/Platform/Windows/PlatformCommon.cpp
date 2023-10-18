@@ -1,7 +1,7 @@
 #include "Platform/PlatformCommon.h"
 
-#include <mh/text/format.hpp>
-
+// #include <mh/text/format.hpp>
+#include <fmt/format.h>
 #include <stdexcept>
 
 #include <Windows.h>
@@ -22,9 +22,9 @@ void* tf2_bot_detector::Platform::GetProcAddressHelper(const char* moduleName, c
 	if (!moduleHandle)
 	{
 		auto err = GetLastError();
-		throw std::system_error(err, std::system_category(), mh::format(MH_FMT_STRING("Failed to GetModuleHandle({})"), moduleName));
+		throw std::system_error(err, std::system_category(), mh::format(FMT_STRING("Failed to GetModuleHandle({})"), moduleName));
 	}
-
+	 
 	auto address = GetProcAddress(moduleHandle, symbolName);
 	if (!address)
 	{
@@ -33,7 +33,7 @@ void* tf2_bot_detector::Platform::GetProcAddressHelper(const char* moduleName, c
 
 		if (isCritical)
 		{
-			throw std::system_error(ec, mh::format(MH_FMT_STRING("{}: Failed to find function {} in {}"), location, symbolName, moduleName));
+			throw std::system_error(ec, fmt::format(FMT_STRING("{}: Failed to find function {} in {}"), location, symbolName, moduleName));
 		}
 	}
 
