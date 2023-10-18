@@ -936,7 +936,6 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 
 	PrintPlayerSourceBans(player);
 
-
 	if (playerAttribs)
 	{
 		ImGui::NewLine();

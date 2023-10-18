@@ -1,3 +1,6 @@
+#pragma once
+#include <functional>
+
 /// <summary>
 /// Goal: have an imgui renderer base that is compatible with 2 configurations.
 ///
@@ -15,11 +18,23 @@
 /// tf2_bot_detector_launcher - for launching ^
 ///
 /// </summary>
-class ITF2BotDetectorRenderer {
+class TF2BotDetectorRendererBase {
+public:
 	/// <summary>
 	/// ImGui::Render() related functions.
 	/// </summary>
 	virtual void DrawFrame() = 0;
+
+	/// <summary>
+	/// registerable draw() function.
+	/// </summary>
+	typedef std::function<void()> DrawableCallbackFn;
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	virtual std::size_t RegisterDrawCallback(DrawableCallbackFn) = 0;
 
 	/// <summary>
 	/// Should we stop running and destroy?

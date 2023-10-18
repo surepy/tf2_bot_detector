@@ -63,6 +63,9 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		{
 			TF2BotDetectorSDLRenderer a;
 
+			//a.RegisterDrawCallback([]() { OutputDebugString("test");  });
+			//a.testa();
+
 			while (!a.ShouldQuit())
 				a.DrawFrame();
 		}
@@ -78,8 +81,8 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		// into a completely seperate thread, with different update rates (settable in settings).
 
 		DebugLog("Entering event loop...");
-		while (!app.ShouldQuit())
-			app.Update();
+		//while (!app.ShouldQuit())
+		//	app.Update();
 	}
 
 	ILogManager::GetInstance().CleanupEmptyLogs();

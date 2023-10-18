@@ -136,9 +136,20 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 	SDL_GL_SwapWindow(window);
 }
 
+std::size_t TF2BotDetectorSDLRenderer::RegisterDrawCallback(DrawableCallbackFn function)
+{
+	drawFunction = function;
+	return std::size_t(0);
+}
+
 bool TF2BotDetectorSDLRenderer::ShouldQuit()
 {
 	return !running;
+}
+
+void TF2BotDetectorSDLRenderer::testa()
+{
+	drawFunction();
 }
 
 /// <summary>
