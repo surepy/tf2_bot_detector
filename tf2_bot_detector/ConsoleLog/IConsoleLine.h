@@ -30,6 +30,7 @@ namespace tf2_bot_detector
 		PlayerStatusMapPosition,
 		ClientReachedServerSpawn,
 		KillNotification,
+		SuicideNotification,
 		CvarlistConvar,
 		EdictUsage,
 		SplitPacket,

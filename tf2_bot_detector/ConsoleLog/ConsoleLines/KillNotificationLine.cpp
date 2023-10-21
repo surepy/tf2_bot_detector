@@ -38,7 +38,7 @@ KillNotificationLine::KillNotificationLine(time_point_t timestamp, std::string a
 KillNotificationLine::KillNotificationLine(time_point_t timestamp, std::string attackerName, SteamID attacker,
 	std::string victimName, SteamID victim, std::string weaponName, bool wasCrit) :
 	BaseClass(timestamp), m_AttackerName(std::move(attackerName)), m_VictimName(std::move(victimName)),
-	m_WeaponName(std::move(weaponName)), m_WasCrit(wasCrit), m_Attacker(attacker), m_Victim(victim)
+	m_WeaponName(std::move(weaponName)), m_WasCrit(wasCrit), m_Attacker(std::move(attacker)), m_Victim(std::move(victim))
 {
 }
 
@@ -52,9 +52,10 @@ std::shared_ptr<IConsoleLine> KillNotificationLine::TryParse(const ConsoleLineTr
 		auto victim = args.m_World.FindSteamIDForName(result[2].str());
 
 		return std::make_shared<KillNotificationLine>(args.m_Timestamp,
-			result[1].str(), attacker.has_value() ? args.m_World.FindPlayer(attacker.value())->GetSteamID() : SteamID::SteamID(),
-			result[2].str(), victim.has_value() ? args.m_World.FindPlayer(victim.value())->GetSteamID() : SteamID::SteamID(),
-			result[3].str(), result[4].matched);
+			result[1].str(), attacker.has_value() ? attacker.value() : SteamID::SteamID(),
+			result[2].str(), victim.has_value() ? victim.value() : SteamID::SteamID(),
+			result[3].str(), result[4].matched
+		);
 	}
 
 	return nullptr;
