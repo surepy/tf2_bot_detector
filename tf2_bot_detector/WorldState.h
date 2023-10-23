@@ -84,6 +84,7 @@ namespace tf2_bot_detector
 		static std::shared_ptr<IWorldState> Create(const Settings& settings);
 
 		virtual void Update() = 0;
+		virtual void ResetScoreboard() = 0;
 
 		virtual time_point_t GetCurrentTime() const = 0;
 		virtual time_point_t GetLastStatusUpdateTime() const = 0;
@@ -148,6 +149,7 @@ namespace tf2_bot_detector
 
 		void Update() override;
 		void UpdateTimestamp(const ConsoleLogParser& parser);
+		void ResetScoreboard() override;
 
 		void AddWorldEventListener(IWorldEventListener* listener) override;
 		void RemoveWorldEventListener(IWorldEventListener* listener) override;

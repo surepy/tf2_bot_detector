@@ -34,6 +34,7 @@
 #include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
 #include "ConsoleLog/ConsoleLines/ServerDroppedPlayerLine.h"
 #include "ConsoleLog/ConsoleLines/PingLine.h"
+#include "ConsoleLog/ConsoleLines/ServerJoinLine.h"
 
 #include <mh/algorithm/algorithm.hpp>
 #include <mh/concurrency/dispatcher.hpp>
@@ -181,6 +182,17 @@ mh::task<> WorldState::AddConsoleOutputLine(std::string line)
 void WorldState::UpdateTimestamp(const ConsoleLogParser& parser)
 {
 	m_CurrentTimestamp = parser.GetCurrentTimestamp();
+}
+
+/// <summary>
+/// Resets scores for all players, so it matches k/d on map change.
+/// 
+/// </summary>
+void WorldState::ResetScoreboard()
+{
+	for (const auto& [id, player] : m_CurrentPlayerData) {
+		player.get()->m_Scores = PlayerScores();
+	}
 }
 
 void WorldState::AddWorldEventListener(IWorldEventListener* listener)
@@ -680,6 +692,11 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 			break;
 		}
 
+		break;
+	}
+	case ConsoleLineType::ServerJoin:
+	{
+		auto& joinLine = static_cast<const ServerJoinLine&>(parsed);
 		break;
 	}
 

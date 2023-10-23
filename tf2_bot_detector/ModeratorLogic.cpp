@@ -119,12 +119,7 @@ namespace
 		void OnPlayerStatusUpdate(IWorldState& world, const IPlayer& player) override;
 		void OnChatMsg(IWorldState& world, IPlayer& player, const std::string_view& msg) override;
 
-		/// <summary>
-		/// event catcher of OnLocalPlayerInitialized (WorldEventListener),
-		/// called on player first spawn on server.
-		/// </summary>
-		/// <param name="world"></param>
-		/// <param name="initialized"></param>
+		// called on player first spawn on server.
 		void OnLocalPlayerInitialized(IWorldState& world, bool initialized);
 
 		void OnRuleMatch(const ModerationRule& rule, const IPlayer& player, std::string reason = "none");
@@ -352,9 +347,17 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 	}
 }
 
+/// <summary>
+/// event catcher of OnLocalPlayerInitialized (WorldEventListener),
+/// called on player first spawn on server.
+/// </summary>
+/// <param name="world"></param>
+/// <param name="initialized"></param>
 void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initialized)
 {
 	m_ActionManager->QueueAction<GenericCommandAction>("exec tf2bd/OnGameJoin");
+
+	world.ResetScoreboard();
 
 	// do our "onjoin" message
 	if (m_Settings->m_AutoChatWarningsConnectingParty && m_Settings->m_AutoChatWarningsConnectingPartyPrintSummary) {
