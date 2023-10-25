@@ -121,6 +121,9 @@ namespace tf2_bot_detector
 		virtual bool IsLocalPlayerInitialized() const = 0;
 		virtual bool IsVoteInProgress() const = 0;
 
+		virtual const std::string& GetServerHostName() const = 0;
+		virtual const std::string& GetMapName() const = 0;
+
 		virtual const IAccountAges& GetAccountAges() const = 0;
 	};
 
@@ -196,6 +199,9 @@ namespace tf2_bot_detector
 		IAccountAges& GetAccountAges() { return *m_AccountAges; }
 		const IAccountAges& GetAccountAges() const override { return *m_AccountAges; }
 
+		const std::string& GetServerHostName() const override { return m_ServerHostName; }
+		const std::string& GetMapName() const override { return m_MapName; }
+
 	protected:
 		virtual IConsoleLineListener& GetConsoleLineListenerBroadcaster() { return m_ConsoleLineListenerBroadcaster; }
 
@@ -243,6 +249,9 @@ namespace tf2_bot_detector
 			void OnDataReady(state_type& state, const response_type& response,
 				queue_collection_type& collection) override;
 		} m_PlayerSourceBansUpdates;
+
+		std::string m_ServerHostName;
+		std::string m_MapName;
 
 		std::vector<LobbyMember> m_CurrentLobbyMembers;
 		std::vector<LobbyMember> m_PendingLobbyMembers;

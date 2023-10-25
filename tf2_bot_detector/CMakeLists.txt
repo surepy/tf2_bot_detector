@@ -111,6 +111,8 @@ target_sources(tf2_bot_detector PRIVATE
 	"ConsoleLog/ConsoleLines/ServerStatusPlayerCountLine.h"
 	"ConsoleLog/ConsoleLines/ServerStatusMapLine.cpp"
 	"ConsoleLog/ConsoleLines/ServerStatusMapLine.h"
+	"ConsoleLog/ConsoleLines/ServerStatusHostNameLine.cpp"
+	"ConsoleLog/ConsoleLines/ServerStatusHostNameLine.h"
 	"ConsoleLog/ConsoleLines/SuicideNotificationLine.cpp"
 	"ConsoleLog/ConsoleLines/SuicideNotificationLine.h"
 	"ConsoleLog/ConsoleLines/PingLine.cpp"

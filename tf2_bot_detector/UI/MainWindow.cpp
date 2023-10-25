@@ -626,6 +626,16 @@ void MainWindow::OnDraw()
 		}
 
 		ImGui::Value("Parsed line count", parsedLineCount);
+
+		ImGui::Text("Connected To:");
+		ImGui::SameLine();
+		std::string hostname = world.GetServerHostName();
+		if (!hostname.empty()) {
+			ImGui::Text(hostname.c_str());
+		}
+		else {
+			ImGui::TextFmt({ 1, 1, 0, 1 }, "unconnected");
+		}
 	}
 
 	//OnDrawServerStats();

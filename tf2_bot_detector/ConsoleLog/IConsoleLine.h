@@ -28,6 +28,7 @@ namespace tf2_bot_detector
 		PlayerStatusShort,
 		PlayerStatusCount,
 		PlayerStatusMapPosition,
+		PlayerStatusHostName,
 		ClientReachedServerSpawn,
 		KillNotification,
 		SuicideNotification,

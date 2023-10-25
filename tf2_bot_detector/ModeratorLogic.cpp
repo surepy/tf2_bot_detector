@@ -151,10 +151,6 @@ namespace
 		void HandleConnectingEnemyCheaters(const std::vector<Cheater>& connectingEnemyCheaters);
 		void HandleConnectingMarkedPlayers(const std::vector<Cheater>& connectingEnemyCheaters);
 
-		// Minimum interval between callvote commands
-		// this should be 150 seconds, which is the default of sv_vote_creation_timer;
-		// however because we can't actually tell how many seconds left until votekick, i'm making it 30. (5 attempts/cooldown)
-		static constexpr duration_t MIN_VOTEKICK_INTERVAL = std::chrono::seconds(30);
 		time_point_t m_LastVoteCallTime{}; // Last time we called a votekick on someone
 		duration_t GetTimeSinceLastCallVote() const { return tfbd_clock_t::now() - m_LastVoteCallTime; }
 
@@ -162,7 +158,13 @@ namespace
 		/// can we call a votekick?
 		/// </summary>
 		/// <returns></returns>
-		bool CanCallVoteKick() { return GetTimeSinceLastCallVote() > MIN_VOTEKICK_INTERVAL; }
+		bool CanCallVoteKick() { return GetTimeSinceLastCallVote() > std::chrono::seconds(m_Settings->m_MinVoteKickInterval); }
+
+		/// <summary>
+		/// Ignore team state and attempt to call a votekick anyways
+		/// </summary>
+		/// <returns></returns>
+		bool VoteKickIgnoresTeamState();
 
 		PlayerListJSON m_PlayerList;
 		ModerationRules m_Rules;
@@ -357,8 +359,6 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 {
 	m_ActionManager->QueueAction<GenericCommandAction>("exec tf2bd/OnGameJoin");
 
-	world.ResetScoreboard();
-
 	// do our "onjoin" message
 	if (m_Settings->m_AutoChatWarningsConnectingParty && m_Settings->m_AutoChatWarningsConnectingPartyPrintSummary) {
 		mh::fmtstr<128> chatMsg;
@@ -447,18 +447,61 @@ void ModeratorLogic::HandleFriendlyCheaters(uint8_t friendlyPlayerCount, uint8_t
 		return;
 	}
 
+	// attempt to skip over some players in the friendlyCheaters list.
+	// Q: why?
+	// A: because we now have m_IgnoreTeamStateOnCertainMaps, and want to try kicking all the marked players,
+	// instead of being stuck in the first player (which can be in the other team)
+	static unsigned int kickAttemptedCount = 0;
+	static size_t lastSize = 0;
+
+	// determine if we should start over our kick iterator.
+	// FLAW: when there's like two bots in the server, and one joins the moment that one leaves-
+	// there's a chance of this code just missing players, especially when all the bots are not connected.
+	// however this should be fine, because the worst that can happen is 
+	auto startOver = [friendlyCheaters] {
+		// we've apparently exhaused our list of cheaters to try,
+		// so we should start over from the first player again.
+		if (kickAttemptedCount >= friendlyCheaters.size()) {
+			return true;
+		}
+
+		// size changed from what we last know, start over.
+		if (lastSize != friendlyCheaters.size()) {
+			return true;
+		}
+
+		// we're probably fine to continue attempt kicking
+		return false;
+	};
+
+	if (startOver()) {
+		kickAttemptedCount = 0;
+		lastSize = friendlyCheaters.size();
+	}
+
 	// Votekick the first one that is actually connected
-	for (const Cheater& cheater : friendlyCheaters)
+	for	(auto cheater = friendlyCheaters.begin() + kickAttemptedCount; cheater != friendlyCheaters.end(); ++cheater)
 	{
-		if (cheater->GetSteamID() == m_Settings->GetLocalSteamID())
+		// we've made it to the last object, and we should attempt from the beginning no matter what.
+		if (cheater == friendlyCheaters.end() - 1) {
+			kickAttemptedCount = 0;
+		}
+
+		// you _somehow_ managed to get yourself as a cheater state.
+		// we probably don't want to votekick ourselves (unless ur a csgo player)
+		// so we continue.
+		if ((*cheater)->GetSteamID() == m_Settings->GetLocalSteamID())
 			continue;
 
-		if (cheater->GetConnectionState() == PlayerStatusState::Active)
+		if ((*cheater)->GetConnectionState() == PlayerStatusState::Active)
 		{
-			if (InitiateVotekick(cheater.m_Player, KickReason::Cheating, &cheater.m_Marks))
+			if (InitiateVotekick(cheater->m_Player, KickReason::Cheating, &cheater->m_Marks)) {
+				kickAttemptedCount++;
 				break;
+			}
 		}
 	}
+
 }
 
 template<typename TIter>
@@ -907,10 +950,13 @@ void ModeratorLogic::ProcessPlayerActions()
 	uint8_t connectedEnemyPlayers = 0;
 	uint8_t totalFriendlyPlayers = 0;
 	uint8_t connectedFriendlyPlayers = 0;
+
+	// all cheaters in lobby: used for m_IgnoreTeamStateOnCertainMaps.
+	std::vector<Cheater> allCheaters;
 	std::vector<Cheater> enemyCheaters;
 	std::vector<Cheater> friendlyCheaters;
 	std::vector<Cheater> connectingEnemyCheaters;
-	// the struct Cheater doesnt really have to be always a cheater.
+	// the struct Cheater doesn't really have to be always a cheater (lol)
 	std::vector<Cheater> connectingMarkedPlayer;
 
 	const bool isBotLeader = IsBotLeader();
@@ -927,6 +973,9 @@ void ModeratorLogic::ProcessPlayerActions()
 			connectingMarkedPlayer.push_back({ player, m_PlayerList.GetPlayerAttributes(player) });
 		}
 
+		if (bool(isCheater))
+			allCheaters.push_back({ player, isCheater });
+
 		if (teamShareResult == TeamShareResult::SameTeams)
 		{
 			if (isPlayerConnected)
@@ -934,7 +983,7 @@ void ModeratorLogic::ProcessPlayerActions()
 				if (player.GetActiveTime() > m_Settings->GetAutoVotekickDelay())
 					connectedFriendlyPlayers++;
 
-				if (!!isCheater)
+				if (bool(isCheater))
 					friendlyCheaters.push_back({ player, isCheater });
 			}
 
@@ -959,8 +1008,17 @@ void ModeratorLogic::ProcessPlayerActions()
 		}
 	}
 
+
 	HandleEnemyCheaters(totalEnemyPlayers, enemyCheaters, connectingEnemyCheaters);
-	HandleFriendlyCheaters(totalFriendlyPlayers, connectedFriendlyPlayers, friendlyCheaters);
+
+	// because we're in a map that swaps the teams around, just ignore our own "team state" and call for everyone.
+	if (this->VoteKickIgnoresTeamState()) {
+		HandleFriendlyCheaters(totalFriendlyPlayers + totalEnemyPlayers, connectedFriendlyPlayers + connectedEnemyPlayers, allCheaters);
+	}
+	else {
+		HandleFriendlyCheaters(totalFriendlyPlayers, connectedFriendlyPlayers, friendlyCheaters);
+	}
+
 	HandleConnectingMarkedPlayers(connectingMarkedPlayer);
 }
 
@@ -1193,4 +1251,29 @@ bool ModeratorLogic::InitiateVotekick(const IPlayer& player, KickReason reason, 
 	//m_ActionManager->QueueAction<ChatMessageAction>("[tf2bd] votekicking ", ChatMessageType::PartyChat);
 
 	return true;
+}
+
+/// <summary>
+/// votekick should ignore team state.
+/// </summary>
+/// <returns></returns>
+bool ModeratorLogic::VoteKickIgnoresTeamState() {
+	if (!m_Settings->m_VoteKickIgnoreTeamStateOnCertainMaps) {
+		return false;
+	}
+
+	std::string map = m_World->GetMapName();
+
+	constexpr std::array<std::string, 2> ignoredPrefixes = {
+		"vsh_",
+		"ze_"
+	};
+
+	for (const std::string& ignore : ignoredPrefixes) {
+		if (map.starts_with(ignore)) {
+			return true;
+		}
+	}
+
+	return false;
 }
