@@ -118,9 +118,9 @@ void SettingsWindow::OnDrawModerationSettings()
 		}
 
 		{
-			if (ImGui::Checkbox("[Experimental] VoteKick Ignores Team State", &m_Settings.m_VoteKickIgnoreTeamStateOnCertainMaps))
+			if (ImGui::Checkbox("[Experimental] VoteKick Ignores Team State in certain maps", &m_Settings.m_VoteKickIgnoreTeamStateOnCertainMaps))
 				m_Settings.SaveFile();
-			ImGui::SetHoverTooltip("..");
+			ImGui::SetHoverTooltip("ignores team states in ze_ and vsh_");
 		}
 
 		ImGui::NewLine();
