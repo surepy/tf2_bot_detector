@@ -1264,7 +1264,7 @@ bool ModeratorLogic::VoteKickIgnoresTeamState() {
 
 	std::string map = m_World->GetMapName();
 
-	constexpr std::array<std::string, 2> ignoredPrefixes = {
+	static constexpr std::array<std::string, 2> ignoredPrefixes = {
 		"vsh_",
 		"ze_"
 	};
