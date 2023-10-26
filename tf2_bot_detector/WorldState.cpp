@@ -34,6 +34,10 @@
 #include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
 #include "ConsoleLog/ConsoleLines/ServerDroppedPlayerLine.h"
 #include "ConsoleLog/ConsoleLines/PingLine.h"
+#include "ConsoleLog/ConsoleLines/ServerJoinLine.h"
+#include "ConsoleLog/ConsoleLines/ServerStatusMapLine.h"
+#include "ConsoleLog/ConsoleLines/ServerStatusHostNameLine.h"
+
 
 #include <mh/algorithm/algorithm.hpp>
 #include <mh/concurrency/dispatcher.hpp>
@@ -181,6 +185,17 @@ mh::task<> WorldState::AddConsoleOutputLine(std::string line)
 void WorldState::UpdateTimestamp(const ConsoleLogParser& parser)
 {
 	m_CurrentTimestamp = parser.GetCurrentTimestamp();
+}
+
+/// <summary>
+/// Resets scores for all players, so it matches k/d on map change.
+/// 
+/// </summary>
+void WorldState::ResetScoreboard()
+{
+	for (const auto& [id, player] : m_CurrentPlayerData) {
+		player.get()->m_Scores = PlayerScores();
+	}
 }
 
 void WorldState::AddWorldEventListener(IWorldEventListener* listener)
@@ -473,14 +488,26 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 			for (auto& player : m_CurrentPlayerData)
 				player.second->m_ClientIndex = 0;
 		}
+
+		if (changeType == LobbyChangeType::Destroyed) {
+			// clear hostname and map, because we've just left the server.
+			m_ServerHostName.clear();
+			m_MapName.clear();
+		}
 		break;
 	}
 	case ConsoleLineType::HostNewGame:
 	case ConsoleLineType::Connecting:
 	case ConsoleLineType::ClientReachedServerSpawn:
 	{
+		// we've just got in a new server, so reset our scoreboard
 		if (m_IsLocalPlayerInitialized)
 		{
+			this->ResetScoreboard();
+
+			// clear map, because we're about to get a new one.
+			m_MapName.clear();
+
 			m_IsLocalPlayerInitialized = false;
 			InvokeEventListener(&IWorldEventListener::OnLocalPlayerInitialized, *this, m_IsLocalPlayerInitialized);
 		}
@@ -630,7 +657,7 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		// i love tech debt.
 		std::ostringstream killLogStream;
 
-		if (attackerSteamID)
+		if (attackerSteamID) 
 		{
 			auto& attacker = FindOrCreatePlayer(*attackerSteamID);
 			attacker.m_Scores.m_Kills++;
@@ -680,6 +707,26 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 			break;
 		}
 
+		break;
+	}
+	case ConsoleLineType::ServerJoin:
+	{
+		auto& joinLine = static_cast<const ServerJoinLine&>(parsed);
+		// this will be inaccurate in valve mm, it will just be "Team Fortress"
+		m_ServerHostName = joinLine.GetHostName();
+		m_MapName = joinLine.GetMapName();
+		break;
+	}
+	case ConsoleLineType::PlayerStatusMapPosition:
+	{
+		auto& mapPos = static_cast<const ServerStatusMapLine&>(parsed);
+		m_MapName = mapPos.GetMapName();
+		break;
+	}
+	case ConsoleLineType::PlayerStatusHostName:
+	{
+		auto& hostNameLine = static_cast<const ServerStatusHostnameLine&>(parsed);
+		m_ServerHostName = hostNameLine.GetHostName();
 		break;
 	}
 

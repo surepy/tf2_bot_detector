@@ -81,8 +81,9 @@ namespace tf2_bot_detector
 		bool m_SaveConsoleLogs = true;
 		bool m_SaveChatHistory = true;
 
-		// custom: print to party chat
+		// print to party chat when cheater joins
 		bool m_AutoChatWarningsConnectingParty = true;
+		// print to party chat the summary of current game.
 		bool m_AutoChatWarningsConnectingPartyPrintSummary = true;
 
 		// bool m_AutoChatWarningsPartyIgnore[4] = { false, false, false, false };
@@ -96,8 +97,7 @@ namespace tf2_bot_detector
 		// how many times until chat warning, in seconds
 		int m_ChatWarningInterval = 10;
 
-		// TODO: wstring support?
-		// custom: custom chat warnings (most requested feature)
+		// custom chat warnings (most requested feature)
 		bool m_UseCustomChatWarnings = false;
 		// maybe?
 		// bool m_IgnoreBotLeaderPriority = false;
@@ -113,6 +113,16 @@ namespace tf2_bot_detector
 		bool m_UseRconStaticParams = false;
 		std::string m_RconStaticPassword = "changeme";
 		uint16_t m_RconStaticPort = 40001;
+
+		/// <summary>
+		/// due to rcon design limitations, ignore team state and try to call a votekick anyways in these maps (vsh_ and ze_)
+		/// </summary>
+		bool m_VoteKickIgnoreTeamStateOnCertainMaps = true;
+
+		/// <summary>
+		/// how many seconds to wait for attempting a votekick
+		/// </summary>
+		int m_MinVoteKickInterval = 30;
 
 		// end custom
 

@@ -462,9 +462,21 @@ void Settings::Deserialize(const nlohmann::json& json)
 				}
 			}
 
+			// rcon static stuff
 			try_get_to_defaulted(*custom_values, m_UseRconStaticParams, "rcon_use_static_values", DEFAULTS.m_UseRconStaticParams);
 			try_get_to_defaulted(*custom_values, m_RconStaticPort, "rcon_static_port", DEFAULTS.m_RconStaticPort);
 			try_get_to_defaulted(*custom_values, m_RconStaticPassword, "rcon_static_password", DEFAULTS.m_RconStaticPassword);
+
+			// votekick stuff
+			try_get_to_defaulted(*custom_values, m_MinVoteKickInterval, "min_vote_kick_interval", DEFAULTS.m_MinVoteKickInterval);
+
+			// invalid settings, this shouldn't be a negative value or faster than tf2's chat speed cap.
+			if (m_MinVoteKickInterval < 5 || m_MinVoteKickInterval > 120) {
+				m_MinVoteKickInterval = 30;
+			}
+
+			// bad fixes
+			try_get_to_defaulted(*custom_values, m_VoteKickIgnoreTeamStateOnCertainMaps, "vote_kick_ignore_team_state_certain_maps", DEFAULTS.m_VoteKickIgnoreTeamStateOnCertainMaps);
 		}
 		// 
 
@@ -546,7 +558,9 @@ void Settings::Serialize(nlohmann::json& json) const
 						{ "muti_cheater_warning", m_MultipleCheaterWarningMessage },
 						{ "rcon_use_static_values", m_UseRconStaticParams },
 						{ "rcon_static_port", m_RconStaticPort },
-						{ "rcon_static_password", m_RconStaticPassword }
+						{ "rcon_static_password", m_RconStaticPassword },
+						{ "min_vote_kick_interval", m_MinVoteKickInterval },
+						{ "vote_kick_ignore_team_state_certain_maps", m_VoteKickIgnoreTeamStateOnCertainMaps }
 					}
 				},
 				{ "sleep_when_unfocused", m_SleepWhenUnfocused },
