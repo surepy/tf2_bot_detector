@@ -84,6 +84,7 @@ namespace tf2_bot_detector
 		static std::shared_ptr<IWorldState> Create(const Settings& settings);
 
 		virtual void Update() = 0;
+		virtual void ResetScoreboard() = 0;
 
 		virtual time_point_t GetCurrentTime() const = 0;
 		virtual time_point_t GetLastStatusUpdateTime() const = 0;
@@ -108,6 +109,7 @@ namespace tf2_bot_detector
 
 		virtual const IPlayer* FindPlayer(const SteamID& id) const = 0;
 		IPlayer* FindPlayer(const SteamID& id) { return const_cast<IPlayer*>(std::as_const(*this).FindPlayer(id)); }
+		virtual const IPlayer* LocalPlayer() const = 0;
 
 		virtual size_t GetApproxLobbyMemberCount() const = 0;
 		virtual mh::generator<const IPlayer&> GetLobbyMembers() const = 0;
@@ -118,6 +120,9 @@ namespace tf2_bot_detector
 		// Have we joined a team and picked a class?
 		virtual bool IsLocalPlayerInitialized() const = 0;
 		virtual bool IsVoteInProgress() const = 0;
+
+		virtual const std::string& GetServerHostName() const = 0;
+		virtual const std::string& GetMapName() const = 0;
 
 		virtual const IAccountAges& GetAccountAges() const = 0;
 	};
@@ -147,6 +152,7 @@ namespace tf2_bot_detector
 
 		void Update() override;
 		void UpdateTimestamp(const ConsoleLogParser& parser);
+		void ResetScoreboard() override;
 
 		void AddWorldEventListener(IWorldEventListener* listener) override;
 		void RemoveWorldEventListener(IWorldEventListener* listener) override;
@@ -168,6 +174,7 @@ namespace tf2_bot_detector
 
 		using IWorldState::FindPlayer;
 		const IPlayer* FindPlayer(const SteamID& id) const override;
+		const IPlayer* LocalPlayer() const override;
 
 		mh::generator<const IPlayer&> GetLobbyMembers() const;
 		mh::generator<const IPlayer&> GetPlayers() const;
@@ -191,6 +198,9 @@ namespace tf2_bot_detector
 
 		IAccountAges& GetAccountAges() { return *m_AccountAges; }
 		const IAccountAges& GetAccountAges() const override { return *m_AccountAges; }
+
+		const std::string& GetServerHostName() const override { return m_ServerHostName; }
+		const std::string& GetMapName() const override { return m_MapName; }
 
 	protected:
 		virtual IConsoleLineListener& GetConsoleLineListenerBroadcaster() { return m_ConsoleLineListenerBroadcaster; }
@@ -239,6 +249,9 @@ namespace tf2_bot_detector
 			void OnDataReady(state_type& state, const response_type& response,
 				queue_collection_type& collection) override;
 		} m_PlayerSourceBansUpdates;
+
+		std::string m_ServerHostName;
+		std::string m_MapName;
 
 		std::vector<LobbyMember> m_CurrentLobbyMembers;
 		std::vector<LobbyMember> m_PendingLobbyMembers;

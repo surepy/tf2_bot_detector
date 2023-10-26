@@ -25,7 +25,7 @@
   <p align="center">
     <s>Automatically detects and votekicks cheaters/bots in TF2 casual.</s>
     <br />
-    Attempts to improve the gameplay experience of playing in casual valve matchmaking servers.  
+    A handy little tool to gather and keep track of bots and bad actors in Team Fortress 2.
     <br />
     <i>sleepy's personal build.</i>    
     <!-- commented until there is documentation at the wiki

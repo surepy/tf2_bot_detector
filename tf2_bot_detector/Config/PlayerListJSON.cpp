@@ -307,8 +307,21 @@ PlayerMarks PlayerListJSON::GetPlayerAttributes(const SteamID& id) const
 	return marks;
 }
 
+/// <summary>
+/// returns... a list of player attributes filtered by attributes?
+///
+/// why is this not returning a boolean???
+///
+/// FIXME: VERY DECEPTIVE NAMING, THIS SHOULD MORE BE LIKE "WherePlayerAttributes"!
+///  turn this function into a boolean, soon.
+/// </summary>
+/// <param name="id">target player</param>
+/// <param name="attributes">attribute to filter by</param>
+/// <param name="persistence">persistence type</param>
+/// <returns></returns>
 PlayerMarks PlayerListJSON::HasPlayerAttributes(const SteamID& id, const PlayerAttributesList& attributes, AttributePersistence persistence) const
 {
+	// we should never have a playermark entry for localplayer, so return early.
 	if (id == m_Settings->GetLocalSteamID())
 		return {};
 

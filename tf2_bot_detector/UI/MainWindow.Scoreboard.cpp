@@ -729,13 +729,16 @@ static void PrintPlayerSourceBans(const IPlayer& player)
 				}
 
 				for (const auto& [server, ban] : banState) {
-					ImGui::TextFmt("  {} (as {}) : Ban State = ", server, ban.m_UserName);
+					ImGui::TextFmt("      {} (as {}) = ", server, ban.m_UserName);
 					ImGui::SameLineNoPad();
 
 					const ImVec4 banStateColor = ban.m_BanState >= tf2_bot_detector::SteamHistoryAPI::Current ? COLOR_YELLOW : ImVec4{ 1, 1, 1, 1 };
-					ImGui::TextFmt(banStateColor, "{:v}", mh::enum_fmt(ban.m_BanState));
+					ImGui::TextFmt(banStateColor, "{:v} ", mh::enum_fmt(ban.m_BanState));
+					ImGui::SameLineNoPad();
 
-					ImGui::TextFmt("  - {} / reason: {}", ban.m_BanTimestamp, ban.m_BanReason);
+					ImGui::TextFmt("[{} ago]", HumanDuration(tfbd_clock_t::now() - ban.m_BanTimestamp));
+
+					ImGui::TextFmt("       - reason: {}", ban.m_BanReason);
 				}
 			});
 }

@@ -111,6 +111,18 @@ void SettingsWindow::OnDrawModerationSettings()
 				"This is needed because players can't vote until they have joined a team and picked a class. If we call a vote before enough people are ready, it might fail.");
 		}
 
+		{
+			if (ImGui::SliderInt("Minimum VoteKick Interval time", &m_Settings.m_MinVoteKickInterval, 5, 120, " % d seconds"))
+				m_Settings.SaveFile();
+			ImGui::SetHoverTooltip("Waits x seconds before attempting an auto Vote Kick.");
+		}
+
+		{
+			if (ImGui::Checkbox("[Experimental] VoteKick Ignores Team State in certain maps", &m_Settings.m_VoteKickIgnoreTeamStateOnCertainMaps))
+				m_Settings.SaveFile();
+			ImGui::SetHoverTooltip("ignores team states in ze_ and vsh_");
+		}
+
 		ImGui::NewLine();
 
 		// Send warnings for connecting cheaters
@@ -476,8 +488,8 @@ void tf2_bot_detector::SettingsWindow::OnDrawMiscSettings()
 
 			// this code has some flaws,
 			// 1. it doesn't check if the port given is even a valid port
-			// 2. it doesnt check if that port is available
-			// however, we can blame the user for using this option so lol
+			// 2. it doesn't check if that port is available
+			// however, we can just blame the user for using this option so lol
 			if (ImGui::InputText("port", &port, ImGuiInputTextFlags_CharsDecimal)) {
 				for (size_t i = 0; i < port.size(); ++i) {
 					if (!isdigit(port.at(i))) {
