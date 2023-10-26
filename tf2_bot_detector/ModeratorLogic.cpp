@@ -1262,14 +1262,11 @@ bool ModeratorLogic::VoteKickIgnoresTeamState() {
 		return false;
 	}
 
+	static constexpr std::array<std::string_view, 2> ignoredPrefixes = { { "vsh_", "ze_" } };
+
 	std::string map = m_World->GetMapName();
 
-	static constexpr std::array<std::string, 2> ignoredPrefixes = {
-		"vsh_",
-		"ze_"
-	};
-
-	for (const std::string& ignore : ignoredPrefixes) {
+	for (const std::string_view& ignore : ignoredPrefixes) {
 		if (map.starts_with(ignore)) {
 			return true;
 		}
