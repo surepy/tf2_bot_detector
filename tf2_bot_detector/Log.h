@@ -120,15 +120,16 @@ namespace tf2_bot_detector
 
 		template<typename... TArgs>
 		NOINLINE inline auto LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-			const std::string_view& fmtStr, const TArgs&... args) ->
-			decltype(mh::try_format(fmtStr, args...), void())
+		const std::string_view& fmtStr, const TArgs&... args)
+			-> decltype(mh::try_format(mh::runtime(fmtStr), mh::make_format_args(args...)), void())
 		{
 			LogImplBase(color, severity, visibility, fmtStr, mh::make_format_args(args...));
 		}
+
 		template<typename... TArgs>
 		NOINLINE inline auto LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-			const mh::source_location& location, const std::string_view& fmtStr, const TArgs&... args) ->
-			decltype(mh::try_format(fmtStr, args...), void())
+		const mh::source_location& location, const std::string_view& fmtStr, const TArgs&... args)
+			-> decltype(mh::try_format(mh::runtime(fmtStr), mh::make_format_args(args...)), void())
 		{
 			LogImplBase(color, severity, visibility, location, fmtStr, mh::make_format_args(args...));
 		}
@@ -147,6 +148,7 @@ namespace tf2_bot_detector
 	}
 
 #undef LOG_DEFINITION_HELPER
+
 #define LOG_DEFINITION_HELPER(name, defaultColor, severity, visibility) \
 	template<typename... TArgs> \
 	inline auto name(const LogMessageColor& color, const mh::source_location& location, const std::string_view& fmtStr, const TArgs&... args) \
@@ -189,7 +191,7 @@ namespace tf2_bot_detector
 	attr void name(const mh::source_location& location, const std::exception_ptr& e, \
 		const std::string_view& fmtStr = {}, const TArgs&... args) \
 	{ \
-		LogException(location, e, severity, visibility, mh::try_format(fmtStr, args...)); \
+		LogException(location, e, severity, visibility, mh::format(mh::runtime(fmtStr), args...)); /* NOTE: we're losing compile-time evaluation on fmtStr, but I can't be arsed to bother. */ \
 	} \
 	template<typename... TArgs> \
 	attr void name(const std::exception_ptr& e, const detail::log_h::src_location_wrapper& fmtStr = {}, const TArgs&... args) \
@@ -236,7 +238,8 @@ namespace tf2_bot_detector
 	[[noreturn]] void LogFatalError(const mh::source_location& location,
 			const std::string_view& fmtStr, const TArgs&... args)
 	{
-		LogFatalError(location, mh::try_format(fmtStr, args...));
+		/* NOTE: we're losing compile-time evaluation on fmtStr, but I can't be arsed to bother. */
+		LogFatalError(location, mh::try_format(mh::runtime(fmtStr), args...));
 	}
 	template<typename... TArgs>
 	[[noreturn]] void LogFatalError(const detail::log_h::src_location_wrapper& fmtStr, const TArgs&... args)
