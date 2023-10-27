@@ -13,7 +13,7 @@ namespace tf2_bot_detector
 		class ITempDB;
 	}
 
-	class TF2BDApplication final : public ImGuiDesktop::Application
+	class TF2BDApplication
 	{
 	public:
 		TF2BDApplication();
@@ -21,14 +21,7 @@ namespace tf2_bot_detector
 
 		static TF2BDApplication& GetApplication();
 
-		MainWindow& GetMainWindow();
-		const MainWindow& GetMainWindow() const;
-
 		DB::ITempDB& GetTempDB();
-
-	protected:
-		void OnAddingManagedWindow(ImGuiDesktop::Window& window) override;
-		void OnRemovingManagedWindow(ImGuiDesktop::Window& window) override;
 
 	private:
 		MainWindow* m_MainWindow = nullptr;

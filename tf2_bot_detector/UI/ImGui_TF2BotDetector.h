@@ -202,7 +202,6 @@ namespace tf2_bot_detector
 	bool Combo(const char* label_id, std::optional<ReleaseChannel>& mode);
 	bool AutoLaunchTF2Checkbox(bool& value);
 
-
 	void DrawPlayerContextCopyMenu(const char* name, const SteamID& steamID);
 	bool DrawPlayerContextGoToMenu(const Settings& settings, const SteamID& steamID);
 }

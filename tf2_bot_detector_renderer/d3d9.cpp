@@ -26,7 +26,7 @@ std::size_t TF2BotDetectorD3D9Renderer::RegisterDrawCallback(DrawableCallbackFn)
 	return std::size_t();
 }
 
-bool TF2BotDetectorD3D9Renderer::ShouldQuit()
+bool TF2BotDetectorD3D9Renderer::ShouldQuit() const
 {
 	return false;
 }
@@ -40,7 +40,7 @@ void TF2BotDetectorD3D9Renderer::SetFramerate(float newFrameTime)
 /// we can't decide this.
 /// </summary>
 /// <returns></returns>
-float TF2BotDetectorD3D9Renderer::GetFramerate()
+float TF2BotDetectorD3D9Renderer::GetFramerate() const
 {
 	return -1;
 }

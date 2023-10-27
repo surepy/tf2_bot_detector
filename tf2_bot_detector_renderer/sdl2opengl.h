@@ -1,6 +1,5 @@
 #pragma once
 #include "ITF2BotDetectorRenderer.h"
-
 #include <SDL.h>
 
 #include <cstdint>
@@ -11,7 +10,7 @@ struct SDL_Window;
 struct ImGuiContext;
 struct ImFontAtlas;
 
-namespace tf2_bot_detector {};
+class ITF2BotDetectorDrawable;
 
 /// <summary>
 /// sdl2-opengl implementation
@@ -27,7 +26,6 @@ public:
 	/// </summary>
 	void DrawFrame();
 
-
 	/// <summary>
 	/// 
 	/// </summary>
@@ -38,7 +36,7 @@ public:
 	/// Should we stop running and destroy?
 	/// </summary>
 	/// <returns></returns>
-	bool ShouldQuit();
+	bool ShouldQuit() const;
 
 	/// <summary>
 	/// how frequent should DrawFrame run?
@@ -47,12 +45,14 @@ public:
 	/// </summary>
 	/// <param name="frameTime">frame time in ms</param>
 	void SetFramerate(float);
-	float GetFramerate();
+	float GetFramerate() const;
 
 	void testa();
 
 private:
-	DrawableCallbackFn drawFunction;
+
+	//std::vector<ITF2BotDetectorDrawable> drawable;
+	std::vector<DrawableCallbackFn> drawFunctions;
 
 	SDL_Window* window;
 	SDL_GLContext gl_context;

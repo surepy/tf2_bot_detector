@@ -30,7 +30,7 @@ public:
 	/// Should we stop running and destroy?
 	/// </summary>
 	/// <returns></returns>
-	bool ShouldQuit();
+	bool ShouldQuit() const;
 
 	/// <summary>
 	/// how frequent should DrawFrame run?
@@ -39,7 +39,7 @@ public:
 	/// </summary>
 	/// <param name="frameTime">frame time in ms</param>
 	void SetFramerate(float);
-	float GetFramerate();
+	float GetFramerate() const;
 };
 
 

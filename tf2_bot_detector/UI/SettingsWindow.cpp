@@ -2,7 +2,6 @@
 #include "ImGui_TF2BotDetector.h"
 #include "Config/Settings.h"
 #include "SetupFlow/AddonManagerPage.h"
-#include "UI/MainWindow.h"
 #include "Util/PathUtils.h"
 #include "Platform/Platform.h"
 
@@ -11,12 +10,9 @@
 
 using namespace tf2_bot_detector;
 
-SettingsWindow::SettingsWindow(ImGuiDesktop::Application& app, Settings& settings, MainWindow& mainWindow) :
-	ImGuiDesktop::Window(app, 800, 600, "Settings"),
-	m_Settings(settings),
-	m_MainWindow(mainWindow)
+SettingsWindow::SettingsWindow(Settings& settings) :
+	m_Settings(settings)
 {
-	ShowWindow();
 }
 
 void SettingsWindow::OnDraw()
@@ -435,8 +431,9 @@ void SettingsWindow::OnDrawUISettings()
 			}
 		};
 
-		if (ImGui::BeginCombo("Font", GetFontComboString(m_Settings.m_Theme.m_Font)))
+		if (ImGui::BeginCombo("Font (Broken)", GetFontComboString(m_Settings.m_Theme.m_Font)))
 		{
+			/*
 			const auto FontSelectable = [&](Font f)
 			{
 				ImFont* fontPtr = mh_ensure(m_MainWindow.GetFontPointer(f));
@@ -459,7 +456,7 @@ void SettingsWindow::OnDrawUISettings()
 			FontSelectable(Font::ProggyClean_13px);
 			FontSelectable(Font::ProggyClean_26px);
 			FontSelectable(Font::UniFont_14px);
-			FontSelectable(Font::UniFont_24px);
+			FontSelectable(Font::UniFont_24px);*/
 
 			ImGui::EndCombo();
 		}

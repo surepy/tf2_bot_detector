@@ -17,6 +17,8 @@
 #endif
 #include "sdl2opengl.h"
 
+#include "UI/SettingsWindow.h"
+
 using namespace std::string_literals;
 
 namespace tf2_bot_detector
@@ -60,17 +62,21 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		// Always run the tests debug builds (but don't quit afterwards)
 		tf2_bot_detector::RunTests();
 #endif
+
+
+
 		{
 			TF2BotDetectorSDLRenderer a;
+			Settings settings = {};
+			SettingsWindow* sw = new SettingsWindow(settings);
 
-			//a.RegisterDrawCallback([]() { OutputDebugString("test");  });
-			//a.testa();
+			a.RegisterDrawCallback([sw] () { sw->OnDraw();  });
 
 			while (!a.ShouldQuit())
 				a.DrawFrame();
 		}
 
-		ImGuiDesktop::SetLogFunction(&tf2_bot_detector::ImGuiDesktopLogFunc);
+		//ImGuiDesktop::SetLogFunction(&tf2_bot_detector::ImGuiDesktopLogFunc);
 
 		DebugLog("Initializing TF2BDApplication...");
 

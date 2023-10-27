@@ -35,7 +35,7 @@ namespace tf2_bot_detector
 	class ITexture;
 	class ITextureManager;
 	class IUpdateManager;
-	class SettingsWindow;
+	//class SettingsWindow;
 
 	class MainWindow final : public ImGuiDesktop::Window, IConsoleLineListener, BaseWorldEventListener
 	{
@@ -169,7 +169,7 @@ namespace tf2_bot_detector
 		time_point_t m_LastServerPingSample{};
 
 		Settings m_Settings;
-		std::unique_ptr<SettingsWindow> m_SettingsWindow;
+		//std::unique_ptr<SettingsWindow> m_SettingsWindow;
 
 		std::unique_ptr<IUpdateManager> m_UpdateManager;
 

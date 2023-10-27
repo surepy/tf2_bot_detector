@@ -9,6 +9,7 @@ add_library(tf2_bot_detector_renderer OBJECT
 	"d3d9.cpp"
 	"d3d9.h"
 	"ITF2BotDetectorRenderer.h"
+	"ITF2BotDetectorDrawable.h"
 	"sdl2opengl.h"
 	"sdl2opengl.cpp"
 )

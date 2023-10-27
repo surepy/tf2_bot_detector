@@ -300,10 +300,12 @@ void MainWindow::OnDrawAppLog()
 
 void MainWindow::OpenSettingsPopup()
 {
+	/*
 	if (!m_SettingsWindow)
 		m_SettingsWindow = std::make_unique<SettingsWindow>(GetApplication(), m_Settings, *this);
 	else
 		m_SettingsWindow->RaiseWindow();
+	*/
 }
 
 void MainWindow::OnDrawUpdateCheckPopup()
@@ -505,8 +507,8 @@ void MainWindow::OnDraw()
 	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
 
-	if (m_SettingsWindow && m_SettingsWindow->ShouldClose())
-		m_SettingsWindow.reset();
+	//if (m_SettingsWindow && m_SettingsWindow->ShouldClose())
+	//	m_SettingsWindow.reset();
 
 	OnDrawUpdateCheckPopup();
 	OnDrawAboutPopup();

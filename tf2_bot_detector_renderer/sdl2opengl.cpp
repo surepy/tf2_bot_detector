@@ -128,6 +128,13 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		ImGui::End();
 	}
 
+	// draw
+	{
+		for (const auto& callOnDraw : drawFunctions) {
+			callOnDraw();
+		}
+	}
+
 	// Rendering
 	ImGui::Render();
 	glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
@@ -138,18 +145,18 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 
 std::size_t TF2BotDetectorSDLRenderer::RegisterDrawCallback(DrawableCallbackFn function)
 {
-	drawFunction = function;
-	return std::size_t(0);
+	drawFunctions.push_back(function);
+	return drawFunctions.size();
 }
 
-bool TF2BotDetectorSDLRenderer::ShouldQuit()
+bool TF2BotDetectorSDLRenderer::ShouldQuit() const
 {
 	return !running;
 }
 
 void TF2BotDetectorSDLRenderer::testa()
 {
-	drawFunction();
+	//drawFunction();
 }
 
 /// <summary>
@@ -164,7 +171,7 @@ void TF2BotDetectorSDLRenderer::SetFramerate(float newFrameTime)
 	this->frameTime = newFrameTime;
 }
 
-float TF2BotDetectorSDLRenderer::GetFramerate()
+float TF2BotDetectorSDLRenderer::GetFramerate() const
 {
 	return this->frameTime;
 }

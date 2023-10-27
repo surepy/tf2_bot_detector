@@ -40,7 +40,7 @@ public:
 	/// Should we stop running and destroy?
 	/// </summary>
 	/// <returns></returns>
-	virtual bool ShouldQuit() = 0;
+	virtual bool ShouldQuit() const = 0;
 
 	/// <summary>
 	/// how frequent should DrawFrame run?
@@ -49,5 +49,5 @@ public:
 	/// </summary>
 	/// <param name="frameTime">frame time in ms</param>
 	virtual void SetFramerate(float) = 0;
-	virtual float GetFramerate() = 0;
+	virtual float GetFramerate() const = 0;
 };
