@@ -284,8 +284,16 @@ void tf2_bot_detector::LogException(const mh::source_location& location, const s
 	if (visibility == LogVisibility::Debug)
 		color = color.WithAlpha(LogColors::DEBUG_ALPHA);
 
-	detail::log_h::LogImpl(LogColors::ERROR, severity, visibility, location,
-		msg.empty() ? "{1}: {2}"sv : "{0}: {1}: {2}"sv, msg, details.type_name(), details.m_Message);
+	detail::log_h::LogImpl(
+		LogColors::ERROR,
+		severity,
+		visibility,
+		location,
+		msg.empty() ? "{1}: {2}"sv : "{0}: {1}: {2}"sv,
+		msg,
+		details.type_name(),
+		details.m_Message
+	);
 
 	if (severity == LogSeverity::Fatal)
 	{
@@ -317,7 +325,7 @@ void detail::log_h::LogImpl(const LogMessageColor& color, LogSeverity severity, 
 	ILogManager::GetInstance().Log(std::move(str), color, severity, visibility);
 }
 
-void tf2_bot_detector::detail::log_h::LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
+void detail::log_h::LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
 	const mh::source_location& location, const std::string_view& str)
 {
 	LogImpl(color, severity, visibility, mh::format(MH_FMT_STRING("{}: {}"sv), location, str));

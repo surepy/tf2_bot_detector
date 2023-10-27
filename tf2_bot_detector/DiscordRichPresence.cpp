@@ -100,7 +100,7 @@ static auto DiscordDebugLog(const std::string_view& fmtStr, const TArgs&... args
 	if (!s_DiscordDebugLogEnabled)
 		return;
 
-	DebugLog(DISCORD_LOG_COLOR, "DRP: {}", mh::format(fmtStr, args...));
+	DebugLog(DISCORD_LOG_COLOR, "DRP: {}", mh::format(mh::runtime(fmtStr), args...));
 }
 
 template<typename... TArgs>
@@ -114,7 +114,7 @@ static auto DiscordDebugLog(const mh::source_location& location,
 	if (fmtStr.empty())
 		DebugLog(DISCORD_LOG_COLOR, location);
 	else
-		DebugLog(DISCORD_LOG_COLOR, location, "DRP: {}", mh::format(fmtStr, args...));
+		DebugLog(DISCORD_LOG_COLOR, location, "DRP: {}", mh::format(mh::runtime(fmtStr), args...));
 }
 
 static void DiscordLogHookFunc(discord::LogLevel level, const char* logMsg)

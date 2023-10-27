@@ -12,7 +12,7 @@
 	url = https://github.com/PazerOP/imgui_desktop.git
 [submodule "submodules/mh_stuff"]
 	path = submodules/mh_stuff
-	url = https://github.com/PazerOP/stuff.git
+	url = https://github.com/surepy/tf2bd_mh_stuff.git
 [submodule "submodules/vcpkg"]
 	path = submodules/vcpkg
 	url = https://github.com/microsoft/vcpkg.git

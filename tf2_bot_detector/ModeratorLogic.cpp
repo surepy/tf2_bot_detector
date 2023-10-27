@@ -635,7 +635,7 @@ std::string ModeratorLogic::GenerateCheaterWarnMessage(const std::vector<std::st
 		// check if they're empty for whatever reason
 		if (!m_Settings->m_OneCheaterWarningMessage.empty()) {
 			try {
-				fmt::format(m_Settings->m_OneCheaterWarningMessage, 1);
+				std::string discard = fmt::format(fmt::runtime(m_Settings->m_OneCheaterWarningMessage), 1);
 				one_cheater_warning = m_Settings->m_OneCheaterWarningMessage;
 			}
 			catch (fmt::format_error err) {
@@ -645,7 +645,7 @@ std::string ModeratorLogic::GenerateCheaterWarnMessage(const std::vector<std::st
 
 		if (!m_Settings->m_MultipleCheaterWarningMessage.empty()) {
 			try {
-				fmt::format(m_Settings->m_MultipleCheaterWarningMessage, fmt::arg("count", 2), fmt::arg("names", "a, b"));
+				std::string discard = fmt::format(fmt::runtime(m_Settings->m_MultipleCheaterWarningMessage), fmt::arg("count", 2), fmt::arg("names", "a, b"));
 				multiple_cheater_warning = m_Settings->m_MultipleCheaterWarningMessage;
 			}
 			catch (fmt::format_error err) {
@@ -770,7 +770,7 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 
 		if (m_Settings->m_UseCustomChatWarnings && !m_Settings->m_MultipleCheaterConnectingMessage.empty()) {
 			try {
-				fmt::format(m_Settings->m_MultipleCheaterConnectingMessage, 1);
+				std::string discard = fmt::format(fmt::runtime(m_Settings->m_MultipleCheaterConnectingMessage), 1);
 				mutli_cheater_connecting = m_Settings->m_MultipleCheaterConnectingMessage;
 			}
 			catch (fmt::format_error err) {

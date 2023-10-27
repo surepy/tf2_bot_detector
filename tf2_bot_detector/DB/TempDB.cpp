@@ -91,7 +91,7 @@ namespace
 		Connect();
 
 		// Delete and recreate the DB if its an old version
-		if (const auto currentUserVersion = m_Connection->execAndGet(mh::format("PRAGMA user_version")).getInt();
+		if (const auto currentUserVersion = m_Connection->execAndGet("PRAGMA user_version").getInt();
 			currentUserVersion != DB_VERSION)
 		{
 			LogWarning("Current {} version = {}. Deleting and recreating...", CreateDBPath(), currentUserVersion);
