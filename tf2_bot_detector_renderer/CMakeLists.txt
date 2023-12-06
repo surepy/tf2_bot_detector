@@ -12,17 +12,28 @@ add_library(tf2_bot_detector_renderer OBJECT
 	"ITF2BotDetectorDrawable.h"
 	"sdl2opengl.h"
 	"sdl2opengl.cpp"
+        "ImguiHelpers.h"
+        "ScopeGuards.h"
+        "ScopeGuards.cpp"
+        "StorageHelper.h"
 )
+
+target_include_directories(tf2_bot_detector_renderer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# imgui options
+option(imgui_USE_OPENGL2 "Includes the OpenGL2 implementation." off)
+option(imgui_USE_OPENGL3 "Includes the OpenGL3 implementation." on)
+option(imgui_USE_DX9 "Includes the OpenGL3 implementation." on)
+option(imgui_USE_GLBINDING "Uses glbinding for the OpenGL implementation." off)
+option(imgui_USE_SDL2 "Uses the SDL2 implementation." on)
 
 # our imgui directory.
 set(IMGUI_DIR "${CMAKE_SOURCE_DIR}/submodules/imgui")
 
 # imgui source file / defn stuff
 # I'm copying a lot of stuff from pazer's imgui_desktop.
-find_package(SDL2 CONFIG REQUIRED)
 
-# TODO: rename this to just "imgui"
-add_library(min_imgui 
+add_library(imgui 
 	"${IMGUI_DIR}/imconfig.h"
 	"${IMGUI_DIR}/imgui.cpp"
 	"${IMGUI_DIR}/imgui.h"
@@ -38,23 +49,72 @@ add_library(min_imgui
 	"${IMGUI_DIR}/misc/cpp/imgui_stdlib.h"
 )
 
-target_sources(min_imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp")
-target_sources(min_imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_sdl2.h")
-
 # imgui includes
-target_include_directories(min_imgui PUBLIC
+target_include_directories(imgui PUBLIC
 	"${IMGUI_DIR}"
 	"${IMGUI_DIR}/misc/cpp"
 )
-target_link_libraries(min_imgui PUBLIC SDL2::SDL2)
-target_compile_definitions(min_imgui PUBLIC IMGUI_USE_SDL2)
+
+# backend: GL2
+if(imgui_USE_OPENGL2)
+	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl2.cpp")
+	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl2.h")
+
+	target_compile_definitions(imgui PUBLIC "IMGUI_USE_OPENGL2")
+
+	if (WIN32)
+		target_link_libraries(imgui PRIVATE "OpenGL32.lib")
+	endif()
+endif()
+
+# backend: GL3
+if(imgui_USE_OPENGL3)
+	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp")
+	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl3.h")
+
+	target_compile_definitions(imgui PUBLIC "IMGUI_USE_OPENGL3")
+
+	if (WIN32)
+		target_link_libraries(imgui PRIVATE "OpenGL32.lib")
+	endif()
+endif()
+
+# backend: dx9
+if(imgui_USE_DX9)
+endif()
+
+# backend: vulkan (!)
+if(imgui_USE_VULKAN)
+endif()
+
+
+# backend: SDL2
+if(imgui_USE_SDL2)
+	find_package(SDL2 CONFIG REQUIRED)
+	target_link_libraries(imgui PUBLIC SDL2::SDL2)
+	target_compile_definitions(imgui PUBLIC IMGUI_USE_SDL2)
+	target_sources(imgui PRIVATE
+		"${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp"
+		"${IMGUI_DIR}/backends/imgui_impl_sdl2.h"
+	)
+elseif(imgui_USE_GLFW)
+	find_package(glfw3 CONFIG REQUIRED)
+	target_link_libraries(imgui PRIVATE glfw)
+	target_compile_definitions(imgui PUBLIC IMGUI_USE_GLFW)
+	target_sources(imgui PRIVATE
+		"${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
+		"${IMGUI_DIR}/backends/imgui_impl_glfw.h"
+	)
+endif()
 
 # renderer includes
 find_package(fmt CONFIG REQUIRED)
 
 target_link_libraries(tf2_bot_detector_renderer
 	PUBLIC
-		min_imgui
+		imgui
+                glad2::glad2
+	PRIVATE
 		SDL2::SDL2
 		fmt::fmt
 		mh::stuff

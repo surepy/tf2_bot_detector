@@ -17,8 +17,6 @@
 #include "LobbyMember.h"
 #include "PlayerStatus.h"
 #include "GameData/TFConstants.h"
-
-#include <imgui_desktop/Window.h>
 #include <mh/error/expected.hpp>
 
 #include <optional>
@@ -37,12 +35,10 @@ namespace tf2_bot_detector
 	class IUpdateManager;
 	//class SettingsWindow;
 
-	class MainWindow final : public ImGuiDesktop::Window, IConsoleLineListener, BaseWorldEventListener
+	class MainWindow final : public IConsoleLineListener, BaseWorldEventListener
 	{
-		using Super = ImGuiDesktop::Window;
-
 	public:
-		explicit MainWindow(ImGuiDesktop::Application& app);
+		explicit MainWindow();
 		~MainWindow();
 
 		ImFont* GetFontPointer(Font f) const;
@@ -52,12 +48,9 @@ namespace tf2_bot_detector
 		void DrawPlayerContextMarkMenu(const SteamID& steamid, const std::string& name, std::string& reasons);
 
 	private:
-		void OnImGuiInit() override;
-		void OnOpenGLInit() override;
-		void OnDraw() override;
-		void OnEndFrame() override;
-		void OnDrawMenuBar() override;
-		bool HasMenuBar() const override { return true; }
+		void OnEndFrame();
+		// TODO 
+		bool HasMenuBar() const { return true; }
 		void OnDrawScoreboard();
 		void OnDrawTeamStats();
 		void OnDrawAllPanesDisabled();
@@ -91,9 +84,7 @@ namespace tf2_bot_detector
 		void PrintDebugInfo();
 		void GenerateDebugReport();
 
-		void OnUpdate() override;
-
-		bool IsSleepingEnabled() const override;
+		bool IsSleepingEnabled() const;
 
 		bool IsTimeEven() const;
 		float TimeSine(float interval = 1.0f, float min = 0, float max = 1) const;
@@ -202,6 +193,13 @@ namespace tf2_bot_detector
 		std::optional<PostSetupFlowState> m_MainState;
 
 	public:
+
+		void OnUpdate();
+		void OnImGuiInit();
+		void OnOpenGLInit();
+		void OnDraw();
+		void OnDrawMenuBar();
+
 		IModeratorLogic& GetModLogic() { return *m_MainState.value().m_ModeratorLogic; }
 		const IModeratorLogic& GetModLogic() const { return *m_MainState.value().m_ModeratorLogic; }
 

@@ -10,7 +10,7 @@
 #include "ReleaseChannel.h"
 
 #include <imgui_internal.h>
-#include <imgui_desktop/ScopeGuards.h>
+#include <ScopeGuards.h>
 #include <mh/memory/cached_variable.hpp>
 #include <mh/text/string_insertion.hpp>
 

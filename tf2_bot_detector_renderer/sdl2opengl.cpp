@@ -25,7 +25,7 @@
 //using namespace ImGuiDesktop;
 using namespace std::string_literals;
 
-TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer()
+TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererBase()
 {
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)

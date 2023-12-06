@@ -18,7 +18,6 @@
 #include "PlayerStatus.h"
 #include "GameData/TFConstants.h"
 
-#include <imgui_desktop/Window.h>
 #include <mh/error/expected.hpp>
 
 #include <optional>
@@ -39,7 +38,7 @@ namespace tf2_bot_detector
 		class ITempDB;
 	}
 
-	class TF2BDApplication
+	class TF2BDApplication : IConsoleLineListener, BaseWorldEventListener
 	{
 	public:
 		TF2BDApplication();
@@ -161,7 +160,5 @@ namespace tf2_bot_detector
 	public:
 		IModeratorLogic& GetModLogic() { return *m_MainState.value().m_ModeratorLogic; }
 		const IModeratorLogic& GetModLogic() const { return *m_MainState.value().m_ModeratorLogic; }
-
-		time_point_t GetLastStatusUpdateTime() const;
 	};
 }

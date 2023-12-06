@@ -1,6 +1,6 @@
 #include "UI/ImGui_TF2BotDetector.h"
 
-#include <imgui_desktop/ScopeGuards.h>
+#include <ScopeGuards.h>
 
 #include <regex>
 #include <sstream>
@@ -15,7 +15,7 @@ using namespace std::string_view_literals;
 std::shared_ptr<IConsoleLine> ClientReachedServerSpawnLine::TryParse(const ConsoleLineTryParseArgs& args)
 {
 	if (args.m_Text == "Client reached server_spawn."sv)
-		return std::make_shared<ClientReachedServerSpawnLine>(args.m_Timestamp);
+		return std::make_shared<ClientReachedServerSpawnLine>(args.m_Timestamp); 
 
 	return nullptr;
 }

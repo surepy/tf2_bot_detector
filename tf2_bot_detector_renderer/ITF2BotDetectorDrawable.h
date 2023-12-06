@@ -8,4 +8,4 @@
 class TF2BotDetectorDrawable {
 public:
 	virtual void OnDraw() = 0;
-}
+};

@@ -23,9 +23,8 @@
 #include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
 #include "ConsoleLog/ConsoleLines/EdictUsageLine.h"
 
-#include <imgui_desktop/Application.h>
-#include <imgui_desktop/ScopeGuards.h>
-#include <imgui_desktop/ImGuiHelpers.h>
+#include <ScopeGuards.h>
+#include <ImGuiHelpers.h>
 #include <imgui.h>
 #include <libzippp/libzippp.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -56,16 +55,14 @@ namespace tf2_bot_detector
 	}
 }
 
-MainWindow::MainWindow(ImGuiDesktop::Application& app) :
-	ImGuiDesktop::Window(app, 800, 600, mh::fmtstr<128>("TF2 Bot Detector v{} (sleepybuild)", VERSION).c_str()),
+// ImGuiDesktop::Window(app, 800, 600, mh::fmtstr<128>("TF2 Bot Detector v{} (sleepybuild)", VERSION).c_str()),
+
+MainWindow::MainWindow() :
 	m_WorldState(IWorldState::Create(m_Settings)),
 	m_ActionManager(IRCONActionManager::Create(m_Settings, GetWorld())),
 	m_TextureManager(ITextureManager::Create()),
 	m_UpdateManager(IUpdateManager::Create(m_Settings))
 {
-	SetIsPrimaryAppWindow(true);
-	ShowWindow();
-
 	ILogManager::GetInstance().CleanupLogFiles();
 
 	GetWorld().AddConsoleLineListener(this);
@@ -175,8 +172,6 @@ void MainWindow::SetupFonts()
 
 void MainWindow::OnImGuiInit()
 {
-	Super::OnImGuiInit();
-
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
 	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 	//ImGui::PushFont
@@ -186,8 +181,6 @@ void MainWindow::OnImGuiInit()
 
 void MainWindow::OnOpenGLInit()
 {
-	Super::OnOpenGLInit();
-
 	m_BaseTextures = IBaseTextures::Create(*m_TextureManager);
 }
 
@@ -291,7 +284,7 @@ void MainWindow::OnDrawAppLog()
 			if (m_LastLogMessage != lastLogMsg)
 			{
 				m_LastLogMessage = lastLogMsg;
-				QueueUpdate();
+				//QueueUpdate();
 			}
 
 			ImGui::PopTextWrapPos();
@@ -411,7 +404,7 @@ void MainWindow::PrintDebugInfo()
 		<< "\n\tVersion:           " << VERSION
 		<< "\n\tIs CI Build:       " << std::boolalpha << (TF2BD_IS_CI_COMPILE ? true : false)
 		<< "\n\tCompile Timestamp: " << __TIMESTAMP__
-		<< "\n\tOpenGL Version:    " << GetGLContextVersion()
+//		<< "\n\tOpenGL Version:    " << GetGLContextVersion()
 
 		<< "\n\tIs Debug Build:    "
 #ifdef _DEBUG
@@ -504,6 +497,8 @@ void MainWindow::OnDrawServerStats()
 
 void MainWindow::OnDraw()
 {
+	ImGui::Begin("bd_main");
+
 	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
 
@@ -657,6 +652,8 @@ void MainWindow::OnDraw()
 
 	if (!mainWindowState.m_ChatEnabled && !mainWindowState.m_ScoreboardEnabled && !mainWindowState.m_AppLogEnabled)
 		OnDrawAllPanesDisabled();
+
+	ImGui::End();
 }
 
 void MainWindow::OnDrawAllPanesDisabled()
@@ -717,8 +714,8 @@ void MainWindow::OnDrawMenuBar()
 
 		ImGui::Separator();
 
-		if (ImGui::MenuItem("Exit", "Alt+F4"))
-			SetShouldClose(true);
+		//if (ImGui::MenuItem("Exit", "Alt+F4"))
+		//	SetShouldClose(true);
 
 		ImGui::EndMenu();
 	}
@@ -864,7 +861,7 @@ void MainWindow::OnConsoleLogChunkParsed(IWorldState& world, bool consoleLinesUp
 
 bool MainWindow::IsSleepingEnabled() const
 {
-	return m_Settings.m_SleepWhenUnfocused && !HasFocus();
+	return m_Settings.m_SleepWhenUnfocused; // FIX && !HasFocus();
 }
 
 bool MainWindow::IsTimeEven() const
@@ -1029,8 +1026,6 @@ time_point_t MainWindow::GetLastStatusUpdateTime() const
 
 float MainWindow::PlayerExtraData::GetAveragePing() const
 {
-	//throw std::runtime_error("TODO");
-#if 1
 	unsigned totalPing = m_Parent->GetPing();
 	unsigned samples = 1;
 
@@ -1041,7 +1036,6 @@ float MainWindow::PlayerExtraData::GetAveragePing() const
 	}
 
 	return totalPing / float(samples);
-#endif
 }
 
 time_point_t MainWindow::GetCurrentTimestampCompensated() const

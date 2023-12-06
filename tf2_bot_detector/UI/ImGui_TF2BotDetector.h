@@ -2,8 +2,8 @@
 
 #include "ReleaseChannel.h"
 
-#include <imgui_desktop/ImGuiHelpers.h>
-#include <imgui_desktop/ScopeGuards.h>
+#include <ImGuiHelpers.h>
+#include <ScopeGuards.h>
 #include <imgui.h>
 #include <mh/raii/scope_exit.hpp>
 #include <mh/text/fmtstr.hpp>

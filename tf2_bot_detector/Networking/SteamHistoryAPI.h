@@ -24,14 +24,12 @@ namespace tf2_bot_detector::SteamHistoryAPI
 		Permanent
 	};
 
-
 	enum class ErrorCode
 	{
 		OK,
 		FeatureDisabled,
 		InvalidAPIKey
 	};
-
 
 	struct PlayerSourceBan {
 		SteamID m_ID;

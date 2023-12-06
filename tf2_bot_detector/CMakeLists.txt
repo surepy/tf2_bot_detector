@@ -293,7 +293,6 @@ find_package(cpprestsdk CONFIG REQUIRED)
 
 target_link_libraries(tf2_bot_detector PRIVATE
 	tf2_bot_detector::common
-	imgui_desktop
 	tf2_bot_detector_renderer
 	ValveFileVDF
 	libzip::zip

@@ -1,6 +1,7 @@
 #include "TextureManager.h"
 #include "Bitmap.h"
 
+/*
 #if IMGUI_USE_GLBINDING
 #define GLBINDING_AVAILABLE 1
 #include <glbinding-aux/ContextInfo.h>
@@ -14,6 +15,12 @@ using namespace gl21;
 #include <Windows.h>
 #include <gl/GL.h>
 #endif
+*/
+
+// TODO: reimplemnent glad stuff
+#include <Windows.h>
+#include <gl/GL.h>
+
 #include <mh/concurrency/thread_sentinel.hpp>
 #include <mh/memory/unique_object.hpp>
 
@@ -159,6 +166,7 @@ Texture::Texture(const TextureManager& manager, const Bitmap& bitmap, const Text
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, bitmap.GetWidth(), bitmap.GetHeight(), 0,
 		sourceFormat, sourceType, bitmap.GetData());
 
+#if IMGUI_USE_GLAD2 && FIXME_DISABLE
 	if (GLAD_GL_ARB_texture_swizzle)
 	{
 		glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle.data());
@@ -167,6 +175,7 @@ Texture::Texture(const TextureManager& manager, const Bitmap& bitmap, const Text
 	{
 		glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA_EXT, swizzle.data());
 	}
+#endif
 
 #if 0
 	if (glGenerateMipmap)

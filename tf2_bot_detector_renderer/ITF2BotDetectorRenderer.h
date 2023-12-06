@@ -20,6 +20,13 @@
 /// </summary>
 class TF2BotDetectorRendererBase {
 public:
+	TF2BotDetectorRendererBase() {
+		ptr = this;
+	}
+	~TF2BotDetectorRendererBase() {
+		ptr = nullptr;
+	}
+
 	/// <summary>
 	/// ImGui::Render() related functions.
 	/// </summary>
@@ -41,7 +48,7 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	virtual bool ShouldQuit() const = 0;
-
+	
 	/// <summary>
 	/// how frequent should DrawFrame run?
 	///
@@ -50,4 +57,7 @@ public:
 	/// <param name="frameTime">frame time in ms</param>
 	virtual void SetFramerate(float) = 0;
 	virtual float GetFramerate() const = 0;
+
+	inline static TF2BotDetectorRendererBase* ptr;
+	static TF2BotDetectorRendererBase* GetRenderer() { return ptr; }
 };

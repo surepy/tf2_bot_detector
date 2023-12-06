@@ -29,6 +29,10 @@ mh::task<tf2_bot_detector::SteamHistoryAPI::PlayerSourceBansResponse>
 	requestSteamIDs.at(0) = '&';
 
 	// copied segments of GenerateSteamAPIURL; consolidate later?
+	
+	// Might have an option in the future that you can choose between sh api and roto's api
+	// - which exists (https://bd-api.roto.lol/profile?steamids=<ids, comma seperated> apparently).
+	// in case one or the other goes down.
 	URL requestURL = URL(mh::format(MH_FMT_STRING("https://steamhistory.net/api/sourcebans?shouldkey=1&key={}{}"), apiKey, requestSteamIDs));
 
 	auto clientPtr = client.shared_from_this();
