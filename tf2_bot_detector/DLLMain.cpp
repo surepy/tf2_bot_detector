@@ -71,13 +71,13 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			SettingsWindow* sw = new SettingsWindow(settings);
 
 			//mainwin->OnImGuiInit();
-			mainwin->OnOpenGLInit();
+			mainwin->OpenGLInit();
 
-			renderer.RegisterDrawCallback([mainwin]() {
+			renderer.RegisterDrawCallback([mainwin] () {
 				mainwin->OnUpdate();
-				mainwin->OnDrawMenuBar();
-				mainwin->OnDraw();
+				mainwin->Draw();
 			});
+
 			renderer.RegisterDrawCallback([sw] () { sw->OnDraw();  });
 
 			while (!renderer.ShouldQuit())

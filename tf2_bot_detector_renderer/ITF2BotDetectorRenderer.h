@@ -17,6 +17,10 @@
 /// tf2_bot_detector_external - outputs tf2_bot_detector.dll same as current
 /// tf2_bot_detector_launcher - for launching ^
 ///
+/// or i can have it so that tf2_bot_detector has both overlay and external methods builtin ig
+/// (overlay will be called by dllmain, external with laucher exported function)
+/// idk we'll see how it goes
+///
 /// </summary>
 class TF2BotDetectorRendererBase {
 public:

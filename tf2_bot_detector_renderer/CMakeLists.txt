@@ -20,6 +20,9 @@ add_library(tf2_bot_detector_renderer OBJECT
 
 target_include_directories(tf2_bot_detector_renderer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+# lol
+target_compile_definitions(tf2_bot_detector_renderer PRIVATE BD_VERSION="${TF2BD_VERSION_MAJOR}.${TF2BD_VERSION_MINOR}.${TF2BD_VERSION_PATCH}")
+
 # imgui options
 option(imgui_USE_OPENGL2 "Includes the OpenGL2 implementation." off)
 option(imgui_USE_OPENGL3 "Includes the OpenGL3 implementation." on)

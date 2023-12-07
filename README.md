@@ -25,7 +25,7 @@
   <p align="center">
     <s>Automatically detects and votekicks cheaters/bots in TF2 casual.</s>
     <br />
-    A handy little tool to gather and keep track of bots and bad actors in Team Fortress 2.
+    A handy little tool to gather, keep track and automatically votekick bots and bad actors in Team Fortress 2.
     <br />
     <i>sleepy's personal build.</i>    
     <!-- commented until there is documentation at the wiki
@@ -80,7 +80,7 @@
 
 ## Installation
 
-### Typical Install (works for nearly everyone)
+### Typical Install
 
 1. Download and install the [Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019][mscr-link]
 2. Download the [latest release][releases-link]
@@ -88,7 +88,9 @@
 
 ### Advanced Installation
 
-If you would like more information about installation or the above options are not quite what you need, visit the more detailed and technical [installation wiki][installation-wiki]
+~~If you would like more information about installation or the above options are not quite what you need, visit the more detailed and technical [installation wiki][installation-wiki]~~  
+
+All of the installation methods in that page are not supported in this fork.
 
 ## General Usage
 
@@ -96,7 +98,7 @@ If you would like more information about installation or the above options are n
 Double click `tf2_bot_detector.exe` in the folder you downloaded from the installation section.
 
 ### First run
-When you first run the tool it will ask if you would like to allow internet connectivity and which update channel you would like. These can be changed later in the settings menu. The recommended options are automatically selected and you may just click next.
+When you first run the tool it will ask if you would like to allow internet connectivity and which update channel you would like. These can be changed later in the settings menu.
 
 ![first-launch]
 
@@ -137,7 +139,6 @@ TF2BD allows for a fair amount of customization (with even more planned). Curren
 
 If you are an advanced user you are more than welcome to create your own lists. You should be familiar with json in general before getting started but there are many people in the [discord][discord-link] who would be happy to help.
 
-
 ## FAQ
 
 ### What is TF2 Bot Detector?
@@ -162,7 +163,9 @@ It monitors the console output (saved to a log file) to get information about th
 
 ### How is the list of known cheaters curated?
 
-The official list that is included with the program is maintained by Pazer exclusively. No user submissions are accepted at this time and it is unlikely that they will be in the future. While this approach this may seem limiting, it is to avoid false positives and to maintain the integrity of the project as a whole. There are some community player lists that can be added to your own detector. These are not maintained by Pazer. For more information on installing community lists go [here][wiki-customization-link].
+The official list that is included with the program was maintained by Pazer exclusively, and no user submissions will be accepted.   
+
+While this approach this may seem limiting, it is to avoid false positives and to maintain the integrity of the project as a whole. There are some community player lists that can be added to your own detector. These are not maintained by Pazer. For more information on installing community lists go [here][wiki-customization-link].
 
 ### I don't like how the tool spams chat. Can I change that?
 
@@ -173,6 +176,8 @@ You can turn off chat warnings by unchecking the checkbox labeled "Enable Chat W
 You likely downloaded the source code instead of the actual tool. Make sure you are downloading one of the .ZIPs that is not labeled "Source Code." There are two of them, one labeled with an x86 and one with an x64. If you don't know which one you want, you almost certainly want the one with the x64. For further instructions go [here][getting-started-wiki].
 
 ### This doesn't detect anything!
+
+[TF2BD is not actually a detector](https://en.wikipedia.org/wiki/Kira_kira_name), as in it can't just magically "detect" cheat features in an ongoing game as that requires memory read, and relies on pre-curated player list and basic rules.
 
 Right now the base player list and rule set is very very limited due to an abundance of caution. There are third party community lists and rules that are run by people who are not Pazer. While the general community trusts them, it is important to remember that these are not official resources and not under direct control of this project. For more information on installing community lists go [here][wiki-customization-link].
 
@@ -187,6 +192,7 @@ For further assistance either open an [issue][issues-url] on github or join our 
 This project does not advocate for the use of cheating in any fashion. Putting aside the obvious moral issues with using cheats, that would introduce the possibility of a VAC ban. This project is committed to maintaining the safety of its users.
 
 ### How can I support this project financially?
+
 You can't. This may change in the future.
 
 ### I have a question that is not listed here!
@@ -245,7 +251,8 @@ Huge thanks to anyone who threw money at this project via GitHub Sponsors. Since
 - [Flavio11113](https://github.com/Flavio11113)
 - [ClaudiaLutz](https://github.com/ClaudiaLutz)
 
-> If you'd like you displayed name changed please contact `The Immortal Nicholas Flamel#0001` on discord or submit a PR from the associated GitHub account
+~~> If you'd like you displayed name changed please contact `The Immortal Nicholas Flamel#0001` on discord or submit a PR from the associated GitHub account~~
+> Please go to the [original repository](original-repo) for this.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
@@ -265,7 +272,6 @@ Huge thanks to anyone who threw money at this project via GitHub Sponsors. Since
 [discord-link]: https://discord.gg/W8ZSh3Z
 [mscr-link]: https://aka.ms/vs/16/release/vc_redist.x64.exe
 [mscr86-link]: https://aka.ms/vs/16/release/vc_redist.x86.exe
-[msix-install-link]: https://tf2bd-util.pazer.us/Redirect/AppInstaller?source=https://tf2bd-util.pazer.us/AppInstaller/Public.msixbundle
 [zip-image]: https://i.imgur.com/ZeCuUul.png
 [github-sponsors-pazerop]: https://github.com/sponsors/PazerOP
 [wiki-customization-link]: https://github.com/PazerOP/tf2_bot_detector/wiki/Customization#third-party-player-lists-and-rules
@@ -280,3 +286,4 @@ Huge thanks to anyone who threw money at this project via GitHub Sponsors. Since
 [update-image]: https://i.imgur.com/q95NMVy.png
 [installation-wiki]: https://github.com/PazerOP/tf2_bot_detector/wiki/Installation
 [api-wiki]: https://github.com/PazerOP/tf2_bot_detector/wiki/Integrations:-Steam-API
+[original-repo]: https://github.com/PazerOP/tf2_bot_detector/

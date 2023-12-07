@@ -179,7 +179,7 @@ void MainWindow::OnImGuiInit()
 	SetupFonts();
 }
 
-void MainWindow::OnOpenGLInit()
+void MainWindow::OpenGLInit()
 {
 	m_BaseTextures = IBaseTextures::Create(*m_TextureManager);
 }
@@ -497,8 +497,6 @@ void MainWindow::OnDrawServerStats()
 
 void MainWindow::OnDraw()
 {
-	ImGui::Begin("bd_main");
-
 	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
 
@@ -570,8 +568,8 @@ void MainWindow::OnDraw()
 			ImGui::TextFmt({ 1, 1, 0, 1 }, "YES");
 		else
 			ImGui::TextFmt({ 0, 1, 0, 1 }, "NO");
-
-		ImGui::TextFmt("FPS: {:1.1f}", GetFPS());
+		
+		ImGui::TextFmt("FPS: {:1.1f}", 1000.0f / ImGui::GetIO().Framerate);
 
 		ImGui::Value("Texture Count", m_TextureManager->GetActiveTextureCount());
 
@@ -652,8 +650,6 @@ void MainWindow::OnDraw()
 
 	if (!mainWindowState.m_ChatEnabled && !mainWindowState.m_ScoreboardEnabled && !mainWindowState.m_AppLogEnabled)
 		OnDrawAllPanesDisabled();
-
-	ImGui::End();
 }
 
 void MainWindow::OnDrawAllPanesDisabled()
@@ -689,7 +685,7 @@ void MainWindow::OnEndFrame()
 void MainWindow::OnDrawMenuBar()
 {
 	const bool isInSetupFlow = m_SetupFlow.ShouldDraw();
-
+	
 	if (ImGui::BeginMenu("File"))
 	{
 		if (ImGui::MenuItem("Open Config Folder"))
@@ -818,6 +814,19 @@ void MainWindow::PostSetupFlowState::OnUpdateDiscord()
 	if (m_DRPManager)
 		m_DRPManager->Update();
 #endif
+}
+
+void MainWindow::Draw()
+{
+	if (ImGui::BeginMainMenuBar()) {
+		this->OnDrawMenuBar();
+		ImGui::EndMainMenuBar();
+	}
+
+	if (ImGui::Begin("TF2 Bot Detector")) {
+		this->OnDraw();
+		ImGui::End();
+	}
 }
 
 void MainWindow::OnUpdate()

@@ -48,12 +48,13 @@ namespace tf2_bot_detector
 		void DrawPlayerContextMarkMenu(const SteamID& steamid, const std::string& name, std::string& reasons);
 
 	private:
+		void OnDrawMenuBar();
+		void OnDraw();
 		void OnEndFrame();
-		// TODO 
-		bool HasMenuBar() const { return true; }
 		void OnDrawScoreboard();
 		void OnDrawTeamStats();
 		void OnDrawAllPanesDisabled();
+
 		void OnDrawScoreboardContextMenu(IPlayer& player);
 		void OnDrawScoreboardRow(IPlayer& player);
 		void OnDrawColorPicker(const char* name_id, std::array<float, 4>& color);
@@ -193,12 +194,10 @@ namespace tf2_bot_detector
 		std::optional<PostSetupFlowState> m_MainState;
 
 	public:
-
+		void Draw();
 		void OnUpdate();
 		void OnImGuiInit();
-		void OnOpenGLInit();
-		void OnDraw();
-		void OnDrawMenuBar();
+		void OpenGLInit();
 
 		IModeratorLogic& GetModLogic() { return *m_MainState.value().m_ModeratorLogic; }
 		const IModeratorLogic& GetModLogic() const { return *m_MainState.value().m_ModeratorLogic; }

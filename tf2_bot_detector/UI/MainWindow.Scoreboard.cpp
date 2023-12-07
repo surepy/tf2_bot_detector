@@ -77,14 +77,14 @@ void MainWindow::OnDrawScoreboard()
 				return changed || forceRecalc;
 			}();
 
-			const auto windowContentWidth = ImGui::GetWindowContentRegionWidth();
+			//const auto windowContentWidth = ImGui::GetWindowContentRegionWidth();
 			const auto windowWidth = ImGui::GetWindowWidth();
 			ImGui::BeginGroup();
 			ImGui::Columns(7, "PlayersColumns");
 
 			// Columns setup
 			{
-				float nameColumnWidth = windowContentWidth;
+				float nameColumnWidth = windowWidth;
 
 				const auto AddColumnHeader = [&](const char* name, float widthOverride = -1)
 				{
