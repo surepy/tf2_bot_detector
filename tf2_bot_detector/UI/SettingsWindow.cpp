@@ -17,8 +17,6 @@ SettingsWindow::SettingsWindow(Settings& settings) :
 
 void SettingsWindow::OnDraw()
 {
-	ImGui::Begin("Settings", NULL);
-
 	OnDrawASOSettings();
 	OnDrawCompatibilitySettings();
 	OnDrawLoggingSettings();
@@ -33,8 +31,6 @@ void SettingsWindow::OnDraw()
 
 	if (AutoLaunchTF2Checkbox(m_Settings.m_AutoLaunchTF2))
 		m_Settings.SaveFile();
-
-	ImGui::End();
 }
 
 void SettingsWindow::OnDrawASOSettings()

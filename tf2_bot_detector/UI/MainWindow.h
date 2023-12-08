@@ -33,7 +33,7 @@ namespace tf2_bot_detector
 	class ITexture;
 	class ITextureManager;
 	class IUpdateManager;
-	//class SettingsWindow;
+	class SettingsWindow;
 
 	class MainWindow final : public IConsoleLineListener, BaseWorldEventListener
 	{
@@ -72,6 +72,8 @@ namespace tf2_bot_detector
 		void OnDrawAppLog();
 		const void* m_LastLogMessage = nullptr;
 
+		bool b_SettingsOpen = false;
+		void OnDrawSettings();
 		void OpenSettingsPopup();
 
 		void OnDrawUpdateCheckPopup();
@@ -160,7 +162,7 @@ namespace tf2_bot_detector
 		time_point_t m_LastServerPingSample{};
 
 		Settings m_Settings;
-		//std::unique_ptr<SettingsWindow> m_SettingsWindow;
+		std::unique_ptr<SettingsWindow> m_SettingsWindow;
 
 		std::unique_ptr<IUpdateManager> m_UpdateManager;
 
@@ -195,6 +197,7 @@ namespace tf2_bot_detector
 
 	public:
 		void Draw();
+		// void DrawExternal();
 		void OnUpdate();
 		void OnImGuiInit();
 		void OpenGLInit();

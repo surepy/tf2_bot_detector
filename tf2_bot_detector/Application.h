@@ -38,7 +38,7 @@ namespace tf2_bot_detector
 		class ITempDB;
 	}
 
-	class TF2BDApplication : IConsoleLineListener, BaseWorldEventListener
+	class TF2BDApplication //: IConsoleLineListener, BaseWorldEventListener
 	{
 	public:
 		TF2BDApplication();
@@ -52,6 +52,7 @@ namespace tf2_bot_detector
 
 		std::unique_ptr<DB::ITempDB> m_TempDB;
 
+		/*
 		// moved from "MainWindow"
 		const void* m_LastLogMessage = nullptr;
 
@@ -160,5 +161,7 @@ namespace tf2_bot_detector
 	public:
 		IModeratorLogic& GetModLogic() { return *m_MainState.value().m_ModeratorLogic; }
 		const IModeratorLogic& GetModLogic() const { return *m_MainState.value().m_ModeratorLogic; }
+
+	*/
 	};
 }

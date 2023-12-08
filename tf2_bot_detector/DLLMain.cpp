@@ -15,6 +15,7 @@
 #include <Objbase.h>
 #include <shellapi.h>
 #endif
+
 #include "sdl2opengl.h"
 
 #include "UI/SettingsWindow.h"
@@ -62,13 +63,12 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		// Always run the tests debug builds (but don't quit afterwards)
 		tf2_bot_detector::RunTests();
 #endif
+		TF2BDApplication app;
 
+		DebugLog("Initializing TF2BDApplication...");
 		{
 			TF2BotDetectorSDLRenderer renderer;
-			Settings settings = {};
-
-			MainWindow* mainwin = new MainWindow(); 
-			SettingsWindow* sw = new SettingsWindow(settings);
+			MainWindow* mainwin = new MainWindow();
 
 			//mainwin->OnImGuiInit();
 			mainwin->OpenGLInit();
@@ -78,23 +78,22 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 				mainwin->Draw();
 			});
 
-			renderer.RegisterDrawCallback([sw] () { sw->OnDraw();  });
-
-			while (!renderer.ShouldQuit())
+			DebugLog("Entering event loop...");
+			while (!renderer.ShouldQuit()) {
 				renderer.DrawFrame();
+			}
 		}
 
 		//ImGuiDesktop::SetLogFunction(&tf2_bot_detector::ImGuiDesktopLogFunc);
 
-		DebugLog("Initializing TF2BDApplication...");
 
 		// plan: TF2BDApplication should take a Renderer as a parameter and should update separately (run in a different thread).
-		//TF2BDApplication app;
+		// TF2BDApplication app;
 
 		// TODO: we should probably seperate ui updates and data updates
 		// into a completely seperate thread, with different update rates (settable in settings).
 
-		DebugLog("Entering event loop...");
+		
 		//while (!app.ShouldQuit())
 		//	app.Update();
 	}

@@ -61,7 +61,8 @@ MainWindow::MainWindow() :
 	m_WorldState(IWorldState::Create(m_Settings)),
 	m_ActionManager(IRCONActionManager::Create(m_Settings, GetWorld())),
 	m_TextureManager(ITextureManager::Create()),
-	m_UpdateManager(IUpdateManager::Create(m_Settings))
+	m_UpdateManager(IUpdateManager::Create(m_Settings)),
+	m_SettingsWindow(std::make_unique<SettingsWindow>(m_Settings))
 {
 	ILogManager::GetInstance().CleanupLogFiles();
 
@@ -75,6 +76,7 @@ MainWindow::MainWindow() :
 	GetActionManager().AddPeriodicActionGenerator<StatusUpdateActionGenerator>();
 	GetActionManager().AddPeriodicActionGenerator<ConfigActionGenerator>();
 	GetActionManager().AddPeriodicActionGenerator<LobbyDebugActionGenerator>();
+
 
 	//app.AddManagedWindow(std::make_unique<SettingsWindow>(app, m_Settings));
 }
@@ -293,12 +295,19 @@ void MainWindow::OnDrawAppLog()
 
 void MainWindow::OpenSettingsPopup()
 {
-	/*
-	if (!m_SettingsWindow)
-		m_SettingsWindow = std::make_unique<SettingsWindow>(GetApplication(), m_Settings, *this);
-	else
-		m_SettingsWindow->RaiseWindow();
-	*/
+	b_SettingsOpen = true;
+}
+
+void MainWindow::OnDrawSettings()
+{
+	if (!b_SettingsOpen) {
+		return;
+	}
+
+	if (ImGui::Begin("Settings", &b_SettingsOpen)) {
+		m_SettingsWindow->OnDraw();
+		ImGui::End();
+	}
 }
 
 void MainWindow::OnDrawUpdateCheckPopup()
@@ -773,8 +782,9 @@ void MainWindow::OnDrawMenuBar()
 
 	if (!isInSetupFlow || m_SetupFlow.GetCurrentPage() == SetupFlowPage::TF2CommandLine)
 	{
-		if (ImGui::MenuItem("Settings"))
+		if (ImGui::MenuItem("Settings")) {
 			OpenSettingsPopup();
+		}
 	}
 
 	if (ImGui::BeginMenu("Help"))
@@ -823,10 +833,19 @@ void MainWindow::Draw()
 		ImGui::EndMainMenuBar();
 	}
 
-	if (ImGui::Begin("TF2 Bot Detector")) {
+	ImGuiWindowFlags bd_external_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoDocking;
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowViewport(viewport->ID);
+
+	if (ImGui::Begin("TF2 Bot Detector", 0, bd_external_flags)) {
 		this->OnDraw();
 		ImGui::End();
 	}
+
+	this->OnDrawSettings();
 }
 
 void MainWindow::OnUpdate()
