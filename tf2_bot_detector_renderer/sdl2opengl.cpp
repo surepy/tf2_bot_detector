@@ -140,30 +140,29 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		}
 	}
 
-	static bool so_true = true;
-	{
-		static float f = 0.0f;
-		static int counter = 0;
+	static bool showRendererSettings = false;
 
-		ImGui::Begin("Renderer Settings");                          // Create a window called "Hello, world!" and append into it.
 
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &so_true);      // Edit bools storing our window open/close state
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::MenuItem("Renderer")) {
+			showRendererSettings = true;
+		}
+		ImGui::EndMainMenuBar();
+	}
 
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	if (showRendererSettings && ImGui::Begin("Renderer Settings", &showRendererSettings)) {
 
-		ImGui::SliderFloat("Set fps", &frameTime, 0.0f, 66.6f);
+		ImGui::Text("Note: This setting will still prefer vSync.");
 
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
+		ImGui::SliderFloat("Set Frame Time", &frameTime, 0.0f, 66.6f);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 		ImGui::End();
-	}
 
-	ImGui::ShowDemoWindow(&so_true);
+		ImGui::EndMenu();
+
+		// ImGui::ShowDemoWindow(&showRendererSettings);
+	}
 
 	// Rendering
 	ImGui::Render();
