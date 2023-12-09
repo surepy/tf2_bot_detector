@@ -195,9 +195,25 @@ namespace tf2_bot_detector
 		};
 		std::optional<PostSetupFlowState> m_MainState;
 
+
+		/// <summary>
+		/// for "sleep when unfocused" feature.
+		/// note: it still will update, when a new log as been processed.
+		/// </summary>
+		bool b_ShouldUpdate = false;
+
 	public:
+		void QueueUpdate();
+		bool ShouldUpdate();
+
+		/// <summary>
+		/// Draw our imgui menu
+		///
+		/// IMPORTANT NOTE: this also handles b_ShouldUpdate/QueueUpdate
+		/// </summary>
 		void Draw();
 		// void DrawExternal();
+
 		void OnUpdate();
 		void OnImGuiInit();
 		void OpenGLInit();

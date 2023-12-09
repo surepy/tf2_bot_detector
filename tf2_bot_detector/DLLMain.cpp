@@ -63,10 +63,10 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		// Always run the tests debug builds (but don't quit afterwards)
 		tf2_bot_detector::RunTests();
 #endif
-		// plan: TF2BDApplication should take a Renderer as a parameter and should update separately (run in a different thread).
-		TF2BDApplication app;
 
 		DebugLog("Initializing TF2BDApplication...");
+		TF2BDApplication app;
+
 		{
 			TF2BotDetectorSDLRenderer renderer;
 			
@@ -75,8 +75,13 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			mainwin->OnImGuiInit();
 			mainwin->OpenGLInit();
 			
-			renderer.RegisterDrawCallback([mainwin] () {
-				mainwin->OnUpdate(); // TODO: move to SDLRenderer
+			renderer.RegisterDrawCallback([mainwin, &renderer] () {
+				// TODO: move to TF2BDApplication for less clutter in MainWindow
+				// mainwindow should only have drawing related (+ "wake from sleep") by the end of this.
+				if (renderer.InFocus() || mainwin->ShouldUpdate()) {
+					mainwin->OnUpdate();
+				}
+
 				mainwin->Draw();
 			});
 
@@ -86,17 +91,11 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			}
 		}
 
+		// this was used for "PrintLogMsg" in imgui_desktop, i'm leaving it out because
+		// 1, we're launching in 1 and only 1 possible opengl configuration which is GL 4.3 + GLSL 430
+		//  realistically *nobody* will need before gl 3 because even the GeForce 400 series supports it.
+		// 2. lazy
 		//ImGuiDesktop::SetLogFunction(&tf2_bot_detector::ImGuiDesktopLogFunc);
-
-
-
-
-		// TODO: we should probably seperate ui updates and data updates
-		// into a completely seperate thread, with different update rates (settable in settings).
-
-		
-		//while (!app.ShouldQuit())
-		//	app.Update();
 	}
 
 	ILogManager::GetInstance().CleanupEmptyLogs();

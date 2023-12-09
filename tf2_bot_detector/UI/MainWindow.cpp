@@ -76,9 +76,6 @@ MainWindow::MainWindow() :
 	GetActionManager().AddPeriodicActionGenerator<StatusUpdateActionGenerator>();
 	GetActionManager().AddPeriodicActionGenerator<ConfigActionGenerator>();
 	GetActionManager().AddPeriodicActionGenerator<LobbyDebugActionGenerator>();
-
-
-	//app.AddManagedWindow(std::make_unique<SettingsWindow>(app, m_Settings));
 }
 
 MainWindow::~MainWindow()
@@ -183,10 +180,7 @@ void MainWindow::SetupFonts()
 void MainWindow::OnImGuiInit()
 {
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
-	//ImGui::PushFont
-
 	SetupFonts();
-
 	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 }
 
@@ -295,7 +289,7 @@ void MainWindow::OnDrawAppLog()
 			if (m_LastLogMessage != lastLogMsg)
 			{
 				m_LastLogMessage = lastLogMsg;
-				//QueueUpdate();
+				QueueUpdate();
 			}
 
 			ImGui::PopTextWrapPos();
@@ -413,6 +407,8 @@ void MainWindow::OnDrawAboutPopup()
 	}
 }
 
+#include "ITF2BotDetectorRenderer.h"
+
 void MainWindow::PrintDebugInfo()
 {
 	DebugLog("Debug Info:"s
@@ -422,7 +418,9 @@ void MainWindow::PrintDebugInfo()
 		<< "\n\tVersion:           " << VERSION
 		<< "\n\tIs CI Build:       " << std::boolalpha << (TF2BD_IS_CI_COMPILE ? true : false)
 		<< "\n\tCompile Timestamp: " << __TIMESTAMP__
-//		<< "\n\tOpenGL Version:    " << GetGLContextVersion()
+
+		<< "\n\tImgui Version:     " << ImGui::GetVersion()
+		<< "\n\tRenderer Info:     " << TF2BotDetectorRendererBase::GetRenderer()->RendererInfo()
 
 		<< "\n\tIs Debug Build:    "
 #ifdef _DEBUG
@@ -835,6 +833,16 @@ void MainWindow::PostSetupFlowState::OnUpdateDiscord()
 #endif
 }
 
+void tf2_bot_detector::MainWindow::QueueUpdate()
+{
+	b_ShouldUpdate = true;
+}
+
+bool tf2_bot_detector::MainWindow::ShouldUpdate()
+{
+	return !this->IsSleepingEnabled() || b_ShouldUpdate;
+}
+
 void MainWindow::Draw()
 {
 	if (ImGui::BeginMainMenuBar()) {
@@ -842,8 +850,10 @@ void MainWindow::Draw()
 		ImGui::EndMainMenuBar();
 	}
 
-	ImGuiWindowFlags bd_external_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoDocking;
+	ImGuiWindowFlags bd_external_flags = ImGuiWindowFlags_NoDecoration |
+		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoDocking;
 
+	// make it fullscreen to our main viewport.
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(viewport->WorkSize);
@@ -855,6 +865,8 @@ void MainWindow::Draw()
 	}
 
 	this->OnDrawSettings();
+
+	this->OnEndFrame();
 }
 
 void MainWindow::OnUpdate()

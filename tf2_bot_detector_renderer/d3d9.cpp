@@ -44,3 +44,13 @@ float TF2BotDetectorD3D9Renderer::GetFramerate() const
 {
 	return -1;
 }
+
+bool TF2BotDetectorD3D9Renderer::InFocus()
+{
+	return false;
+}
+
+std::string TF2BotDetectorD3D9Renderer::RendererInfo() const
+{
+	return "DirectX 9";
+}

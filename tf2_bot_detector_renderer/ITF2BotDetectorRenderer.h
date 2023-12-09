@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <string>
 
 /// <summary>
 /// Goal: have an imgui renderer base that is compatible with 2 configurations.
@@ -17,7 +18,8 @@
 /// tf2_bot_detector_external - outputs tf2_bot_detector.dll same as current
 /// tf2_bot_detector_launcher - for launching ^
 ///
-/// or i can have it so that tf2_bot_detector has both overlay and external methods builtin ig
+/// (new plan)
+/// or i can have it so that tf2_bot_detector has both overlay and external methods built in
 /// (overlay will be called by dllmain, external with laucher exported function)
 /// idk we'll see how it goes
 ///
@@ -56,12 +58,30 @@ public:
 	/// <summary>
 	/// how frequent should DrawFrame run?
 	///
-	/// note: ignored in hook mode.
+	/// note: ignored in overlay mode.
 	/// </summary>
 	/// <param name="frameTime">frame time in ms</param>
 	virtual void SetFramerate(float) = 0;
 	virtual float GetFramerate() const = 0;
 
+	/// <summary>
+	/// is this "window" in focus?
+	///
+	/// note: ignored in overlay mode.
+	/// </summary>
+	/// <returns></returns>
+	virtual bool InFocus() const = 0;
+
+	/// <summary>
+	/// is this "window" in focus?
+	///
+	/// note: ignored in overlay mode.
+	/// </summary>
+	/// <returns></returns>
+	virtual std::string RendererInfo() const = 0;
+
+
+	// do we even need these features?
 	inline static TF2BotDetectorRendererBase* ptr;
 	static TF2BotDetectorRendererBase* GetRenderer() { return ptr; }
 };

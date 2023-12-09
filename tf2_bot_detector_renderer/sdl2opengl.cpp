@@ -64,8 +64,6 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	window = SDL_CreateWindow(version_string.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
 	gl_context = SDL_GL_CreateContext(window);
 
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
-#endif 
 #ifdef IMGUI_USE_GLAD2
 	gladLoadGL([](const char* name) __declspec(noinline)
 	{
@@ -135,20 +133,26 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 
 	ImGuiIO& io = ImGui::GetIO();
 
-	static bool so_true = true;
+	// draw our registered draw functions
+	{
+		for (const auto& callOnDraw : drawFunctions) {
+			callOnDraw();
+		}
+	}
 
+	static bool so_true = true;
 	{
 		static float f = 0.0f;
 		static int counter = 0;
 
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+		ImGui::Begin("Renderer Settings");                          // Create a window called "Hello, world!" and append into it.
 
 		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 		ImGui::Checkbox("Demo Window", &so_true);      // Edit bools storing our window open/close state
 
 		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
-		ImGui::SliderFloat("set fps", &frameTime, 0.0f, 66.6f);
+		ImGui::SliderFloat("Set fps", &frameTime, 0.0f, 66.6f);
 
 		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
 			counter++;
@@ -160,13 +164,6 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 	}
 
 	ImGui::ShowDemoWindow(&so_true);
-
-	// draw
-	{
-		for (const auto& callOnDraw : drawFunctions) {
-			callOnDraw();
-		}
-	}
 
 	// Rendering
 	ImGui::Render();
@@ -204,9 +201,7 @@ bool TF2BotDetectorSDLRenderer::ShouldQuit() const
 }
 
 /// <summary>
-/// sets frame time, so we can limit how much we render (30fps is a good target)
-///
-/// TODO: implement.
+/// sets frame time, so we can limit how much we render (60fps is a good target)
 /// </summary>
 /// <param name="newFrameTime"></param>
 void TF2BotDetectorSDLRenderer::SetFramerate(float newFrameTime)
@@ -217,4 +212,14 @@ void TF2BotDetectorSDLRenderer::SetFramerate(float newFrameTime)
 float TF2BotDetectorSDLRenderer::GetFramerate() const
 {
 	return this->frameTime;
+}
+
+bool TF2BotDetectorSDLRenderer::InFocus() const
+{
+	return SDL_GetWindowFlags(window) & (SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS);
+}
+
+std::string TF2BotDetectorSDLRenderer::RendererInfo() const
+{
+	return "TF2BotDetectorSDLRenderer: OpenGl 4.3 + GLSL 430"; // fmt::format(FMT_COMPILE("TF2BotDetectorSDLRenderer: OpenGl GL 4.3 + GLSL 430"));
 }

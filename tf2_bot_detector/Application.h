@@ -49,7 +49,6 @@ namespace tf2_bot_detector
 		DB::ITempDB& GetTempDB();
 
 	private:
-
 		std::unique_ptr<DB::ITempDB> m_TempDB;
 
 		/*

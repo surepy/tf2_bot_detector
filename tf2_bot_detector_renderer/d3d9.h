@@ -40,6 +40,14 @@ public:
 	/// <param name="frameTime">frame time in ms</param>
 	void SetFramerate(float);
 	float GetFramerate() const;
+
+	/// <summary>
+	/// external-only feature.
+	/// </summary>
+	/// <returns></returns>
+	bool InFocus();
+
+	std::string RendererInfo() const;
 };
 
 
