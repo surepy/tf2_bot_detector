@@ -119,7 +119,6 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 	// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 	SDL_Event event;
 
-	// FIXME: winrt errors thrown here
 	while (SDL_PollEvent(&event))
 	{
 		ImGui_ImplSDL2_ProcessEvent(&event);
@@ -159,7 +158,6 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 		ImGui::End();
 	}
-
 
 	ImGui::ShowDemoWindow(&so_true);
 

@@ -8,7 +8,7 @@ namespace tf2_bot_detector
 	class SettingsWindow 
 	{
 	public:
-		SettingsWindow(Settings& settings);
+		SettingsWindow(Settings& settings, MainWindow& mainWindow);
 
 		void OnDraw();
 
@@ -24,6 +24,7 @@ namespace tf2_bot_detector
 		void OnDrawMiscSettings();
 
 		Settings& m_Settings;
+		MainWindow& m_MainWindow;
 
 		bool m_ModsChanged = false;
 	};

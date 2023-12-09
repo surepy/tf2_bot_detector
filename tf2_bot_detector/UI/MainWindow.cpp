@@ -62,7 +62,7 @@ MainWindow::MainWindow() :
 	m_ActionManager(IRCONActionManager::Create(m_Settings, GetWorld())),
 	m_TextureManager(ITextureManager::Create()),
 	m_UpdateManager(IUpdateManager::Create(m_Settings)),
-	m_SettingsWindow(std::make_unique<SettingsWindow>(m_Settings))
+	m_SettingsWindow(std::make_unique<SettingsWindow>(m_Settings, *this))
 {
 	ILogManager::GetInstance().CleanupLogFiles();
 
@@ -123,32 +123,40 @@ void MainWindow::SetupFonts()
 	// load into config so our glyph loads for all fonts in this config.
 	config.GlyphRanges = ranges.Data;
 
+	// load ProggyClean font(s)
 	// instead of having two copies of ProggyClean, we can just pull from the IMGUI library.
-	if (!m_ProggyTiny10Font)
 	{
-		m_ProggyTiny10Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
-			IFilesystem::Get().ResolvePath("fonts/ProggyTiny.ttf", PathUsage::Read).string().c_str(),
-			10, &config);
+		// ProggyClean13 is provided by imgui itself, we need to load it first for backwards compatibility reason.
+		ImGui::GetIO().Fonts->AddFontDefault();
+
+		// We can load ProggyClean26 the same way.
+		if (!m_ProggyClean26Font)
+		{
+			config.GlyphOffset.y = 1;
+			config.SizePixels = 26;
+
+			m_ProggyClean26Font = ImGui::GetIO().Fonts->AddFontDefault(&config);
+		}
 	}
 
-	if (!m_ProggyTiny20Font)
+	// load ProggyTiny font(s)
 	{
-		m_ProggyTiny20Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
-			IFilesystem::Get().ResolvePath("fonts/ProggyTiny.ttf", PathUsage::Read).string().c_str(),
-			20, &config);
+		if (!m_ProggyTiny10Font)
+		{
+			m_ProggyTiny10Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
+				IFilesystem::Get().ResolvePath("fonts/ProggyTiny.ttf", PathUsage::Read).string().c_str(),
+				10, &config);
+		}
+
+		if (!m_ProggyTiny20Font)
+		{
+			m_ProggyTiny20Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(
+				IFilesystem::Get().ResolvePath("fonts/ProggyTiny.ttf", PathUsage::Read).string().c_str(),
+				20, &config);
+		}
 	}
 
-	// ProggyClean13 is loaded by ImGuiDesktop::Application::Application() constructor.
-
-	if (!m_ProggyClean26Font)
-	{
-		config.GlyphOffset.y = 1;
-		config.SizePixels = 26;
-		// ProggyClean is embedded in imgui, no need to have two files.
-		m_ProggyClean26Font = ImGui::GetIO().Fonts->AddFontDefault(&config);
-	}
-
-	// reset so we use defaults
+	// reset so we use defaults again
 	config.OversampleH = 3;
 	config.GlyphOffset.y = 0;
 	config.SizePixels = 0.0f;
@@ -175,10 +183,11 @@ void MainWindow::SetupFonts()
 void MainWindow::OnImGuiInit()
 {
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
-	//ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 	//ImGui::PushFont
 
 	SetupFonts();
+
+	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 }
 
 void MainWindow::OpenGLInit()
@@ -889,7 +898,7 @@ void MainWindow::OnConsoleLogChunkParsed(IWorldState& world, bool consoleLinesUp
 
 bool MainWindow::IsSleepingEnabled() const
 {
-	return m_Settings.m_SleepWhenUnfocused; // FIX && !HasFocus();
+	return m_Settings.m_SleepWhenUnfocused;
 }
 
 bool MainWindow::IsTimeEven() const
