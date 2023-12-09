@@ -3,16 +3,18 @@
 #if WIN32
 #include <Windows.h>
 #endif
-#include <gl/GL.h>
+//
 
-#include "imgui.h"
+#include <glad/gl.h>
+//#include <gl/GL.h>
+// TODO use glad
+
+#include <imgui.h>
+
 #include <backends/imgui_impl_sdl2.h>
-#include <backends/imgui_impl_opengl3.h>
 #include <SDL.h>
 
-// #include <glad/gl.h>
-// TODO use glad
-#include <SDL_opengl.h>
+#include <backends/imgui_impl_opengl3.h>
 
 #include <iomanip>
 #include <sstream>
@@ -20,6 +22,11 @@
 
 #include <fmt/format.h>
 #include <fmt/compile.h>
+
+#ifdef __WINRT__
+#endif
+
+#define GL_APIENTRY GLAD_API_PTR
 
 using namespace std::string_literals;
 
@@ -34,21 +41,37 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 		// TODO: crash
 	}
 
-	// GL 3.0 + GLSL 130
-	const char* glsl_version = "#version 130";
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+	// ~~GL 3.0 + GLSL 130~~
+	// * GL 4.3 + GLSL 430 core *
+	const char* glsl_version = "#version 430 core";
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 
 	// Create window with graphics context
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	// Create our window
+	// 
+	// SDL_WINDOW_HIDDEN: Why? Why do I have to do this or WinRT complains constantly about IID_ITfUIElementSink not being registered, why???
+	// why do i have to create it with SDL_WINDOW_HIDDEN and then call SDL_ShowWindow at the bottom of this constructor??
+	// it's also how pazer's imgui_desktop handled it;; but, but why??
+	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
 	window = SDL_CreateWindow(version_string.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
 	gl_context = SDL_GL_CreateContext(window);
+
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
+#endif 
+#ifdef IMGUI_USE_GLAD2
+	gladLoadGL([](const char* name) __declspec(noinline)
+	{
+		return reinterpret_cast<GLADapiproc>(SDL_GL_GetProcAddress(name));
+	});
+#endif
 
 	SDL_GL_MakeCurrent(window, gl_context);
 	SDL_GL_SetSwapInterval(1); // Enable vsync
@@ -71,6 +94,8 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	// Setup Platform/Renderer backends
 	ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 	ImGui_ImplOpenGL3_Init(glsl_version);
+
+	SDL_ShowWindow(window);
 }
 
 TF2BotDetectorSDLRenderer::~TF2BotDetectorSDLRenderer()
@@ -111,8 +136,7 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 
 	ImGuiIO& io = ImGui::GetIO();
 
-	bool so_true = true;
-	ImGui::ShowDemoWindow(&so_true);
+	static bool so_true = true;
 
 	{
 		static float f = 0.0f;
@@ -122,7 +146,6 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 
 		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 		ImGui::Checkbox("Demo Window", &so_true);      // Edit bools storing our window open/close state
-		ImGui::Checkbox("Another Window", &so_true);
 
 		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
@@ -136,6 +159,9 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 		ImGui::End();
 	}
+
+
+	ImGui::ShowDemoWindow(&so_true);
 
 	// draw
 	{
@@ -163,6 +189,9 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 	}
 
 	SDL_GL_SwapWindow(window);
+
+	// lmfao
+	SDL_Delay(static_cast<Uint32>(this->frameTime));
 }
 
 std::size_t TF2BotDetectorSDLRenderer::RegisterDrawCallback(DrawableCallbackFn function)
@@ -176,11 +205,6 @@ bool TF2BotDetectorSDLRenderer::ShouldQuit() const
 	return !running;
 }
 
-void TF2BotDetectorSDLRenderer::testa()
-{
-	//drawFunction();
-}
-
 /// <summary>
 /// sets frame time, so we can limit how much we render (30fps is a good target)
 ///
@@ -189,7 +213,6 @@ void TF2BotDetectorSDLRenderer::testa()
 /// <param name="newFrameTime"></param>
 void TF2BotDetectorSDLRenderer::SetFramerate(float newFrameTime)
 { 
-	//tf2_bot_detector::UserMessageType::ItemPickup;
 	this->frameTime = newFrameTime;
 }
 

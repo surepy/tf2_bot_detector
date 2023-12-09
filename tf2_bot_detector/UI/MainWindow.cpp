@@ -175,7 +175,7 @@ void MainWindow::SetupFonts()
 void MainWindow::OnImGuiInit()
 {
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
-	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
+	//ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 	//ImGui::PushFont
 
 	SetupFonts();
@@ -293,9 +293,9 @@ void MainWindow::OnDrawAppLog()
 		});
 }
 
-void MainWindow::OpenSettingsPopup()
+void MainWindow::ToggleSettingsPopup()
 {
-	b_SettingsOpen = true;
+	b_SettingsOpen = !b_SettingsOpen;
 }
 
 void MainWindow::OnDrawSettings()
@@ -783,7 +783,7 @@ void MainWindow::OnDrawMenuBar()
 	if (!isInSetupFlow || m_SetupFlow.GetCurrentPage() == SetupFlowPage::TF2CommandLine)
 	{
 		if (ImGui::MenuItem("Settings")) {
-			OpenSettingsPopup();
+			ToggleSettingsPopup();
 		}
 	}
 

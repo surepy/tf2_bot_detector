@@ -63,18 +63,20 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		// Always run the tests debug builds (but don't quit afterwards)
 		tf2_bot_detector::RunTests();
 #endif
+		// plan: TF2BDApplication should take a Renderer as a parameter and should update separately (run in a different thread).
 		TF2BDApplication app;
 
 		DebugLog("Initializing TF2BDApplication...");
 		{
 			TF2BotDetectorSDLRenderer renderer;
+			
 			MainWindow* mainwin = new MainWindow();
 
-			//mainwin->OnImGuiInit();
+			mainwin->OnImGuiInit();
 			mainwin->OpenGLInit();
-
+			
 			renderer.RegisterDrawCallback([mainwin] () {
-				mainwin->OnUpdate();
+				mainwin->OnUpdate(); // TODO: move to SDLRenderer
 				mainwin->Draw();
 			});
 
@@ -87,8 +89,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		//ImGuiDesktop::SetLogFunction(&tf2_bot_detector::ImGuiDesktopLogFunc);
 
 
-		// plan: TF2BDApplication should take a Renderer as a parameter and should update separately (run in a different thread).
-		// TF2BDApplication app;
+
 
 		// TODO: we should probably seperate ui updates and data updates
 		// into a completely seperate thread, with different update rates (settable in settings).

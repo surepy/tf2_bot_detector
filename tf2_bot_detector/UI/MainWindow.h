@@ -74,7 +74,7 @@ namespace tf2_bot_detector
 
 		bool b_SettingsOpen = false;
 		void OnDrawSettings();
-		void OpenSettingsPopup();
+		void ToggleSettingsPopup();
 
 		void OnDrawUpdateCheckPopup();
 		bool m_UpdateCheckPopupOpen = false;

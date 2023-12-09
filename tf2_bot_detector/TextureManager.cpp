@@ -18,8 +18,8 @@ using namespace gl21;
 */
 
 // TODO: reimplemnent glad stuff
-#include <Windows.h>
-#include <gl/GL.h>
+//#include <Windows.h>
+#include <glad/gl.h>
 
 #include <mh/concurrency/thread_sentinel.hpp>
 #include <mh/memory/unique_object.hpp>
@@ -166,7 +166,7 @@ Texture::Texture(const TextureManager& manager, const Bitmap& bitmap, const Text
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, bitmap.GetWidth(), bitmap.GetHeight(), 0,
 		sourceFormat, sourceType, bitmap.GetData());
 
-#if IMGUI_USE_GLAD2 && FIXME_DISABLE
+#if IMGUI_USE_GLAD2
 	if (GLAD_GL_ARB_texture_swizzle)
 	{
 		glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle.data());

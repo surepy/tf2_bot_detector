@@ -26,7 +26,10 @@ target_compile_definitions(tf2_bot_detector_renderer PRIVATE BD_VERSION="${TF2BD
 # imgui options
 option(imgui_USE_OPENGL2 "Includes the OpenGL2 implementation." off)
 option(imgui_USE_OPENGL3 "Includes the OpenGL3 implementation." on)
-option(imgui_USE_DX9 "Includes the OpenGL3 implementation." on)
+option(imgui_USE_DX9 "Includes the DirectX9 implementation." on)
+
+option(imgui_USE_GLAD2 "Uses Glad2 implementation." on)
+
 option(imgui_USE_GLBINDING "Uses glbinding for the OpenGL implementation." off)
 option(imgui_USE_SDL2 "Uses the SDL2 implementation." on)
 
@@ -76,10 +79,6 @@ if(imgui_USE_OPENGL3)
 	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl3.h")
 
 	target_compile_definitions(imgui PUBLIC "IMGUI_USE_OPENGL3")
-
-	if (WIN32)
-		target_link_libraries(imgui PRIVATE "OpenGL32.lib")
-	endif()
 endif()
 
 # backend: dx9
@@ -109,6 +108,11 @@ elseif(imgui_USE_GLFW)
 		"${IMGUI_DIR}/backends/imgui_impl_glfw.h"
 	)
 endif()
+
+# backend: glad2
+find_package(glad2 REQUIRED)
+target_link_libraries(imgui PRIVATE glad2::glad2)
+target_compile_definitions(imgui PUBLIC IMGUI_USE_GLAD2)
 
 # renderer includes
 find_package(fmt CONFIG REQUIRED)

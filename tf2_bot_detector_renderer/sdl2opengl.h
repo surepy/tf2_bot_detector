@@ -47,8 +47,6 @@ public:
 	void SetFramerate(float);
 	float GetFramerate() const;
 
-	void testa();
-
 private:
 
 	//std::vector<ITF2BotDetectorDrawable> drawable;
@@ -58,5 +56,6 @@ private:
 	SDL_GLContext gl_context;
 
 	bool running = true;
-	float frameTime = 33.3f;
+	// runs 60fps by default
+	float frameTime = 16.6f;
 };
