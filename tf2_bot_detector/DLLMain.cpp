@@ -65,23 +65,24 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 #endif
 
 		DebugLog("Initializing TF2BDApplication...");
-		TF2BDApplication app;
+		TF2BotDetectorSDLRenderer renderer;
 
+		std::shared_ptr<TF2BDApplication> app = std::make_shared<TF2BDApplication>();
 		{
-			TF2BotDetectorSDLRenderer renderer;
-			
-			MainWindow* mainwin = new MainWindow();
+			MainWindow* mainwin = new MainWindow(app.get());
 
 			mainwin->OnImGuiInit();
 			mainwin->OpenGLInit();
 			
-			renderer.RegisterDrawCallback([mainwin, &renderer] () {
+			renderer.RegisterDrawCallback([mainwin, &renderer, app] () {
 				// TODO: move to TF2BDApplication for less clutter in MainWindow
-				// mainwindow should only have drawing related (+ "wake from sleep") by the end of this.
-				if (renderer.InFocus() || mainwin->ShouldUpdate()) {
-					mainwin->OnUpdate();
+				if (renderer.InFocus() || app->ShouldUpdate()) {
+					//mainwin->OnUpdate();
+					app->Update();
 				}
 
+				// important note: while mainwindow handles drawing related stuff,
+				// it also handles "wake from sleep" so our app state actually gets updated.
 				mainwin->Draw();
 			});
 

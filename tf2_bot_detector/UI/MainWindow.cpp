@@ -19,6 +19,7 @@
 #include "GlobalDispatcher.h"
 #include "Networking/HTTPClient.h"
 #include "SettingsWindow.h"
+#include "Application.h"
 
 #include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
 #include "ConsoleLog/ConsoleLines/EdictUsageLine.h"
@@ -46,36 +47,13 @@ using namespace std::chrono_literals;
 using namespace std::string_literals;
 using namespace std::string_view_literals;
 
-namespace tf2_bot_detector
-{
-	mh::dispatcher& GetDispatcher()
-	{
-		static mh::dispatcher s_Dispatcher;
-		return s_Dispatcher;
-	}
-}
-
-// ImGuiDesktop::Window(app, 800, 600, mh::fmtstr<128>("TF2 Bot Detector v{} (sleepybuild)", VERSION).c_str()),
-
-MainWindow::MainWindow() :
-	m_WorldState(IWorldState::Create(m_Settings)),
-	m_ActionManager(IRCONActionManager::Create(m_Settings, GetWorld())),
+MainWindow::MainWindow(TF2BDApplication* application) :
 	m_TextureManager(ITextureManager::Create()),
-	m_UpdateManager(IUpdateManager::Create(m_Settings)),
+	m_Application(application),
+	m_Settings(application->m_Settings),
 	m_SettingsWindow(std::make_unique<SettingsWindow>(m_Settings, *this))
 {
-	ILogManager::GetInstance().CleanupLogFiles();
-
-	GetWorld().AddConsoleLineListener(this);
-	GetWorld().AddWorldEventListener(this);
-
 	PrintDebugInfo();
-
-	m_OpenTime = clock_t::now();
-
-	GetActionManager().AddPeriodicActionGenerator<StatusUpdateActionGenerator>();
-	GetActionManager().AddPeriodicActionGenerator<ConfigActionGenerator>();
-	GetActionManager().AddPeriodicActionGenerator<LobbyDebugActionGenerator>();
 }
 
 MainWindow::~MainWindow()
@@ -240,13 +218,13 @@ void MainWindow::OnDrawChat()
 
 	ImGui::AutoScrollBox("##fileContents", { 0, 0 }, [&]()
 		{
-			if (!m_MainState)
+			if (!m_Application->GetMainState())
 				return;
 
 			ImGui::PushTextWrapPos();
 
-			const IConsoleLine::PrintArgs args{ m_Settings, *m_WorldState, *this };
-			for (auto it = m_MainState->m_PrintingLines.rbegin(); it != m_MainState->m_PrintingLines.rend(); ++it)
+			const IConsoleLine::PrintArgs args{ m_Settings, *m_Application->m_WorldState, *this };
+			for (auto it = m_Application->GetMainState()->m_PrintingLines.rbegin(); it != m_Application->GetMainState()->m_PrintingLines.rend(); ++it)
 			{
 				assert(*it);
 				(*it)->Print(args);
@@ -290,6 +268,7 @@ void MainWindow::OnDrawAppLog()
 			{
 				m_LastLogMessage = lastLogMsg;
 				QueueUpdate();
+				m_Application->QueueUpdate();
 			}
 
 			ImGui::PopTextWrapPos();
@@ -484,14 +463,14 @@ void MainWindow::OnDrawServerStats()
 {
 	ImGui::PlotLines("Edicts", [&](int idx)
 		{
-			return m_EdictUsageSamples[idx].m_UsedEdicts;
-		}, (int)m_EdictUsageSamples.size(), 0, nullptr, 0, 2048);
+			return m_Application->m_EdictUsageSamples[idx].m_UsedEdicts;
+		}, (int)m_Application->m_EdictUsageSamples.size(), 0, nullptr, 0, 2048);
 
-	if (!m_EdictUsageSamples.empty())
+	if (!m_Application->m_EdictUsageSamples.empty())
 	{
 		ImGui::SameLine(0, 4);
 
-		auto& lastSample = m_EdictUsageSamples.back();
+		auto& lastSample = m_Application->m_EdictUsageSamples.back();
 		const float percent = float(lastSample.m_UsedEdicts) / lastSample.m_MaxEdicts;
 		ImGui::ProgressBar(percent, { -1, 0 },
 			mh::pfstr<64>("%i (%1.0f%%)", lastSample.m_UsedEdicts, percent * 100).c_str());
@@ -499,13 +478,13 @@ void MainWindow::OnDrawServerStats()
 		ImGui::SetHoverTooltip("{} of {} ({:1.1f}%)", lastSample.m_UsedEdicts, lastSample.m_MaxEdicts, percent * 100);
 	}
 
-	if (!m_ServerPingSamples.empty())
+	if (!m_Application->m_ServerPingSamples.empty())
 	{
-		ImGui::PlotLines(mh::fmtstr<64>("Average ping: {}", m_ServerPingSamples.back().m_Ping).c_str(),
+		ImGui::PlotLines(mh::fmtstr<64>("Average ping: {}", m_Application->m_ServerPingSamples.back().m_Ping).c_str(),
 			[&](int idx)
 			{
-				return m_ServerPingSamples[idx].m_Ping;
-			}, (int)m_ServerPingSamples.size(), 0, nullptr, 0);
+				return m_Application->m_ServerPingSamples[idx].m_Ping;
+			}, (int)m_Application->m_ServerPingSamples.size(), 0, nullptr, 0);
 	}
 
 	//OnDrawNetGraph();
@@ -524,15 +503,15 @@ void MainWindow::OnDraw()
 
 	{
 		ISetupFlowPage::DrawState ds;
-		ds.m_ActionManager = &GetActionManager();
-		ds.m_UpdateManager = m_UpdateManager.get();
+		ds.m_ActionManager = &m_Application->GetActionManager();
+		ds.m_UpdateManager = m_Application->m_UpdateManager.get();
 		ds.m_Settings = &m_Settings;
 
-		if (m_SetupFlow.OnDraw(m_Settings, ds))
+		if (m_Application->m_SetupFlow.OnDraw(m_Settings, ds))
 			return;
 	}
 
-	if (!m_MainState)
+	if (!m_Application->GetMainState())
 		return;
 
 	const auto& mainWindowState = m_Settings.m_UIState.m_MainWindow;
@@ -543,7 +522,7 @@ void MainWindow::OnDraw()
 
 	ImGui::HorizontalScrollBox("SettingsScroller", [&]
 		{
-			ImGui::Checkbox("Pause", &m_Paused); ImGui::SameLine();
+			ImGui::Checkbox("Pause", &m_Application->m_Paused); ImGui::SameLine();
 
 			auto& settings = m_Settings;
 			const auto ModerationCheckbox = [&settings](const char* name, bool& value, const char* tooltip)
@@ -573,14 +552,14 @@ void MainWindow::OnDraw()
 
 #ifdef _DEBUG
 	{
-		ImGui::Value("Time (Compensated)", to_seconds<float>(GetCurrentTimestampCompensated() - m_OpenTime));
+		ImGui::Value("Time (Compensated)", to_seconds<float>(m_Application->GetCurrentTimestampCompensated() - m_Application->m_OpenTime));
 
-		auto leader = GetModLogic().GetBotLeader();
+		auto leader = m_Application->GetModLogic().GetBotLeader();
 		ImGui::Value("Bot Leader", leader ? mh::fmtstr<128>("{}", *leader).view() : ""sv);
 
 		ImGui::TextFmt("Is vote in progress:");
 		ImGui::SameLine();
-		if (GetWorld().IsVoteInProgress())
+		if (m_Application->GetWorld().IsVoteInProgress())
 			ImGui::TextFmt({ 1, 1, 0, 1 }, "YES");
 		else
 			ImGui::TextFmt({ 0, 1, 0, 1 }, "NO");
@@ -621,14 +600,14 @@ void MainWindow::OnDraw()
 	}
 #endif
 
-	ImGui::Value("Blacklisted user count", GetModLogic().GetBlacklistedPlayerCount());
-	ImGui::Value("Rule count", GetModLogic().GetRuleCount());
+	ImGui::Value("Blacklisted user count", m_Application->GetModLogic().GetBlacklistedPlayerCount());
+	ImGui::Value("Rule count", m_Application->GetModLogic().GetRuleCount());
 
-	if (m_MainState)
+	if (m_Application->GetMainState())
 	{
-		auto& world = GetWorld();
-		const auto parsedLineCount = m_ParsedLineCount;
-		const auto parseProgress = m_MainState->m_Parser.GetParseProgress();
+		auto& world = m_Application->GetWorld();
+		const auto parsedLineCount = m_Application->m_ParsedLineCount;
+		const auto parseProgress = m_Application->GetMainState()->m_Parser.GetParseProgress();
 
 		if (parseProgress < 0.95f)
 		{
@@ -700,7 +679,7 @@ void MainWindow::OnEndFrame()
 
 void MainWindow::OnDrawMenuBar()
 {
-	const bool isInSetupFlow = m_SetupFlow.ShouldDraw();
+	const bool isInSetupFlow = m_Application->m_SetupFlow.ShouldDraw();
 	
 	if (ImGui::BeginMenu("File"))
 	{
@@ -714,7 +693,7 @@ void MainWindow::OnDrawMenuBar()
 		if (!isInSetupFlow)
 		{
 			if (ImGui::MenuItem("Reload Playerlists/Rules"))
-				GetModLogic().ReloadConfigFiles();
+				m_Application->GetModLogic().ReloadConfigFiles();
 			if (ImGui::MenuItem("Reload Settings"))
 				m_Settings.LoadFile();
 
@@ -787,7 +766,7 @@ void MainWindow::OnDrawMenuBar()
 #endif
 #endif
 
-	if (!isInSetupFlow || m_SetupFlow.GetCurrentPage() == SetupFlowPage::TF2CommandLine)
+	if (!isInSetupFlow || m_Application->m_SetupFlow.GetCurrentPage() == SetupFlowPage::TF2CommandLine)
 	{
 		if (ImGui::MenuItem("Settings")) {
 			ToggleSettingsPopup();
@@ -815,23 +794,6 @@ void MainWindow::OnDrawMenuBar()
 	}
 }
 
-void MainWindow::PostSetupFlowState::OnUpdateDiscord()
-{
-#ifdef TF2BD_ENABLE_DISCORD_INTEGRATION
-	const auto curTime = clock_t::now();
-	if (!m_DRPManager && m_Parent->m_Settings.m_Discord.m_EnableRichPresence)
-	{
-		m_DRPManager = IDRPManager::Create(m_Parent->m_Settings, m_Parent->GetWorld());
-	}
-	else if (m_DRPManager && !m_Parent->m_Settings.m_Discord.m_EnableRichPresence)
-	{
-		m_DRPManager.reset();
-	}
-
-	if (m_DRPManager)
-		m_DRPManager->Update();
-#endif
-}
 
 void tf2_bot_detector::MainWindow::QueueUpdate()
 {
@@ -869,227 +831,9 @@ void MainWindow::Draw()
 	this->OnEndFrame();
 }
 
-void MainWindow::OnUpdate()
-{
-	if (m_Paused)
-		return;
-
-	GetDispatcher().run_for(10ms);
-
-	GetWorld().Update();
-	m_UpdateManager->Update();
-
-	if (m_Settings.m_Unsaved.m_RCONClient)
-		m_Settings.m_Unsaved.m_RCONClient->set_logging(m_Settings.m_Logging.m_RCONPackets);
-
-	if (m_SetupFlow.OnUpdate(m_Settings))
-	{
-		m_MainState.reset();
-	}
-	else
-	{
-		if (!m_MainState)
-			m_MainState.emplace(*this);
-
-		m_MainState->m_Parser.Update();
-		GetModLogic().Update();
-
-		m_MainState->OnUpdateDiscord();
-	}
-
-	GetActionManager().Update();
-}
-
-void MainWindow::OnConsoleLogChunkParsed(IWorldState& world, bool consoleLinesUpdated)
-{
-	assert(&world == &GetWorld());
-
-	if (consoleLinesUpdated)
-		UpdateServerPing(GetCurrentTimestampCompensated());
-}
-
 bool MainWindow::IsSleepingEnabled() const
 {
 	return m_Settings.m_SleepWhenUnfocused;
-}
-
-bool MainWindow::IsTimeEven() const
-{
-	const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(clock_t::now() - m_OpenTime);
-	return !(seconds.count() % 2);
-}
-
-float MainWindow::TimeSine(float interval, float min, float max) const
-{
-	const auto elapsed = (clock_t::now() - m_OpenTime) % std::chrono::duration_cast<clock_t::duration>(std::chrono::duration<float>(interval));
-	const auto progress = std::chrono::duration<float>(elapsed).count() / interval;
-	return mh::remap(std::sin(progress * 6.28318530717958647693f), -1.0f, 1.0f, min, max);
-}
-
-void MainWindow::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
-{
-	m_ParsedLineCount++;
-
-	if (parsed.ShouldPrint() && m_MainState)
-	{
-		while (m_MainState->m_PrintingLines.size() > m_MainState->MAX_PRINTING_LINES)
-			m_MainState->m_PrintingLines.pop_back();
-
-		m_MainState->m_PrintingLines.push_front(parsed.shared_from_this());
-	}
-
-	switch (parsed.GetType())
-	{
-	case ConsoleLineType::LobbyChanged:
-	{
-		auto& lobbyChangedLine = static_cast<const LobbyChangedLine&>(parsed);
-		const LobbyChangeType changeType = lobbyChangedLine.GetChangeType();
-
-		if (changeType == LobbyChangeType::Created || changeType == LobbyChangeType::Updated)
-			GetActionManager().QueueAction<LobbyUpdateAction>();
-
-		break;
-	}
-	case ConsoleLineType::EdictUsage:
-	{
-		auto& usageLine = static_cast<const EdictUsageLine&>(parsed);
-		m_EdictUsageSamples.push_back({ usageLine.GetTimestamp(), usageLine.GetUsedEdicts(), usageLine.GetTotalEdicts() });
-
-		while (m_EdictUsageSamples.front().m_Timestamp < (usageLine.GetTimestamp() - 5min))
-			m_EdictUsageSamples.erase(m_EdictUsageSamples.begin());
-
-		break;
-	}
-
-	default: break;
-	}
-}
-
-void MainWindow::OnConsoleLineUnparsed(IWorldState& world, const std::string_view& text)
-{
-	m_ParsedLineCount++;
-}
-
-mh::generator<IPlayer&> MainWindow::PostSetupFlowState::GeneratePlayerPrintData()
-{
-	IPlayer* printData[33]{};
-	auto begin = std::begin(printData);
-	auto end = std::end(printData);
-	assert(begin <= end);
-	auto& world = m_Parent->m_WorldState;
-	assert(static_cast<size_t>(end - begin) >= world->GetApproxLobbyMemberCount());
-
-	std::fill(begin, end, nullptr);
-
-	{
-		auto* current = begin;
-		for (IPlayer& member : world->GetLobbyMembers())
-		{
-			*current = &member;
-			current++;
-		}
-
-		if (current == begin)
-		{
-			// We seem to have either an empty lobby or we're playing on a community server.
-			// Just find the most recent status updates.
-			for (IPlayer& playerData : world->GetPlayers())
-			{
-				if (playerData.GetLastStatusUpdateTime() >= (world->GetLastStatusUpdateTime() - 15s))
-				{
-					*current = &playerData;
-					current++;
-
-					if (current >= end)
-						break; // This might happen, but we're not in a lobby so everything has to be approximate
-				}
-			}
-		}
-
-		end = current;
-	}
-
-	std::sort(begin, end, [](const IPlayer* lhs, const IPlayer* rhs) -> bool
-		{
-			assert(lhs);
-			assert(rhs);
-			//if (!lhs && !rhs)
-			//	return false;
-			//if (auto result = !!rhs <=> !!lhs; !std::is_eq(result))
-			//	return result < 0;
-
-			// Intentionally reversed, we want descending kill order
-			if (auto killsResult = rhs->GetScores().m_Kills <=> lhs->GetScores().m_Kills; !std::is_eq(killsResult))
-				return std::is_lt(killsResult);
-
-			if (auto deathsResult = lhs->GetScores().m_Deaths <=> rhs->GetScores().m_Deaths; !std::is_eq(deathsResult))
-				return std::is_lt(deathsResult);
-
-			// Sort by ascending userid
-			{
-				auto luid = lhs->GetUserID();
-				auto ruid = rhs->GetUserID();
-				if (luid && ruid)
-				{
-					if (auto result = *luid <=> *ruid; !std::is_eq(result))
-						return std::is_lt(result);
-				}
-			}
-
-			return false;
-		});
-
-	for (auto it = begin; it != end; ++it)
-		co_yield **it;
-}
-
-void MainWindow::UpdateServerPing(time_point_t timestamp)
-{
-	if ((timestamp - m_LastServerPingSample) <= 7s)
-		return;
-
-	float totalPing = 0;
-	uint16_t samples = 0;
-
-	for (IPlayer& player : GetWorld().GetPlayers())
-	{
-		if (player.GetLastStatusUpdateTime() < (timestamp - 20s))
-			continue;
-
-		auto& data = player.GetOrCreateData<PlayerExtraData>(player);
-		totalPing += data.GetAveragePing();
-		samples++;
-	}
-
-	m_ServerPingSamples.push_back({ timestamp, uint16_t(totalPing / samples) });
-	m_LastServerPingSample = timestamp;
-
-	while ((timestamp - m_ServerPingSamples.front().m_Timestamp) > 5min)
-		m_ServerPingSamples.erase(m_ServerPingSamples.begin());
-}
-
-time_point_t MainWindow::GetLastStatusUpdateTime() const
-{
-	return GetWorld().GetLastStatusUpdateTime();
-}
-
-float MainWindow::PlayerExtraData::GetAveragePing() const
-{
-	unsigned totalPing = m_Parent->GetPing();
-	unsigned samples = 1;
-
-	for (const auto& entry : m_PingHistory)
-	{
-		totalPing += entry.m_Ping;
-		samples++;
-	}
-
-	return totalPing / float(samples);
-}
-
-time_point_t MainWindow::GetCurrentTimestampCompensated() const
-{
-	return GetWorld().GetCurrentTime();
 }
 
 mh::expected<std::shared_ptr<ITexture>, std::error_condition> MainWindow::TryGetAvatarTexture(IPlayer& player)
@@ -1154,12 +898,3 @@ mh::expected<std::shared_ptr<ITexture>, std::error_condition> MainWindow::TryGet
 		return std::errc::operation_in_progress;
 }
 
-MainWindow::PostSetupFlowState::PostSetupFlowState(MainWindow& window) :
-	m_Parent(&window),
-	m_ModeratorLogic(IModeratorLogic::Create(window.GetWorld(), window.m_Settings, window.GetActionManager())),
-	m_Parser(window.GetWorld(), window.m_Settings, window.m_Settings.GetTFDir() / "console.log")
-{
-#ifdef TF2BD_ENABLE_DISCORD_INTEGRATION
-	m_DRPManager = IDRPManager::Create(window.m_Settings, window.GetWorld());
-#endif
-}

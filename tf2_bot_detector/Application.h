@@ -38,7 +38,7 @@ namespace tf2_bot_detector
 		class ITempDB;
 	}
 
-	class TF2BDApplication //: IConsoleLineListener, BaseWorldEventListener
+	class TF2BDApplication : IConsoleLineListener, BaseWorldEventListener
 	{
 	public:
 		TF2BDApplication();
@@ -51,40 +51,28 @@ namespace tf2_bot_detector
 	private:
 		std::unique_ptr<DB::ITempDB> m_TempDB;
 
-		/*
 		// moved from "MainWindow"
 		const void* m_LastLogMessage = nullptr;
 
-		void PrintDebugInfo();
-		void GenerateDebugReport();
-
-		//void OnUpdate() override;
-
-		//bool IsSleepingEnabled() const override;
+		bool IsSleepingEnabled() const;
 
 		bool IsTimeEven() const;
 		float TimeSine(float interval = 1.0f, float min = 0, float max = 1) const;
 
-		void SetupFonts();
-
 		// IConsoleLineListener
-		//void OnConsoleLineParsed(IWorldState& world, IConsoleLine& line) override;
-		//void OnConsoleLineUnparsed(IWorldState& world, const std::string_view& text) override;
-		//void OnConsoleLogChunkParsed(IWorldState& world, bool consoleLinesParsed) override;
+		void OnConsoleLineParsed(IWorldState& world, IConsoleLine& line) override;
+		void OnConsoleLineUnparsed(IWorldState& world, const std::string_view& text) override;
+		void OnConsoleLogChunkParsed(IWorldState& world, bool consoleLinesParsed) override;
 		size_t m_ParsedLineCount = 0;
 
 		// IWorldEventListener
-		//void OnChatMsg(WorldState& world, const IPlayer& player, const std::string_view& msg) override;
-		//void OnUpdate(WorldState& world, bool consoleLinesUpdated) override;
+		// void OnChatMsg(WorldState& world, const IPlayer& player, const std::string_view& msg) override;
+		// void OnUpdate(WorldState& world, bool consoleLinesUpdated) override;
 
 		bool m_Paused = false;
 
 		// Gets the current timestamp, but time progresses in real time even without new messages
 		time_point_t GetCurrentTimestampCompensated() const;
-
-		mh::expected<std::shared_ptr<ITexture>, std::error_condition> TryGetAvatarTexture(IPlayer& player);
-		std::shared_ptr<ITextureManager> m_TextureManager;
-		std::unique_ptr<IBaseTextures> m_BaseTextures;
 
 		struct PingSample
 		{
@@ -138,11 +126,17 @@ namespace tf2_bot_detector
 		IRCONActionManager& GetActionManager() { return *m_ActionManager; }
 		const IRCONActionManager& GetActionManager() const { return *m_ActionManager; }
 
+		/// <summary>
+		/// for "sleep when unfocused" feature.
+		/// note: it still will update, when a new log as been processed.
+		/// </summary>
+		bool b_ShouldUpdate = false;
+
 		struct PostSetupFlowState
 		{
-			PostSetupFlowState(MainWindow& window);
+			PostSetupFlowState(TF2BDApplication& window);
 
-			MainWindow* m_Parent = nullptr;
+			TF2BDApplication* m_Parent = nullptr;
 			std::unique_ptr<IModeratorLogic> m_ModeratorLogic;
 
 			ConsoleLogParser m_Parser;
@@ -158,9 +152,16 @@ namespace tf2_bot_detector
 		std::optional<PostSetupFlowState> m_MainState;
 
 	public:
+		void QueueUpdate();
+		bool ShouldUpdate();
+		void Update();
+
+		std::optional<PostSetupFlowState>& GetMainState() { return m_MainState; }
+
 		IModeratorLogic& GetModLogic() { return *m_MainState.value().m_ModeratorLogic; }
 		const IModeratorLogic& GetModLogic() const { return *m_MainState.value().m_ModeratorLogic; }
 
-	*/
+		// for easy migration
+		friend class MainWindow;
 	};
 }

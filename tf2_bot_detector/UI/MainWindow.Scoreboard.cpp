@@ -129,7 +129,7 @@ void MainWindow::OnDrawScoreboard()
 				ImGui::Separator();
 			}
 
-			for (IPlayer& player : m_MainState->GeneratePlayerPrintData())
+			for (IPlayer& player : m_Application->m_MainState->GeneratePlayerPrintData())
 				OnDrawScoreboardRow(player);
 
 			ImGui::EndGroup();
@@ -185,8 +185,8 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 	bool shouldDrawPlayerTooltip = false;
 
 	// Selectable
-	const auto teamShareResult = GetModLogic().GetTeamShareResult(player);
-	const auto playerAttribs = GetModLogic().GetPlayerAttributes(player);
+	const auto teamShareResult = m_Application->GetModLogic().GetTeamShareResult(player);
+	const auto playerAttribs = m_Application->GetModLogic().GetPlayerAttributes(player);
 	{
 		ImVec4 bgColor = [&]() -> ImVec4
 		{
@@ -206,13 +206,13 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 		}();
 
 		if (playerAttribs.Has(PlayerAttribute::Cheater))
-			bgColor = BlendColors(bgColor.to_array(), m_Settings.m_Theme.m_Colors.m_ScoreboardCheaterBG, TimeSine());
+			bgColor = BlendColors(bgColor.to_array(), m_Settings.m_Theme.m_Colors.m_ScoreboardCheaterBG, m_Application->TimeSine());
 		else if (playerAttribs.Has(PlayerAttribute::Suspicious))
-			bgColor = BlendColors(bgColor.to_array(), m_Settings.m_Theme.m_Colors.m_ScoreboardSuspiciousBG, TimeSine());
+			bgColor = BlendColors(bgColor.to_array(), m_Settings.m_Theme.m_Colors.m_ScoreboardSuspiciousBG, m_Application->TimeSine());
 		else if (playerAttribs.Has(PlayerAttribute::Exploiter))
-			bgColor = BlendColors(bgColor.to_array(), m_Settings.m_Theme.m_Colors.m_ScoreboardExploiterBG, TimeSine());
+			bgColor = BlendColors(bgColor.to_array(), m_Settings.m_Theme.m_Colors.m_ScoreboardExploiterBG, m_Application->TimeSine());
 		else if (playerAttribs.Has(PlayerAttribute::Racist))
-			bgColor = BlendColors(bgColor.to_array(), m_Settings.m_Theme.m_Colors.m_ScoreboardRacistBG, TimeSine());
+			bgColor = BlendColors(bgColor.to_array(), m_Settings.m_Theme.m_Colors.m_ScoreboardRacistBG, m_Application->TimeSine());
 
 		ImGuiDesktop::ScopeGuards::StyleColor styleColorScope(ImGuiCol_Header, bgColor);
 
@@ -432,8 +432,8 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 		tf2_bot_detector::DrawPlayerContextGoToMenu(m_Settings, steamID);
 
-		const auto& world = GetWorld();
-		auto& modLogic = GetModLogic();
+		const auto& world = m_Application->GetWorld();
+		auto& modLogic = m_Application->GetModLogic();
 
 		if (ImGui::BeginMenu("Votekick",
 			(world.GetTeamShareResult(steamID, m_Settings.GetLocalSteamID()) == TeamShareResult::SameTeams) && world.FindUserID(steamID)))
@@ -453,7 +453,7 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 		ImGui::Separator();
 
 
-		auto& data = player.GetOrCreateData<PlayerExtraData>(player);
+		auto& data = player.GetOrCreateData<TF2BDApplication::PlayerExtraData>(player);
 
 		DrawPlayerContextMarkMenu(player.GetSteamID(), player.GetNameSafe(), data.m_pendingReason);
 
@@ -471,7 +471,7 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 void MainWindow::DrawPlayerTooltip(IPlayer& player)
 {
-	DrawPlayerTooltip(player, m_WorldState->GetTeamShareResult(player), GetModLogic().GetPlayerAttributes(player));
+	DrawPlayerTooltip(player, m_Application->m_WorldState->GetTeamShareResult(player), m_Application->GetModLogic().GetPlayerAttributes(player));
 }
 
 void MainWindow::DrawPlayerTooltip(IPlayer& player, TeamShareResult teamShareResult,
@@ -921,7 +921,7 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 	PrintPlayerPlaytime(player);
 	PrintPlayerLogsCount(player);
 	PrintPlayerInventoryInfo(player);
-	PrintPlayerMarkedFriendsCount(player, GetModLogic());
+	PrintPlayerMarkedFriendsCount(player, m_Application->GetModLogic());
 
 #ifdef _DEBUG
 	ImGui::TextFmt("   Active time : {}", HumanDuration(player.GetActiveTime()));
@@ -945,7 +945,7 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 		ImGui::TextFmt("Player {} marked in playerlist(s):{}", player, playerAttribs);
 		ImGui::NewLine();
 		ImGui::Text("Reasons: ");
-		for (auto& [fileName, data] : GetModLogic().GetPlayerList()->FindPlayerData(player.GetSteamID())) {
+		for (auto& [fileName, data] : m_Application->GetModLogic().GetPlayerList()->FindPlayerData(player.GetSteamID())) {
 			if (data.m_Proof.empty()) {
 				continue;
 			}
@@ -964,7 +964,7 @@ void MainWindow::DrawPlayerContextMarkMenu(const SteamID& steamid, const std::st
 {
 	if (ImGui::BeginMenu("Mark"))
 	{
-		IModeratorLogic& modLogic = GetModLogic();
+		IModeratorLogic& modLogic = m_Application->GetModLogic();
 
 		ImGui::InputTextWithHint("", "Reason", &reasons, ImGuiInputTextFlags_CallbackAlways);
 
@@ -1005,9 +1005,9 @@ void MainWindow::OnDrawTeamStats()
 
 	TeamStats statsArray[2]{};
 
-	IWorldState& world = GetWorld();
+	IWorldState& world = m_Application->GetWorld();
 
-	for (const IPlayer& player : GetWorld().GetPlayers())
+	for (const IPlayer& player : world.GetPlayers())
 	{
 		TeamStats* stats = nullptr;
 		switch (world.GetTeamShareResult(player))
@@ -1056,7 +1056,7 @@ void MainWindow::OnDrawTeamStats()
 		stats->m_Kills += player.GetScores().m_Kills;
 		stats->m_Deaths += player.GetScores().m_Deaths;
 
-		if (!GetModLogic().GetPlayerList()->GetPlayerAttributes(player).empty()) {
+		if (!m_Application->GetModLogic().GetPlayerList()->GetPlayerAttributes(player).empty()) {
 			stats->m_MarkedCount++;
 
 			if (player.GetConnectionState() == PlayerStatusState::Active) {
