@@ -198,6 +198,7 @@ namespace
 
 // lazy and dumb function to make a string list of marked files
 std::string listMarkFiles(PlayerMarks& marks) {
+
 	PlayerAttributesList attribute{ 0 };
 	std::vector<std::string> files;
 
@@ -1011,7 +1012,7 @@ void ModeratorLogic::ProcessPlayerActions()
 
 	HandleEnemyCheaters(totalEnemyPlayers, enemyCheaters, connectingEnemyCheaters);
 
-	// because we're in a map that swaps the teams around, just ignore our own "team state" and call for everyone.
+	// because we're in a map that swaps the teams around constantly, just ignore our own "team state" and try to call for everyone.
 	if (this->VoteKickIgnoresTeamState()) {
 		HandleFriendlyCheaters(totalFriendlyPlayers + totalEnemyPlayers, connectedFriendlyPlayers + connectedEnemyPlayers, allCheaters);
 	}

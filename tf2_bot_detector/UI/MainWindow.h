@@ -71,7 +71,6 @@ namespace tf2_bot_detector
 		void OnDrawColorPickers(const char* id, const std::initializer_list<ColorPicker>& pickers);
 
 		void OnDrawAppLog();
-		const void* m_LastLogMessage = nullptr;
 
 		bool b_SettingsOpen = false;
 		void OnDrawSettings();

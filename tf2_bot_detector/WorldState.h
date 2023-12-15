@@ -104,8 +104,7 @@ namespace tf2_bot_detector
 		virtual TeamShareResult GetTeamShareResult(const SteamID& id) const = 0;
 		virtual TeamShareResult GetTeamShareResult(const SteamID& id0, const SteamID& id1) const = 0;
 		virtual TeamShareResult GetTeamShareResult(const std::optional<LobbyMemberTeam>& team0, const SteamID& id1) const = 0;
-		static TeamShareResult GetTeamShareResult(
-			const std::optional<LobbyMemberTeam>& team0, const std::optional<LobbyMemberTeam>& team1);
+		static TeamShareResult GetTeamShareResult(const std::optional<LobbyMemberTeam>& team0, const std::optional<LobbyMemberTeam>& team1);
 
 		virtual const IPlayer* FindPlayer(const SteamID& id) const = 0;
 		IPlayer* FindPlayer(const SteamID& id) { return const_cast<IPlayer*>(std::as_const(*this).FindPlayer(id)); }

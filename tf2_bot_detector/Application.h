@@ -149,6 +149,7 @@ namespace tf2_bot_detector
 			std::unique_ptr<IDRPManager> m_DRPManager;
 #endif
 		};
+
 		std::optional<PostSetupFlowState> m_MainState;
 
 	public:

@@ -264,11 +264,10 @@ void MainWindow::OnDrawAppLog()
 				lastLogMsg = &msg;
 			}
 
-			if (m_LastLogMessage != lastLogMsg)
+			if (m_Application->m_LastLogMessage != lastLogMsg)
 			{
-				m_LastLogMessage = lastLogMsg;
+				m_Application->m_LastLogMessage = lastLogMsg;
 				QueueUpdate();
-				m_Application->QueueUpdate();
 			}
 
 			ImGui::PopTextWrapPos();
@@ -798,6 +797,7 @@ void MainWindow::OnDrawMenuBar()
 void tf2_bot_detector::MainWindow::QueueUpdate()
 {
 	b_ShouldUpdate = true;
+	m_Application->QueueUpdate();
 }
 
 bool tf2_bot_detector::MainWindow::ShouldUpdate()
