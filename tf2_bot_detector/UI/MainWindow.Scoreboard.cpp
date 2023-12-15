@@ -460,7 +460,7 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 #ifdef _DEBUG
 		ImGui::Separator();
 
-		if (bool isRunning = GetModLogic().IsUserRunningTool(player);
+		if (bool isRunning = m_Application->GetModLogic().IsUserRunningTool(player);
 			ImGui::MenuItem("Is Running TFBD", nullptr, isRunning))
 		{
 			GetModLogic().SetUserRunningTool(player, !isRunning);
