@@ -1,8 +1,8 @@
 #include "SettingsWindow.h"
+#include "MainWindow.h"
 #include "ImGui_TF2BotDetector.h"
 #include "Config/Settings.h"
 #include "SetupFlow/AddonManagerPage.h"
-#include "UI/MainWindow.h"
 #include "Util/PathUtils.h"
 #include "Platform/Platform.h"
 
@@ -11,12 +11,10 @@
 
 using namespace tf2_bot_detector;
 
-SettingsWindow::SettingsWindow(ImGuiDesktop::Application& app, Settings& settings, MainWindow& mainWindow) :
-	ImGuiDesktop::Window(app, 800, 600, "Settings"),
+SettingsWindow::SettingsWindow(Settings& settings, MainWindow& mainWindow) :
 	m_Settings(settings),
 	m_MainWindow(mainWindow)
 {
-	ShowWindow();
 }
 
 void SettingsWindow::OnDraw()

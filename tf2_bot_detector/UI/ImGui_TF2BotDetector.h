@@ -2,8 +2,8 @@
 
 #include "ReleaseChannel.h"
 
-#include <imgui_desktop/ImGuiHelpers.h>
-#include <imgui_desktop/ScopeGuards.h>
+#include <ImGuiHelpers.h>
+#include <ScopeGuards.h>
 #include <imgui.h>
 #include <mh/raii/scope_exit.hpp>
 #include <mh/text/fmtstr.hpp>
@@ -201,7 +201,6 @@ namespace tf2_bot_detector
 	bool InputTextSteamAPIKey(const char* label_id, std::string& key, bool requireValid = false);
 	bool Combo(const char* label_id, std::optional<ReleaseChannel>& mode);
 	bool AutoLaunchTF2Checkbox(bool& value);
-
 
 	void DrawPlayerContextCopyMenu(const char* name, const SteamID& steamID);
 	bool DrawPlayerContextGoToMenu(const Settings& settings, const SteamID& steamID);

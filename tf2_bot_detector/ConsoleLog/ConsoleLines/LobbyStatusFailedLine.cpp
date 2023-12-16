@@ -8,7 +8,7 @@
 #include "Log.h"
 #include "WorldState.h"
 
-#include <imgui_desktop/ScopeGuards.h>
+#include <ScopeGuards.h>
 
 #include <regex>
 #include <sstream>

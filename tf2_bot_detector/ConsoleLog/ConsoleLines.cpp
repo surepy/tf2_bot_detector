@@ -14,7 +14,7 @@
 #include <mh/text/fmtstr.hpp>
 #include <mh/text/format.hpp>
 #include <mh/text/string_insertion.hpp>
-#include <imgui_desktop/ScopeGuards.h>
+#include <ScopeGuards.h>
 
 #include <regex>
 #include <sstream>

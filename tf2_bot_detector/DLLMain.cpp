@@ -16,6 +16,10 @@
 #include <shellapi.h>
 #endif
 
+#include "sdl2opengl.h"
+
+#include "UI/SettingsWindow.h"
+
 using namespace std::string_literals;
 
 namespace tf2_bot_detector
@@ -60,17 +64,46 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		tf2_bot_detector::RunTests();
 #endif
 
-		ImGuiDesktop::SetLogFunction(&tf2_bot_detector::ImGuiDesktopLogFunc);
-
 		DebugLog("Initializing TF2BDApplication...");
-		TF2BDApplication app;
+		TF2BotDetectorSDLRenderer renderer;
 
-		// TODO: we should probably seperate ui updates and data updates
-		// into a completely seperate thread, with different update rates (settable in settings).
+		std::shared_ptr<TF2BDApplication> app = std::make_shared<TF2BDApplication>();
+		{
+			MainWindow* mainwin = new MainWindow(app.get());
 
-		DebugLog("Entering event loop...");
-		while (!app.ShouldQuit())
-			app.Update();
+			mainwin->OnImGuiInit();
+			mainwin->OpenGLInit();
+			
+			renderer.RegisterDrawCallback([mainwin, &renderer, app] () {
+				// update our main state instantly, if we are focused or we're forced by application log
+				if ((renderer.InFocus() || app->ShouldUpdate())) {
+					//mainwin->OnUpdate();
+					app->Update();
+				}
+				// render our stuff, after we wait 100ms anyway (FIXME/HACK: this replicates the "FIXME" behaivor in imgui_desktop). 
+				else {
+					Sleep(100);
+					app->Update();
+				}
+
+				// important note: while mainwindow handles drawing related stuff,
+				// it also handles "wake from sleep", when our application log (not tf2 log!) has new stuff
+				mainwin->Draw();
+			});
+
+			//renderer.RegisterDrawCallback([]() {});
+
+			DebugLog("Entering event loop...");
+			while (!renderer.ShouldQuit()) {
+				renderer.DrawFrame();
+			}
+		}
+
+		// this was used for "PrintLogMsg" in imgui_desktop, i'm leaving it out because
+		// 1, we're launching in 1 and only 1 possible opengl configuration which is GL 4.3 + GLSL 430
+		//  realistically *nobody* will need before gl 3 because even the GeForce 400 series supports it.
+		// 2. lazy
+		//ImGuiDesktop::SetLogFunction(&tf2_bot_detector::ImGuiDesktopLogFunc);
 	}
 
 	ILogManager::GetInstance().CleanupEmptyLogs();
