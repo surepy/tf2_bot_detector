@@ -135,13 +135,13 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 
 	// draw our registered draw functions
 	{
-		for (const auto& callOnDraw : drawFunctions) {
+		for (size_t i = 0; i < drawFunctions.size(); i++) {
+			const auto& callOnDraw = drawFunctions.at(i);
 			callOnDraw();
 		}
 	}
 
 	static bool showRendererSettings = false;
-
 
 	if (ImGui::BeginMainMenuBar()) {
 		if (ImGui::MenuItem("Renderer")) {

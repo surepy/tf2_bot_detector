@@ -75,16 +75,23 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			mainwin->OpenGLInit();
 			
 			renderer.RegisterDrawCallback([mainwin, &renderer, app] () {
-				// TODO: move to TF2BDApplication for less clutter in MainWindow
-				if (renderer.InFocus() || app->ShouldUpdate()) {
+				// update our main state instantly, if we are focused or we're forced by application log
+				if ((renderer.InFocus() || app->ShouldUpdate())) {
 					//mainwin->OnUpdate();
+					app->Update();
+				}
+				// render our stuff, after we wait 100ms anyway (FIXME/HACK: this replicates the "FIXME" behaivor in imgui_desktop). 
+				else {
+					Sleep(100);
 					app->Update();
 				}
 
 				// important note: while mainwindow handles drawing related stuff,
-				// it also handles "wake from sleep" so our app state actually gets updated.
+				// it also handles "wake from sleep", when our application log (not tf2 log!) has new stuff
 				mainwin->Draw();
 			});
+
+			//renderer.RegisterDrawCallback([]() {});
 
 			DebugLog("Entering event loop...");
 			while (!renderer.ShouldQuit()) {
