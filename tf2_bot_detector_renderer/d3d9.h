@@ -1,4 +1,6 @@
 #pragma once
+#ifdef WIN32
+
 #include "ITF2BotDetectorRenderer.h"
 
 #include <chrono>
@@ -45,9 +47,15 @@ public:
 	/// external-only feature.
 	/// </summary>
 	/// <returns></returns>
-	bool InFocus();
+	bool InFocus() const;
 
 	std::string RendererInfo() const;
+
+private:
+	/// <summary>
+	/// vTables of our d3d9Device.
+	/// </summary>
+	void* d3d9DevicevTable[119];
 };
 
-
+#endif

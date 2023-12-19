@@ -14,10 +14,11 @@
 #include <Windows.h>
 #include <Objbase.h>
 #include <shellapi.h>
+
+#include "d3d9.h"
 #endif
 
 #include "sdl2opengl.h"
-
 #include "UI/SettingsWindow.h"
 
 using namespace std::string_literals;
@@ -35,6 +36,12 @@ namespace tf2_bot_detector
 	}
 }
 
+/// <summary>
+/// main entry point for tf2bd/External window
+/// </summary>
+/// <param name="argc"></param>
+/// <param name="argv"></param>
+/// <returns></returns>
 TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** argv)
 {
 	{
@@ -64,6 +71,8 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		tf2_bot_detector::RunTests();
 #endif
 
+
+#ifndef TF2BD_OVERLAY_BUILD
 		DebugLog("Initializing TF2BDApplication...");
 		TF2BotDetectorSDLRenderer renderer;
 
@@ -75,18 +84,19 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			mainwin->OpenGLInit();
 			
 			renderer.RegisterDrawCallback([mainwin, &renderer, app] () {
+				// TODO: Put this in a different thread?
 				// update our main state instantly, if we are focused or we're forced by application log
 				if ((renderer.InFocus() || app->ShouldUpdate())) {
-					//mainwin->OnUpdate();
 					app->Update();
 				}
-				// render our stuff, after we wait 100ms anyway (FIXME/HACK: this replicates the "FIXME" behaivor in imgui_desktop). 
+				// update our main state, after we wait 100ms anyway (FIXME/HACK: this replicates the "FIXME" behaivor in imgui_desktop).
+				// https://github.com/PazerOP/imgui_desktop/blob/2e103fd66a39725a75fe93267bff1c701f246c34/imgui_desktop/src/Application.cpp#L52-L53
 				else {
 					Sleep(100);
 					app->Update();
 				}
 
-				// important note: while mainwindow handles drawing related stuff,
+				// important note: while mainwindow handles only drawing related stuff,
 				// it also handles "wake from sleep", when our application log (not tf2 log!) has new stuff
 				mainwin->Draw();
 			});
@@ -98,6 +108,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 				renderer.DrawFrame();
 			}
 		}
+#endif
 
 		// this was used for "PrintLogMsg" in imgui_desktop, i'm leaving it out because
 		// 1, we're launching in 1 and only 1 possible opengl configuration which is GL 4.3 + GLSL 430
@@ -114,7 +125,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 
 #ifdef WIN32
 /// <summary>
-/// workaround so SmartScreen-signed exe works
+/// workaround so pazer's SmartScreen-signed exe works, calls the other windows-specific RunProgram().
 /// </summary>
 /// <param name="hInstance">unused</param>
 /// <param name="hPrevInstance">unused</param>
@@ -125,6 +136,10 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(HINSTANCE hInstance, HI
 	return tf2_bot_detector::RunProgram();
 }
 
+/// <summary>
+/// entry for tf2bd/External window, handles command line arguments for windows platform.
+/// </summary>
+/// <returns></returns>
 TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram()
 {
 	int argc;
@@ -176,4 +191,76 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram()
 
 	return RunProgram(argc, argv.data());
 }
+
+
+#ifdef TF2BD_OVERLAY_BUILD
+/// <summary>
+/// Run program into an overlay mode (directx/gl/vk* - endscene)
+///
+/// uses dummy device method to hook d3d9.
+///
+/// TODO: if we ever make a linux build or whatever, we should probably consider that too.
+/// </summary>
+/// <param name="ignored"></param>
+void tf2_bot_detector::RunProgramOverlay(HMODULE module) {
+	// game isn't running
+	while (FindWindowA("Valve001", 0) == 0)
+		Sleep(100);
+
+	DebugLog("Initializing TF2BDApplication (Overlay!)...");
+	TF2BotDetectorD3D9Renderer* renderer = new TF2BotDetectorD3D9Renderer();
+
+	std::shared_ptr<TF2BDApplication> app = std::make_shared<TF2BDApplication>();
+
+	MainWindow* mainwin = new MainWindow(app.get());
+
+	// register our draw function to endscene hook draw callback
+	renderer->RegisterDrawCallback([mainwin]() { mainwin->Draw(); });
+
+	// do tf2bd logic here
+	// TODO: a way to quit
+	while (true) {
+		if (app->ShouldUpdate()) {
+			app->Update();
+		}
+	}
+
+	/*
+	// client/engine isnt running
+	while (GetModuleHandleA("client.dll") == 0 || GetModuleHandleA("engine.dll") == 0)
+		Sleep(100);
+	*/
+
+	// clean up and exit
+	FreeLibraryAndExitThread(module, 0);
+}
+
+/// <summary>
+/// entry for tf2bd/overlay 
+/// </summary>
+/// <param name="hinstDLL"></param>
+/// <param name="fdwReason"></param>
+/// <param name="lpReserved"></param>
+/// <returns></returns>
+BOOL WINAPI DllMain(
+	HINSTANCE hinstDLL,  // handle to DLL module.
+	DWORD fdwReason,     // reason for calling function.
+	LPVOID lpReserved)  // reserved.
+{
+	// Perform actions based on the reason for calling.
+	switch (fdwReason) {
+	case DLL_PROCESS_ATTACH:
+#ifdef TF2BD_OVERLAY_BUILD
+		MessageBoxA(NULL, "WARN: This launch configuration is potentially VAC insecure, you have been warned.", "Injected!", MB_OK | MB_ICONEXCLAMATION);
+		CreateThread(nullptr, NULL, (LPTHREAD_START_ROUTINE)tf2_bot_detector::RunProgramOverlay, nullptr, NULL, nullptr);
+#endif // TF2BD_OVERLAY_BUILD
+		break;
+	case DLL_PROCESS_DETACH:
+		break;
+	}
+
+	return TRUE;  // Successful DLL_PROCESS_ATTACH.
+}
+#endif
+
 #endif

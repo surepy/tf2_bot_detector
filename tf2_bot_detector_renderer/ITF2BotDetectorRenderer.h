@@ -19,8 +19,10 @@
 /// tf2_bot_detector_launcher - for launching ^
 ///
 /// (new plan)
-/// or i can have it so that tf2_bot_detector has both overlay and external methods built in
-/// (overlay will be called by dllmain, external with laucher exported function)
+/// ~~or i can have it so that tf2_bot_detector has both overlay and external methods built in~~
+/// ~~(overlay will be called by dllmain, external with laucher exported function)~~
+/// not possible
+/// 
 /// idk we'll see how it goes
 ///
 /// </summary>

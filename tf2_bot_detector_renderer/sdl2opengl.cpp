@@ -23,9 +23,6 @@
 #include <fmt/format.h>
 #include <fmt/compile.h>
 
-#ifdef __WINRT__
-#endif
-
 #define GL_APIENTRY GLAD_API_PTR
 
 using namespace std::string_literals;
@@ -157,11 +154,17 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		ImGui::SliderFloat("Set Frame Time", &frameTime, 0.0f, 66.6f);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+#ifdef _DEBUG
+		if (!this->InFocus()) {
+			ImGui::Text("Application State: <Sleeping>");
+		}
+		else {
+			ImGui::Text("Application State: <Active>");
+		}
+#endif // _DEBUG
 		ImGui::End();
-
 		ImGui::EndMenu();
-
-		// ImGui::ShowDemoWindow(&showRendererSettings);
 	}
 
 	// Rendering
@@ -169,7 +172,7 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 	glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 	glClear(GL_COLOR_BUFFER_BIT);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	
+
 	// Update and Render additional Platform Windows
 	// (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
 	//  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
@@ -204,7 +207,7 @@ bool TF2BotDetectorSDLRenderer::ShouldQuit() const
 /// </summary>
 /// <param name="newFrameTime"></param>
 void TF2BotDetectorSDLRenderer::SetFramerate(float newFrameTime)
-{ 
+{
 	this->frameTime = newFrameTime;
 }
 
@@ -222,3 +225,4 @@ std::string TF2BotDetectorSDLRenderer::RendererInfo() const
 {
 	return "TF2BotDetectorSDLRenderer: OpenGl 4.3 + GLSL 430"; // fmt::format(FMT_COMPILE("TF2BotDetectorSDLRenderer: OpenGl GL 4.3 + GLSL 430"));
 }
+
