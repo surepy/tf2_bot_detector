@@ -30,10 +30,5 @@ add_subdirectory(submodules/glad2)
 
 add_subdirectory(tf2_bot_detector_common)
 add_subdirectory(tf2_bot_detector_renderer)
-
-if (WIN32)
-	add_subdirectory(tf2_bot_detector_winrt)
-endif()
-
 add_subdirectory(tf2_bot_detector)
 
