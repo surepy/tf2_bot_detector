@@ -9,6 +9,11 @@ what's different from normal tf2bd?
 * Custom All-chat warning messages!  
 ![custom warnings](https://user-images.githubusercontent.com/24486494/232056440-5793e7e6-70f9-47ef-a879-ef9accc975da.png)
 * Neuter chat wrappers (3 characters long, might break // makes copy-pasting from chat less painful.)
+* Ability to set your own votekick "cooldown" (frequency of how often the tool tries to call a vote)
+* Ability to ignore votekick team state for some maps
+   * currently ``vsh_`` and ``ze_``
+   * should rotate all "marked cheater" players, I haven't really got to test it a lot so probably report it if issues exist   
+![votekick changes](https://github.com/surepy/tf2_bot_detector/assets/24486494/1e1c7423-6d6d-42bb-bc03-65f68bc62c92)
 
 ### Marking
 * ability to mark people that left/disconnected on chat log.  
@@ -30,13 +35,14 @@ format ``unmarked (unmarked_connected) vs marked (marked_connected)``
 ![verifying the reason](https://user-images.githubusercontent.com/24486494/216663482-7fa5ea6c-690d-4182-bd83-c2956fffd044.jpg)
 * kill logs in chat _(default disabled)_  
 ![killogs](https://user-images.githubusercontent.com/24486494/232056583-ba99f610-423d-4096-879c-a4eb0cfea8ba.png)
+ * +shows suicides too
 * Added SteamHistory SourceBans integration  
 ![steamhistory integration](https://github.com/surepy/tf2_bot_detector/assets/24486494/c0ea2102-df0d-4767-a24f-fc6a0f57c23f)
  * first time setup now shows to setup the steam api (generate api key button opens on steam app)  
  ![first time setup](https://github.com/surepy/tf2_bot_detector/assets/24486494/38bab41a-24af-4f82-af45-968236e04adc) 
- - Added "Marked Friends" section (will not load if private)  
+ * Added "Marked Friends" section (will not load if private)  
 ![marked friends](https://github.com/surepy/tf2_bot_detector/assets/24486494/1a85a00d-44db-448a-b6c4-9ab09e469f59)
-- "Has SourceBans Entries" tooltip on playerlist  
+* "Has SourceBans Entries" tooltip on playerlist  
 ![has sourcebans tooltip](https://github.com/surepy/tf2_bot_detector/assets/24486494/793fbf8b-cce9-4bf9-96f3-b6c3ab6682a0)
 
 ### Misc
@@ -62,4 +68,5 @@ format ``unmarked (unmarked_connected) vs marked (marked_connected)``
 * having a private profile won't cause you to have like [1gb log files by the end of your session](https://github.com/surepy/tf2_bot_detector/issues/17)
 * static rcon launch parameter settings (not really recommended but if u _need_ them here u go)   
 ![image](https://github.com/surepy/tf2_bot_detector/assets/24486494/205c0fa4-59e5-4217-b2db-b337da32db54)
+* bumped fmt to version 8.1.1 from 8.0.1 (but nobody cares)
 * more todo...
