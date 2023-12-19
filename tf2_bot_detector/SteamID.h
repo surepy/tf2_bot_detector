@@ -135,3 +135,10 @@ namespace std
 		}
 	};
 }
+
+
+#if MH_FORMATTER == MH_FORMATTER_FMTLIB && FMT_VERSION >= 90000
+// for fmt 9.0+
+#include <fmt/ostream.h>
+template <> struct fmt::formatter<tf2_bot_detector::SteamID> : ostream_formatter {};
+#endif

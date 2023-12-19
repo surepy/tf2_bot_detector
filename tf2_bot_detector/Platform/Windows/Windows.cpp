@@ -6,7 +6,6 @@
 #include "Util/TextUtils.h"
 #include "Log.h"
 #include "WindowsHelpers.h"
-#include "tf2_bot_detector_winrt.h"
 
 #include <mh/error/ensure.hpp>
 #include <mh/error/exception_details.hpp>
@@ -22,11 +21,6 @@
 
 using namespace tf2_bot_detector;
 using namespace std::string_view_literals;
-
-namespace tf2_bot_detector
-{
-	class WinRT;
-}
 
 static std::filesystem::path GetKnownFolderPath(const KNOWNFOLDERID& id)
 {
@@ -54,74 +48,9 @@ static bool IsReallyWindows10OrGreater()
 	return info.dwMajorVersion >= 10;
 }
 
-static const tf2_bot_detector::WinRT* GetWinRTInterface()
-{
-	struct WinRTHelper
-	{
-		WinRTHelper()
-		{
-			constexpr char WINRT_DLL_NAME[] = "tf2_bot_detector_winrt.dll";
-			m_Module = mh_ensure(LoadLibraryA(WINRT_DLL_NAME));
-
-			CreateWinRTInterfaceFn func = reinterpret_cast<CreateWinRTInterfaceFn>(GetProcAddressHelper(WINRT_DLL_NAME, "CreateWinRTInterface"));
-
-			m_WinRT.reset(func());
-
-			struct DummyType {};
-			m_ExceptionDetailsHandler = mh::exception_details::add_handler(
-				typeid(DummyType), m_WinRT->GetWinRTExceptionDetailsHandler());
-		}
-		WinRTHelper(WinRTHelper&& other) noexcept :
-			m_Module(std::exchange(other.m_Module, nullptr)),
-			m_WinRT(std::move(other.m_WinRT))
-		{
-		}
-		WinRTHelper& operator=(WinRTHelper&& other) noexcept
-		{
-			destroy();
-
-			m_Module = std::exchange(other.m_Module, nullptr);
-			m_WinRT = std::move(other.m_WinRT);
-
-			return *this;
-		}
-		~WinRTHelper()
-		{
-			destroy();
-		}
-
-		void destroy()
-		{
-			m_WinRT.reset();
-
-			if (m_Module)
-			{
-				mh_ensure(FreeLibrary(m_Module));
-				m_Module = {};
-			}
-		}
-
-		HMODULE m_Module{};
-		std::unique_ptr<WinRT> m_WinRT;
-		mh::exception_details::handler m_ExceptionDetailsHandler;
-	};
-
-	static const tf2_bot_detector::WinRT* s_Value = []() -> const tf2_bot_detector::WinRT*
-	{
-		if (IsReallyWindows10OrGreater())
-		{
-			static WinRTHelper s_Helper;
-			return s_Helper.m_WinRT.get();
-		}
-
-		return nullptr;
-	}();
-
-	return s_Value;
-}
-
 std::filesystem::path tf2_bot_detector::Platform::GetCurrentExeDir()
 {
+	// C6262: Function uses '65544' bytes of stack. Consider moving some data to heap.
 	WCHAR path[32768];
 	const auto length = GetModuleFileNameW(nullptr, path, (DWORD)std::size(path));
 
@@ -135,8 +64,10 @@ std::filesystem::path tf2_bot_detector::Platform::GetCurrentExeDir()
 	return std::filesystem::path(path, path + length).parent_path();
 }
 
+// unused, remove?
 std::filesystem::path tf2_bot_detector::Platform::GetLegacyAppDataDir()
 {
+	/*
 	if (auto winrt = GetWinRTInterface())
 	{
 		try
@@ -152,60 +83,22 @@ std::filesystem::path tf2_bot_detector::Platform::GetLegacyAppDataDir()
 			LogException();
 		}
 	}
+	*/
 
 	return {};
 }
 
 std::filesystem::path tf2_bot_detector::Platform::GetRootLocalAppDataDir()
 {
-	if (auto winrt = GetWinRTInterface())
-	{
-		try
-		{
-			if (winrt->IsInPackage())
-				return winrt->GetPackageLocalAppDataDir();
-		}
-		catch (...)
-		{
-			LogException();
-		}
-	}
-
 	return GetKnownFolderPath(FOLDERID_LocalAppData);
 }
 
 std::filesystem::path tf2_bot_detector::Platform::GetRootRoamingAppDataDir()
 {
-	if (auto winrt = GetWinRTInterface())
-	{
-		try
-		{
-			if (winrt->IsInPackage())
-				return winrt->GetPackageRoamingAppDataDir();
-		}
-		catch (...)
-		{
-			LogException();
-		}
-	}
-
 	return GetKnownFolderPath(FOLDERID_RoamingAppData);
 }
 
 std::filesystem::path tf2_bot_detector::Platform::GetRootTempDataDir()
 {
-	if (auto winrt = GetWinRTInterface())
-	{
-		try
-		{
-			if (winrt->IsInPackage())
-				return winrt->GetPackageTempDir();
-		}
-		catch (...)
-		{
-			LogException();
-		}
-	}
-
 	return std::filesystem::temp_directory_path();
 }
