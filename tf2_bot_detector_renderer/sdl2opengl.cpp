@@ -3,18 +3,13 @@
 #if WIN32
 #include <Windows.h>
 #endif
-//
 
 #include <glad/gl.h>
-//#include <gl/GL.h>
-// TODO use glad
-
-#include <imgui.h>
-
-#include <backends/imgui_impl_sdl2.h>
 #include <SDL.h>
 
+#include <imgui.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_sdl2.h>
 
 #include <iomanip>
 #include <sstream>
@@ -54,7 +49,7 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 
 	// Create our window
 	// 
-	// SDL_WINDOW_HIDDEN: Why? Why do I have to do this or WinRT complains constantly about IID_ITfUIElementSink not being registered, why???
+	// SDL_WINDOW_HIDDEN: Why? Why do I have to do this it complains constantly about IID_ITfUIElementSink not being registered, why???
 	// why do i have to create it with SDL_WINDOW_HIDDEN and then call SDL_ShowWindow at the bottom of this constructor??
 	// it's also how pazer's imgui_desktop handled it;; but, but why??
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
@@ -90,6 +85,7 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
+	// show our window cuz SDL_WINDOW_HIDDEN funny
 	SDL_ShowWindow(window);
 }
 
@@ -218,6 +214,14 @@ float TF2BotDetectorSDLRenderer::GetFramerate() const
 
 bool TF2BotDetectorSDLRenderer::InFocus() const
 {
+	// !ImGui::GetIO().AppFocusLost <- not implemented
+
+	for (auto& viewport : ImGui::GetPlatformIO().Viewports) {
+		if (ImGui::GetPlatformIO().Platform_GetWindowFocus(viewport)) {
+			return true;
+		}
+	}
+
 	return SDL_GetWindowFlags(window) & (SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS);
 }
 

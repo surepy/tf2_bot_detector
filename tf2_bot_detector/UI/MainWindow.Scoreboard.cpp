@@ -729,7 +729,7 @@ static void PrintPlayerSourceBans(const IPlayer& player)
 				}
 
 				for (const auto& [server, ban] : banState) {
-					ImGui::TextFmt("      {} (as {}) = ", server, ban.m_UserName);
+					ImGui::TextFmt("      {} (as {}) = ", server, std::quoted(ban.m_UserName));
 					ImGui::SameLineNoPad();
 
 					const ImVec4 banStateColor = ban.m_BanState >= tf2_bot_detector::SteamHistoryAPI::Current ? COLOR_YELLOW : ImVec4{ 1, 1, 1, 1 };
@@ -942,20 +942,55 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 	if (playerAttribs)
 	{
 		ImGui::NewLine();
-		ImGui::TextFmt("Player {} marked in playerlist(s):{}", player, playerAttribs);
-		ImGui::NewLine();
-		ImGui::Text("Reasons: ");
+		ImGui::TextFmt("Player {} marked in playerlist(s):", player);
+
 		for (auto& [fileName, data] : m_Application->GetModLogic().GetPlayerList()->FindPlayerData(player.GetSteamID())) {
+			ImGui::Indent(18.0f);
+			ImGui::TextFmt("- {} ({}):", std::quoted(fileName), data.GetAttributes());
+
+			ImGui::Indent(27.0f);
+
+			// as "name" at "time"
+			// this will just not render if lastseen is null
+			if (data.m_LastSeen.has_value()) {
+				ImGui::Text("as");
+				ImGui::SameLine();
+
+				if (data.m_LastSeen->m_PlayerName.empty()) {
+					ImGui::TextFmt({ 1, 1, 0, 1 }, "<unknown>");
+				}
+				else {
+					ImGui::TextFmt("\"{}\"", data.m_LastSeen->m_PlayerName);
+				}
+
+				ImGui::SameLine();
+				ImGui::Text("at");
+				ImGui::SameLine();
+
+				// NOTE: m_LastSeen is never updated by this application, so it's more like "first seen"
+				// so treat it as first seen for now
+				if (data.m_LastSeen->m_Time.time_since_epoch() == std::chrono::seconds(0)) {
+					ImGui::TextFmt({ 1, 1, 0, 1 }, "<unknown>");
+				}
+				else {
+					ImGui::TextFmt("{}", data.m_LastSeen->m_Time);
+				}
+			}
+
+			ImGui::Text("reason:");
+			ImGui::SameLine();
+
 			if (data.m_Proof.empty()) {
-				continue;
+				ImGui::TextFmt({ 1, 1, 0, 1 }, "<no reason given>");
 			}
-
-			std::string proofs = "";
-			for (auto p : data.m_Proof) {
-				proofs += p.get<std::string>() + "\n ";
+			else {
+				for (const auto& p : data.m_Proof) {
+					ImGui::TextFmt({ 0, 1, 1, 1 }, "{}", p.get<std::string>().c_str());
+				}
 			}
+			ImGui::Unindent(27.0f);
 
-			ImGui::TextFmt("  {}: {}", fileName, proofs);
+			ImGui::Unindent(18.0f);
 		}
 	}
 }
