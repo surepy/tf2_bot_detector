@@ -358,6 +358,7 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 /// <param name="initialized"></param>
 void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initialized)
 {
+	//world.GetMapName()
 	m_ActionManager->QueueAction<GenericCommandAction>("exec tf2bd/OnGameJoin");
 
 	// do our "onjoin" message
@@ -379,12 +380,11 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 				if (username == "") {
 					auto summary = player.GetPlayerSummary();
 
-
 					if (summary.has_value()) {
 						username = summary.value().m_Nickname;
 					}
 					else {
-						// steamapi didn't get the name either so gg
+						// steamapi didn't get the name either so gg, fall back to id
 						username = player.GetSteamID().str();
 					}
 				}

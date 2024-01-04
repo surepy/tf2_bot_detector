@@ -5,6 +5,7 @@
 #include "SetupFlow/AddonManagerPage.h"
 #include "Util/PathUtils.h"
 #include "Platform/Platform.h"
+#include "Application.h"
 
 #include <mh/algorithm/algorithm.hpp>
 #include <mh/error/ensure.hpp>

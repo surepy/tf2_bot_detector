@@ -48,9 +48,11 @@ static bool IsReallyWindows10OrGreater()
 	return info.dwMajorVersion >= 10;
 }
 
+#pragma warning(disable: 6262)
 std::filesystem::path tf2_bot_detector::Platform::GetCurrentExeDir()
 {
 	// C6262: Function uses '65544' bytes of stack. Consider moving some data to heap.
+	// the maximum possible directory length in windows, apparently.
 	WCHAR path[32768];
 	const auto length = GetModuleFileNameW(nullptr, path, (DWORD)std::size(path));
 
@@ -63,6 +65,7 @@ std::filesystem::path tf2_bot_detector::Platform::GetCurrentExeDir()
 
 	return std::filesystem::path(path, path + length).parent_path();
 }
+#pragma warning(default: 6262)
 
 // unused, remove?
 std::filesystem::path tf2_bot_detector::Platform::GetLegacyAppDataDir()

@@ -85,5 +85,14 @@ public:
 
 	// do we even need these features?
 	inline static TF2BotDetectorRendererBase* ptr;
+
+	/// <summary>
+	/// Gets the current renderer.
+	///
+	/// in case anyone needs to
+	/// "TF2BotDetectorRendererBase::GetRenderer()->RegisterDrawCallback([this]() { this->Draw(); });"
+	/// or something
+	/// </summary>
+	/// <returns></returns>
 	static TF2BotDetectorRendererBase* GetRenderer() { return ptr; }
 };

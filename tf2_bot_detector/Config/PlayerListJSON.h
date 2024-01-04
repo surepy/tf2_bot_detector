@@ -107,6 +107,7 @@ namespace tf2_bot_detector
 		};
 		std::optional<LastSeen> m_LastSeen;
 
+		// TODO: vector<std::string>
 		std::vector<nlohmann::json> m_Proof;
 		void addProof(std::string reason);
 		bool proofExists(std::string reason);
@@ -130,6 +131,7 @@ namespace tf2_bot_detector
 		Modified,
 	};
 
+	/*
 	template<typename T> concept ModifyPlayerCallback = requires(T x)
 	{
 #ifndef __INTELLISENSE__
@@ -137,6 +139,7 @@ namespace tf2_bot_detector
 		{ x(std::declval<PlayerListData>()) } -> std::same_as<ModifyPlayerAction>;
 #endif
 	};
+	*/
 
 	using ConfigFileName = std::string;
 	struct PlayerMarks final
@@ -208,7 +211,7 @@ namespace tf2_bot_detector
 
 		static constexpr int PLAYERLIST_SCHEMA_VERSION = 3;
 
-		struct ConfigFileGroup final : ConfigFileGroupBase<PlayerListFile, std::vector<std::pair<ConfigFileName, PlayerMap_t>>>
+		struct ConfigFileGroup final : public ConfigFileGroupBase<PlayerListFile, std::vector<std::pair<ConfigFileName, PlayerMap_t>>>
 		{
 			using BaseClass = ConfigFileGroupBase;
 
@@ -217,6 +220,12 @@ namespace tf2_bot_detector
 			std::string GetBaseFileName() const override { return "playerlist"; }
 
 		} m_CFGGroup;
+
+	public:
+		// this seems like a bad idea, idk why.
+		ConfigFileGroup& GetConfigFileGroup() { return m_CFGGroup; }
+
+		friend class PlayerListManagementWindow;
 	};
 
 	std::string to_string(const PlayerAttribute& d);

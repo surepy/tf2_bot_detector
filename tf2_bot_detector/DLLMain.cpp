@@ -2,12 +2,15 @@
 
 #include "Application.h"
 #include "Tests/Tests.h"
-#include "UI/MainWindow.h"
 #include "Util/TextUtils.h"
 #include "Log.h"
 #include "Filesystem.h"
 
 #include <mh/text/string_insertion.hpp>
+
+#include "UI/MainWindow.h"
+#include "UI/SettingsWindow.h"
+#include "UI/PlayerListManagementWindow.h"
 
 #ifdef WIN32
 #include "Platform/Windows/WindowsHelpers.h"
@@ -19,7 +22,6 @@
 #endif
 
 #include "sdl2opengl.h"
-#include "UI/SettingsWindow.h"
 
 using namespace std::string_literals;
 
@@ -77,13 +79,15 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		TF2BotDetectorSDLRenderer renderer;
 
 		std::shared_ptr<TF2BDApplication> app = std::make_shared<TF2BDApplication>();
+		// register mainwindow
 		{
-			MainWindow* mainwin = new MainWindow(app.get());
+			std::shared_ptr<MainWindow> mainwin = std::make_shared<MainWindow>(app.get());
 
 			mainwin->OnImGuiInit();
 			mainwin->OpenGLInit();
-			
-			renderer.RegisterDrawCallback([mainwin, &renderer, app] () {
+
+			// renderer.RegisterDrawCallback([]() {});
+			renderer.RegisterDrawCallback([main_window = std::move(mainwin), &renderer, app]() {
 				// TODO: Put this in a different thread?
 				// update our main state instantly, if we are focused or we're forced by application log
 				if ((renderer.InFocus() || app->ShouldUpdate())) {
@@ -98,15 +102,21 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 
 				// important note: while mainwindow handles only drawing related stuff,
 				// it also handles "wake from sleep", when our application log (not tf2 log!) has new stuff
-				mainwin->Draw();
+				main_window->Draw();
 			});
+		}
 
-			//renderer.RegisterDrawCallback([]() {});
+		{
+			std::shared_ptr<PlayerListManagementWindow> plist = std::make_shared<PlayerListManagementWindow>();
 
-			DebugLog("Entering event loop...");
-			while (!renderer.ShouldQuit()) {
-				renderer.DrawFrame();
-			}
+			renderer.RegisterDrawCallback([window = std::move(plist)]() {
+				window->Draw();
+			});
+		}
+
+		DebugLog("Entering event loop...");
+		while (!renderer.ShouldQuit()) {
+			renderer.DrawFrame();
 		}
 #endif
 

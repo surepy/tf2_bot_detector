@@ -764,7 +764,6 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		break;
 	}
 #endif
-
 	default:
 		break;
 	}

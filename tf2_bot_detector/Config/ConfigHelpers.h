@@ -180,6 +180,14 @@ namespace tf2_bot_detector
 			}
 		}
 
+		/// <summary>
+		/// check if user is pazer, and modify playerlist.official.json if so
+		///
+		/// this might be horribly broken, I have no reason to modify playerlist.official.json ever so if this causes a crash that's well lol
+		///
+		/// TODO: remove?
+		/// </summary>
+		/// <returns></returns>
 		bool IsOfficial() const { return m_Settings->GetLocalSteamID().IsPazer(); }
 
 		T& GetDefaultMutableList()

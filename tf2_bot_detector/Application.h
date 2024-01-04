@@ -45,7 +45,6 @@ namespace tf2_bot_detector
 		~TF2BDApplication();
 
 		static TF2BDApplication& GetApplication();
-
 		DB::ITempDB& GetTempDB();
 
 	private:
@@ -69,6 +68,9 @@ namespace tf2_bot_detector
 		// void OnChatMsg(WorldState& world, const IPlayer& player, const std::string_view& msg) override;
 		// void OnUpdate(WorldState& world, bool consoleLinesUpdated) override;
 
+		/// <summary>
+		/// is our application paused?
+		/// </summary>
 		bool m_Paused = false;
 
 		// Gets the current timestamp, but time progresses in real time even without new messages
@@ -108,23 +110,17 @@ namespace tf2_bot_detector
 
 		time_point_t m_OpenTime;
 
-		void UpdateServerPing(time_point_t timestamp);
 		std::vector<PingSample> m_ServerPingSamples;
 		time_point_t m_LastServerPingSample{};
+		void UpdateServerPing(time_point_t timestamp);
 
 		Settings m_Settings;
 
-		std::unique_ptr<IUpdateManager> m_UpdateManager;
-
 		SetupFlow m_SetupFlow;
 
+		std::unique_ptr<IUpdateManager> m_UpdateManager;
 		std::shared_ptr<IWorldState> m_WorldState;
 		std::unique_ptr<IRCONActionManager> m_ActionManager;
-
-		IWorldState& GetWorld() { return *m_WorldState; }
-		const IWorldState& GetWorld() const { return *m_WorldState; }
-		IRCONActionManager& GetActionManager() { return *m_ActionManager; }
-		const IRCONActionManager& GetActionManager() const { return *m_ActionManager; }
 
 		/// <summary>
 		/// for "sleep when unfocused" feature.
@@ -159,8 +155,21 @@ namespace tf2_bot_detector
 
 		std::optional<PostSetupFlowState>& GetMainState() { return m_MainState; }
 
+		/// <summary>
+		/// get moderation logic.
+		/// </summary>
 		IModeratorLogic& GetModLogic() { return *m_MainState.value().m_ModeratorLogic; }
 		const IModeratorLogic& GetModLogic() const { return *m_MainState.value().m_ModeratorLogic; }
+
+		/// <summary>
+		/// get our world state
+		/// </summary>
+		/// <returns></returns>
+		IWorldState& GetWorld() { return *m_WorldState; }
+		const IWorldState& GetWorld() const { return *m_WorldState; }
+
+		IRCONActionManager& GetActionManager() { return *m_ActionManager; }
+		const IRCONActionManager& GetActionManager() const { return *m_ActionManager; }
 
 		// for easy migration
 		friend class MainWindow;
