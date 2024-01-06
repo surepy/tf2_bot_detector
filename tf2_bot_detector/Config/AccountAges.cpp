@@ -21,6 +21,8 @@ namespace tf2_bot_detector::DB
 
 namespace
 {
+	/// Estimates an account's steam account age, by given steamid.
+	/// TODO: move this to Util/, because this has nothing to do with config.
 	class AccountAges final : public IAccountAges
 	{
 	public:
@@ -31,8 +33,6 @@ namespace
 	private:
 		[[nodiscard]] bool CheckSteamIDValid(const SteamID& id, MH_SOURCE_LOCATION_AUTO(location)) const;
 	};
-
-	static const std::filesystem::path ACCOUNT_AGES_FILENAME = "cfg/account_ages.json";
 }
 
 std::shared_ptr<IAccountAges> tf2_bot_detector::IAccountAges::Create()

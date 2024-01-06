@@ -298,6 +298,13 @@ void ModeratorLogic::OnPlayerStatusUpdate(IWorldState& world, const IPlayer& pla
 	}
 }
 
+/// <summary>
+/// is this maybe from a different tf2bd instance?
+///
+/// NOTE: you should probably never really trust this.
+/// </summary>
+/// <param name="msg">tf2 chat message</param>
+/// <returns>returns true if this message is in the tf2bd template.</returns>
 static bool IsBotDetectorMessage(const std::string_view& msg)
 {
 	static const std::regex s_IngameWarning(

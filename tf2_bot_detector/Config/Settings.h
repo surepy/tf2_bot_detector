@@ -183,6 +183,7 @@ namespace tf2_bot_detector
 			uint32_t m_ChatMsgWrappersToken{};
 			std::optional<ChatWrappers> m_ChatMsgWrappers;
 			std::unique_ptr<srcon::async_client> m_RCONClient;
+			std::string m_ForwardedCommandLineArguments;
 
 		} m_Unsaved;
 

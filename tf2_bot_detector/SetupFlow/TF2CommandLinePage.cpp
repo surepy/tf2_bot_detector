@@ -202,13 +202,23 @@ static std::string FindUserLaunchOptions(const Settings& settings)
 	}
 }
 
-// Actually launch tf2 with the necessary command line args for tf2bd to communicate with it
+/// <summary>
+/// Actually launch tf2 with the necessary command line args for tf2bd to communicate with it
+///
+/// Fun Note: you don't need to use this button, just launch your tf2 with
+/// "-usercon +sv_rcon_whitelist_address 127.0.0.1 +ip 0.0.0.0 +hostport [port] +rcon_password [pass] +net_start"
+/// </summary>
+/// <param name="settings"></param>
+/// <param name="rconPassword"></param>
+/// <param name="rconPort"></param>
 static void OpenTF2(const Settings& settings, const std::string_view& rconPassword, uint16_t rconPort)
 {
 	const std::filesystem::path hl2Path = settings.GetTFDir() / ".." / "hl2.exe";
 
 	// TODO: scrub any conflicting alias or one-time-use commands from this
 	std::string args = FindUserLaunchOptions(settings);
+	// CommandLineToArgvW(args.c_str() <- convert to wstring, args.size());
+
 	args <<
 		" dummy" // Dummy option in case user has mismatched command line args in their steam config
 		" -game tf"
@@ -227,6 +237,10 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 		" -condebug"
 		" -conclearlog"
 		;
+
+	// forwarded options
+	args << " " << settings.m_Unsaved.m_ForwardedCommandLineArguments;
+
 
 	Processes::Launch(hl2Path, args);
 }

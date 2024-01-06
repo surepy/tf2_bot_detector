@@ -50,8 +50,13 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		IFilesystem::Get().Init();
 		ILogManager::GetInstance().Init();
 
+		std::string forwarded_arg;
+
 		for (int i = 1; i < argc; i++)
 		{
+			if (!strcmp(argv[i], "-forward") && (i + 1) < argc) {
+				forwarded_arg = argv[i + 1];
+			}
 #ifdef _DEBUG
 			if (!strcmp(argv[i], "--static-seed") && (i + 1) < argc)
 				tf2_bot_detector::g_StaticRandomSeed = atoi(argv[i + 1]);
@@ -79,6 +84,9 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		TF2BotDetectorSDLRenderer renderer;
 
 		std::shared_ptr<TF2BDApplication> app = std::make_shared<TF2BDApplication>();
+
+		app.get()->SetForwardedCommandLineArguments(forwarded_arg);
+
 		// register mainwindow
 		{
 			std::shared_ptr<MainWindow> mainwin = std::make_shared<MainWindow>(app.get());
@@ -105,6 +113,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 				main_window->Draw();
 			});
 		}
+
 
 		{
 			std::shared_ptr<PlayerListManagementWindow> plist = std::make_shared<PlayerListManagementWindow>();
