@@ -38,7 +38,6 @@ namespace
 		static constexpr char NON_PORTABLE_MARKER[] = ".non_portable";
 		static constexpr char APPDATA_SUBFOLDER[] = "TF2 Bot Detector";
 		std::vector<std::filesystem::path> m_SearchPaths;
-		bool m_IsPortable;
 
 		mh::thread_sentinel m_Sentinel;
 
@@ -73,31 +72,29 @@ void Filesystem::Init()
 
 			m_SearchPaths.insert(m_SearchPaths.begin(), m_ExeDir);
 
-			if (!ResolvePath(std::filesystem::path("cfg") / NON_PORTABLE_MARKER, PathUsage::Read).empty())
-			{
-				DebugLog("Installation detected as non-portable.");
-				m_SearchPaths.insert(m_SearchPaths.begin(), m_RoamingAppDataDir);
-				m_IsPortable = false;
+			m_WorkingDir = std::filesystem::current_path();
 
-				if (std::filesystem::create_directories(m_RoamingAppDataDir))
+			// support for launching through steam.
+			if (m_WorkingDir != m_ExeDir) {
+
+				DebugLog("m_ExeDir differs from PATH!", m_ExeDir);
+
+				// create cfg inside Team Fortress 2 folder (cuz why not)
+				if (std::filesystem::create_directories("cfg"))
 					DebugLog("Created {}", m_RoamingAppDataDir);
 
-				if (std::filesystem::create_directories(m_LocalAppDataDir))
-					DebugLog("Created {}", m_LocalAppDataDir);
+				m_SearchPaths.insert(m_SearchPaths.begin(), m_WorkingDir);
+			}
+
+			// we've launched somewhere that differs from PATH, we should probably change back to our exedir cuz that's where we work.
+			if ((m_WorkingDir / "tf2_bot_detector.dll").empty() || !(m_WorkingDir / "hl2.exe").empty() || !(m_WorkingDir / "hl2_linux").empty())
+			{
+				DebugLog("We can't find tf2_bot_detector.dll in m_WorkingDir!", m_ExeDir);
 
 				// If we crash, we want our working directory to be somewhere we can write to.
-				std::filesystem::current_path(m_LocalAppDataDir);
-				DebugLog("Set working directory to {}", m_LocalAppDataDir);
+				std::filesystem::current_path(m_ExeDir);
+				DebugLog("Set working directory to {}", m_ExeDir);
 			}
-			else
-			{
-				DebugLog("Installation detected as portable.");
-				m_IsPortable = true;
-			}
-
-			m_WorkingDir = std::filesystem::current_path();
-			if (m_WorkingDir != m_ExeDir)
-				m_SearchPaths.insert(m_SearchPaths.begin(), m_WorkingDir);
 
 			{
 				std::string initMsg = "Filesystem initialized. Search paths:";
@@ -229,24 +226,21 @@ std::filesystem::path Filesystem::GetLocalAppDataDir() const
 {
 	EnsureInit();
 
-	return m_IsPortable ? m_WorkingDir : m_LocalAppDataDir;
+	return m_ExeDir;
 }
 
 std::filesystem::path Filesystem::GetRoamingAppDataDir() const
 {
 	EnsureInit();
 
-	return m_IsPortable ? m_WorkingDir : m_RoamingAppDataDir;
+	return m_ExeDir;
 }
 
 std::filesystem::path Filesystem::GetTempDir() const
 {
 	EnsureInit();
 
-	if (m_IsPortable)
-		return m_WorkingDir / "temp";
-	else
-		return Platform::GetRootTempDataDir() / "TF2 Bot Detector";
+	return m_ExeDir / "temp";
 }
 
 void Filesystem::EnsureInit(const mh::source_location& location) const
