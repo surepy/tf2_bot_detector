@@ -467,6 +467,8 @@ void Settings::Deserialize(const nlohmann::json& json)
 			try_get_to_defaulted(*custom_values, m_RconStaticPort, "rcon_static_port", DEFAULTS.m_RconStaticPort);
 			try_get_to_defaulted(*custom_values, m_RconStaticPassword, "rcon_static_password", DEFAULTS.m_RconStaticPassword);
 
+			try_get_to_defaulted(*custom_values, m_UseLaunchRecommendedParams, "use_recommended_launch_params", DEFAULTS.m_UseLaunchRecommendedParams);
+
 			// votekick stuff
 			try_get_to_defaulted(*custom_values, m_MinVoteKickInterval, "min_vote_kick_interval", DEFAULTS.m_MinVoteKickInterval);
 
@@ -559,6 +561,7 @@ void Settings::Serialize(nlohmann::json& json) const
 						{ "rcon_use_static_values", m_UseRconStaticParams },
 						{ "rcon_static_port", m_RconStaticPort },
 						{ "rcon_static_password", m_RconStaticPassword },
+						{ "use_recommended_launch_params", m_UseLaunchRecommendedParams },
 						{ "min_vote_kick_interval", m_MinVoteKickInterval },
 						{ "vote_kick_ignore_team_state_certain_maps", m_VoteKickIgnoreTeamStateOnCertainMaps }
 					}

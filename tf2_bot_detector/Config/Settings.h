@@ -115,6 +115,11 @@ namespace tf2_bot_detector
 		uint16_t m_RconStaticPort = 40001;
 
 		/// <summary>
+		/// use recommended launch params (I actually need contimes to not be 0 :DD)
+		/// </summary>
+		bool m_UseLaunchRecommendedParams = true;
+
+		/// <summary>
 		/// due to rcon design limitations, ignore team state and try to call a votekick anyways in these maps (vsh_ and ze_)
 		/// </summary>
 		bool m_VoteKickIgnoreTeamStateOnCertainMaps = true;
@@ -183,6 +188,8 @@ namespace tf2_bot_detector
 			uint32_t m_ChatMsgWrappersToken{};
 			std::optional<ChatWrappers> m_ChatMsgWrappers;
 			std::unique_ptr<srcon::async_client> m_RCONClient;
+
+			bool m_IsLaunchedFromSteam;
 			std::string m_ForwardedCommandLineArguments;
 
 		} m_Unsaved;

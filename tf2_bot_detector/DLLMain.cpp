@@ -46,14 +46,22 @@ namespace tf2_bot_detector
 /// <returns></returns>
 TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** argv)
 {
+	DebugLog("Hello from RunProgram!");
 	{
 		IFilesystem::Get().Init();
 		ILogManager::GetInstance().Init();
 
 		std::string forwarded_arg;
+		bool running_from_steam = false;
 
 		for (int i = 1; i < argc; i++)
 		{
+			DebugLog(" command-line argv[{}]: {}", i, argv[i]);
+			// steam automatically injects these command line arguments.
+			if (!strcmp(argv[i], "-forward") || !strcmp(argv[i], "-game") || !strcmp(argv[i], "-steam")) {
+				running_from_steam = true;
+			}
+
 			if (!strcmp(argv[i], "-forward") && (i + 1) < argc) {
 				forwarded_arg = argv[i + 1];
 			}
@@ -73,6 +81,10 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 #endif
 		}
 
+		if (running_from_steam) {
+			DebugLog("Detected that we launched from Steam, using -forward if it exists.");
+		}
+
 #if defined(_DEBUG) && defined(TF2BD_ENABLE_TESTS)
 		// Always run the tests debug builds (but don't quit afterwards)
 		tf2_bot_detector::RunTests();
@@ -86,6 +98,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		std::shared_ptr<TF2BDApplication> app = std::make_shared<TF2BDApplication>();
 
 		app.get()->SetForwardedCommandLineArguments(forwarded_arg);
+		app.get()->SetLaunchedFromSteam(running_from_steam);
 
 		// register mainwindow
 		{

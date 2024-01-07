@@ -215,18 +215,16 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 {
 	const std::filesystem::path hl2Path = settings.GetTFDir() / ".." / "hl2.exe";
 
-	// TODO: scrub any conflicting alias or one-time-use commands from this
-	std::string args = FindUserLaunchOptions(settings);
-	// CommandLineToArgvW(args.c_str() <- convert to wstring, args.size());
+	std::string args = settings.m_Unsaved.m_IsLaunchedFromSteam ? settings.m_Unsaved.m_ForwardedCommandLineArguments : FindUserLaunchOptions(settings);
 
+	// TODO: scrub any conflicting alias or one-time-use commands from this
 	args <<
 		" dummy" // Dummy option in case user has mismatched command line args in their steam config
 		" -game tf"
 		" -steam -secure"  // One or both of these is needed when launching the game directly
 		" -usercon"
-		" +developer 1 +alias developer"
-		" +contimes 0" // the text in the top left when developer >= 1
-		" +ip 0.0.0.0 +alias ip"
+		" +developer 1"
+		" +ip 0.0.0.0"
 		" +sv_rcon_whitelist_address 127.0.0.1"
 		" +sv_quota_stringcmdspersecond 1000000" // workaround for mastercomfig causing crashes on local servers
 		" +rcon_password " << rconPassword <<
@@ -238,9 +236,12 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 		" -conclearlog"
 		;
 
-	// forwarded options
-	args << " " << settings.m_Unsaved.m_ForwardedCommandLineArguments;
-
+	if (settings.m_UseLaunchRecommendedParams) {
+		args
+			<< " +alias developer" // disables the "developer" command
+			<< " +contimes 0" // the text in the top left when developer >= 1
+			<< " +alias ip"; // disables the "ip" command
+	}
 
 	Processes::Launch(hl2Path, args);
 }
@@ -452,7 +453,15 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 		{
 			m_Data.m_TestRCONClient.reset();
 			ImGui::TextFmt("TF2 must be launched via TF2 Bot Detector. You can open it by clicking the button below.");
+
 			DrawLaunchTF2Button(ds);
+
+			if (ds.m_Settings->m_Unsaved.m_IsLaunchedFromSteam) {
+				ImGui::InputText("Your forwarded command-line arguments", &ds.m_Settings->m_Unsaved.m_ForwardedCommandLineArguments, ImGuiInputTextFlags_ReadOnly);
+			}
+			else {
+				ImGui::Text("Your Steam command line arguments for TF2 will be forwarded.");
+			}
 		}
 	}
 	else if (m_Data.m_MultipleInstances)

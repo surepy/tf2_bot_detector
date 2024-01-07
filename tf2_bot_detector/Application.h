@@ -171,6 +171,7 @@ namespace tf2_bot_detector
 		IRCONActionManager& GetActionManager() { return *m_ActionManager; }
 		const IRCONActionManager& GetActionManager() const { return *m_ActionManager; }
 
+		void SetLaunchedFromSteam(bool isLaunchedFromSteam) { m_Settings.m_Unsaved.m_IsLaunchedFromSteam = isLaunchedFromSteam; }
 		void SetForwardedCommandLineArguments(const std::string& str) { m_Settings.m_Unsaved.m_ForwardedCommandLineArguments = str; }
 
 		// for easy migration

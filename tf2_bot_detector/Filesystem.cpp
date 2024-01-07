@@ -77,12 +77,15 @@ void Filesystem::Init()
 			// support for launching through steam.
 			if (m_WorkingDir != m_ExeDir) {
 
-				DebugLog("m_ExeDir differs from PATH!", m_ExeDir);
+				DebugLog("m_ExeDir differs from working directory!", m_ExeDir);
 
 				// create cfg inside Team Fortress 2 folder (cuz why not)
 				if (std::filesystem::create_directories("cfg"))
 					DebugLog("Created {}", m_RoamingAppDataDir);
 
+				// NOTE: this creates a kind of nasty unintended behaviors where if a setting.json or something is in that directory,
+				// it will have a higher priority and just wipe the other one.
+				// don't ask me how I know
 				m_SearchPaths.insert(m_SearchPaths.begin(), m_WorkingDir);
 			}
 
