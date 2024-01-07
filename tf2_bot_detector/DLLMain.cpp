@@ -127,7 +127,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			});
 		}
 
-
+		if (false)
 		{
 			std::shared_ptr<PlayerListManagementWindow> plist = std::make_shared<PlayerListManagementWindow>();
 
