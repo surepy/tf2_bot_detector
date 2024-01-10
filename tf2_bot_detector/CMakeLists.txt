@@ -225,6 +225,10 @@ target_sources(tf2_bot_detector PRIVATE
 	"GameData/TFConstants.h"
 	"UpdateManager.h"
 	"UpdateManager.cpp"
+	"PlayerList/PlayerList.cpp"
+	"PlayerList/PlayerList.h"
+	"PlayerList/PlayerAttribute.cpp"
+	"PlayerList/PlayerAttribute.h"
 	"Version.h"
 	"Version.cpp"
 	"WorldEventListener.cpp"
@@ -252,6 +256,13 @@ if(WIN32)
 		"Platform/Windows/Windows.cpp"
 		"Platform/Windows/PlatformInstall.cpp"
 		"Platform/Windows/Platform.cpp"
+	)
+else()
+	target_sources(tf2_bot_detector PRIVATE
+		"Platform/Linux/Processes.cpp"
+		"Platform/Linux/Shell.cpp"
+		"Platform/Linux/Steam.cpp"
+		"Platform/Linux/LinuxHelpers.h"
 	)
 endif()
 
