@@ -17,7 +17,7 @@ namespace tf2_bot_detector
 	struct ModerationRule;
 	struct PlayerAttributesList;
 	struct PlayerMarks;
-	class IRCONActionManager;
+	class RCONActionManager;
 	class Settings;
 	class SteamID;
 	class IWorldState;
@@ -44,7 +44,7 @@ namespace tf2_bot_detector
 	public:
 		virtual ~IModeratorLogic() = default;
 
-		static std::unique_ptr<IModeratorLogic> Create(IWorldState& world, const Settings& settings, IRCONActionManager& actionManager);
+		static std::unique_ptr<IModeratorLogic> Create(IWorldState& world, const Settings& settings, RCONActionManager& actionManager);
 
 		virtual void Update() = 0;
 

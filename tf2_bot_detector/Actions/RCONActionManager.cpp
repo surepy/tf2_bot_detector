@@ -26,61 +26,6 @@ using namespace std::chrono_literals;
 using namespace std::string_literals;
 using namespace std::string_view_literals;
 
-namespace
-{
-	class RCONActionManager final : public IRCONActionManager, BaseWorldEventListener
-	{
-	public:
-		RCONActionManager(const Settings& settings, IWorldState& world);
-		~RCONActionManager();
-
-		void Update();
-
-		bool QueueAction(std::unique_ptr<IAction>&& action);
-
-		template<typename TAction, typename... TArgs>
-		bool QueueAction(TArgs&&... args)
-		{
-			return QueueAction(std::make_unique<TAction>(std::forward<TArgs>(args)...));
-		}
-
-		void AddPeriodicActionGenerator(std::unique_ptr<IPeriodicActionGenerator>&& action);
-
-		template<typename TAction, typename... TArgs>
-		void AddPeriodicActionGenerator(TArgs&&... args)
-		{
-			return AddPeriodicActionGenerator(std::make_unique<TAction>(std::forward<TArgs>(args)...));
-		}
-
-	private:
-		void OnLocalPlayerInitialized(IWorldState& world, bool initialized) override;
-
-		struct RunningCommand
-		{
-			time_point_t m_StartTime{};
-			std::string m_Command;
-			std::shared_future<std::string> m_Future;
-		};
-		std::queue<RunningCommand> m_RunningCommands;
-		void ProcessRunningCommands();
-		void ProcessQueuedCommands();
-
-		struct Writer;
-
-		static constexpr duration_t UPDATE_INTERVAL = std::chrono::milliseconds(250);
-
-		IWorldState& m_WorldState;
-		const Settings& m_Settings;
-		time_point_t m_LastUpdateTime{};
-		std::vector<std::unique_ptr<IAction>> m_Actions;
-		std::vector<std::unique_ptr<IPeriodicActionGenerator>> m_PeriodicActionGenerators;
-		std::map<ActionType, time_point_t> m_LastTriggerTime;
-
-		bool ShouldDiscardCommand(const std::string_view& cmd) const;
-		bool m_IsDiscardingServerCommands = true;
-	};
-}
-
 struct SRCONInit
 {
 	SRCONInit()
@@ -93,7 +38,7 @@ struct SRCONInit
 
 } s_SRCONInit;
 
-std::unique_ptr<IRCONActionManager> IRCONActionManager::Create(const Settings& settings, IWorldState& world)
+std::unique_ptr<RCONActionManager> RCONActionManager::Create(const Settings& settings, IWorldState& world)
 {
 	return std::make_unique<RCONActionManager>(settings, world);
 }
@@ -177,8 +122,9 @@ void RCONActionManager::ProcessRunningCommands()
 		}
 		catch (const std::future_error& e)
 		{
-			if (e.code() == std::future_errc::broken_promise)
+			if (e.code() == std::future_errc::broken_promise) {
 				DebugLogWarning(std::string(__FUNCTION__) << "(): " << e.code().message() << ": " << e.what() << ": " << std::quoted(cmd.m_Command));
+			}
 			else
 				PrintErrorMsg(e.code().message() << ": " << e.what() << ": " << std::quoted(cmd.m_Command));
 		}

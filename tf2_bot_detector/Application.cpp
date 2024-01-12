@@ -62,7 +62,7 @@ namespace tf2_bot_detector
 
 TF2BDApplication::TF2BDApplication() :
 	m_WorldState(IWorldState::Create(m_Settings)),
-	m_ActionManager(IRCONActionManager::Create(m_Settings, GetWorld())),
+	m_ActionManager(RCONActionManager::Create(m_Settings, GetWorld())),
 	m_UpdateManager(IUpdateManager::Create(m_Settings))
 {
 	assert(!s_Application);

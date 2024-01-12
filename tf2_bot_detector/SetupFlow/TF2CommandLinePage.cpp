@@ -5,6 +5,9 @@
 #include "Log.h"
 #include "Util/TextUtils.h"
 
+#include "Application.h"
+#include "Actions/RCONActionManager.h"
+
 #include <mh/future.hpp>
 #include <mh/text/charconv_helper.hpp>
 #include <mh/text/string_insertion.hpp>
@@ -72,10 +75,22 @@ void TF2CommandLinePage::Data::TryUpdateCmdlineArgs()
 
 auto TF2CommandLinePage::ValidateSettings(const Settings& settings) const -> ValidateSettingsResult
 {
-	if (!Processes::IsTF2Running())
+	if (!Processes::IsTF2Running()) {
+		// we have to make m_Unsaved.m_RCONClient null or else RCONActionManager will continue to queue commands
+		// until we literally run out of ports, see https://github.com/surepy/tf2_bot_detector/issues/25
+		// so we just break all the promises and clear our rcon client, as it doesn't matter and having it around is actually worse.
+		if (settings.m_Unsaved.m_RCONClient) {
+			// clear any actions that were about to be commited
+			TF2BDApplication::GetApplication().GetActionManager().clearActions();
+			// delete our rcon client.
+			const_cast<Settings&>(settings).m_Unsaved.m_RCONClient.reset();
+		}
+
 		return ValidateSettingsResult::TriggerOpen;
-	if (!m_Data.m_CommandLineArgs.has_value() || !m_Data.m_CommandLineArgs->IsPopulated())
+	}
+	if (!m_Data.m_CommandLineArgs.has_value() || !m_Data.m_CommandLineArgs->IsPopulated()) {
 		return ValidateSettingsResult::TriggerOpen;
+	}
 
 	return ValidateSettingsResult::Success;
 }
@@ -309,7 +324,7 @@ bool TF2CommandLinePage::RCONClientData::Update()
 		}
 
 		if (!m_Future.valid())
-			m_Future = m_Client->send_command_async("echo RCON connection successful.", false);
+			m_Future = m_Client->send_command_async("echo [TF2BD] RCON connection successful.", false);
 	}
 
 	ImGui::TextFmt(m_MessageColor, m_Message);
@@ -484,8 +499,9 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 		ImGui::TextFmt("Connecting to TF2 on 127.0.0.1:{} with password {}...",
 			args.m_RCONPort.value(), std::quoted(args.m_RCONPassword));
 
-		if (!m_Data.m_TestRCONClient)
+		if (!m_Data.m_TestRCONClient) {
 			m_Data.m_TestRCONClient.emplace(args.m_RCONPassword, args.m_RCONPort.value());
+		}
 
 		ImGui::NewLine();
 		m_Data.m_RCONSuccess = m_Data.m_TestRCONClient.value().Update();
@@ -509,6 +525,7 @@ void TF2CommandLinePage::Init(const InitState& is)
 void TF2CommandLinePage::Commit(const CommitState& cs)
 {
 	m_IsAutoLaunchAllowed = false;
+	cs.m_Settings.m_Unsaved.m_RCONClient.reset();
 	cs.m_Settings.m_Unsaved.m_RCONClient = std::move(m_Data.m_TestRCONClient.value().m_Client);
 	m_Data.m_TestRCONClient.reset();
 }

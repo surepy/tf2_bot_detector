@@ -120,7 +120,7 @@ namespace tf2_bot_detector
 
 		std::unique_ptr<IUpdateManager> m_UpdateManager;
 		std::shared_ptr<IWorldState> m_WorldState;
-		std::unique_ptr<IRCONActionManager> m_ActionManager;
+		std::unique_ptr<RCONActionManager> m_ActionManager;
 
 		/// <summary>
 		/// for "sleep when unfocused" feature.
@@ -168,8 +168,8 @@ namespace tf2_bot_detector
 		IWorldState& GetWorld() { return *m_WorldState; }
 		const IWorldState& GetWorld() const { return *m_WorldState; }
 
-		IRCONActionManager& GetActionManager() { return *m_ActionManager; }
-		const IRCONActionManager& GetActionManager() const { return *m_ActionManager; }
+		RCONActionManager& GetActionManager() { return *m_ActionManager; }
+		const RCONActionManager& GetActionManager() const { return *m_ActionManager; }
 
 		void SetLaunchedFromSteam(bool isLaunchedFromSteam) { m_Settings.m_Unsaved.m_IsLaunchedFromSteam = isLaunchedFromSteam; }
 		void SetForwardedCommandLineArguments(const std::string& str) { m_Settings.m_Unsaved.m_ForwardedCommandLineArguments = str; }

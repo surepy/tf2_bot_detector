@@ -312,8 +312,8 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 				icons.push_back({ (ImTextureID)(intptr_t)icon->GetHandle(), { 1, 0, 0, 1 }, "Steam Friends" });
 			});
 
+		// They are SourceBanned
 		if (auto sourceBans = player.GetPlayerSourceBanState()) {
-			// They are SourceBanned
 			std::invoke([&]
 				{
 					if constexpr (!DEBUG_ALWAYS_DRAW_ICONS)

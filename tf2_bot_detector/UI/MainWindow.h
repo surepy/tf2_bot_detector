@@ -6,7 +6,6 @@
 #include "CompensatedTS.h"
 #include "ConsoleLog/ConsoleLineListener.h"
 #include "ConsoleLog/ConsoleLogParser.h"
-#include "Config/PlayerListJSON.h"
 #include "Config/Settings.h"
 #include "DiscordRichPresence.h"
 #include "Networking/GithubAPI.h"
