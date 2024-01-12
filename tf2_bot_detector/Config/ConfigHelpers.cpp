@@ -248,8 +248,11 @@ mh::task<std::error_condition> ConfigFileBase::LoadFileAsync(const std::filesyst
 		co_return ConfigErrorType::PostLoadFailed;
 	}
 
-	if (loadResult && loadResult != std::errc::no_such_file_or_directory)
+	if (loadResult && loadResult != std::errc::no_such_file_or_directory) {
 		SaveConfigFileBackup(filename);
+		// investigate: 
+		// co_return loadResult;
+	}
 
 	if (auto saveResult = SaveFile(filename))
 	{

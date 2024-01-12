@@ -96,7 +96,8 @@ namespace tf2_bot_detector
 		virtual void Serialize(nlohmann::json& json) const = 0;
 
 		std::optional<ConfigSchemaInfo> m_Schema;
-		std::string m_FileName; // Name of the file this was loaded from
+		// Name of the file this was loaded from, can be filename (filesystem) or "name" inside the file.
+		std::string m_FileName; 
 
 	protected:
 		virtual void PostLoad(bool deserialized) {}
@@ -181,9 +182,9 @@ namespace tf2_bot_detector
 		}
 
 		/// <summary>
-		/// check if user is pazer, and modify playerlist.official.json if so
+		/// check if user is pazer, and modify *.official.json if so
 		///
-		/// this might be horribly broken, I have no reason to modify playerlist.official.json ever so if this causes a crash that's well lol
+		/// this might be horribly broken, I have no reason to modify *.official.json ever so if this causes a crash that's well lol
 		///
 		/// TODO: remove?
 		/// </summary>
@@ -199,9 +200,9 @@ namespace tf2_bot_detector
 		}
 		const T* GetDefaultMutableList() const
 		{
+			// This might cause occasional UI hiccups, but I (pazer) am the only one this code path will run for
 			if (IsOfficial())
 			{
-				// This might cause occasional UI hiccups, but I am the only one this code path will run for
 				return &m_OfficialList.get();
 			}
 

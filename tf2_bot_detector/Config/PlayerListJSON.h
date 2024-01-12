@@ -115,7 +115,6 @@ namespace tf2_bot_detector
 		bool operator==(const PlayerListData&) const;
 
 	private:
-
 		SteamID m_SteamID;
 	};
 
