@@ -6,7 +6,8 @@
 	url=https://github.com/PazerOP/ValveFileVDF.git
 [submodule "submodules/SourceRCON"]
 	path = submodules/SourceRCON
-	url = https://github.com/PazerOP/SourceRCON.git
+	url = git@github.com:surepy/tf2bd_SourceRCON.git
+	branch = tf2bd
 [submodule "submodules/imgui_desktop"]
 	path = submodules/imgui_desktop
 	url = https://github.com/PazerOP/imgui_desktop.git
