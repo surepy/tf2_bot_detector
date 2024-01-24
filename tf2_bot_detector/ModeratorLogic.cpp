@@ -26,6 +26,7 @@
 #include <regex>
 #include <unordered_set>
 #include <fstream>
+#include "PlayerList/PlayerList.h"
 
 using namespace tf2_bot_detector;
 using namespace std::chrono_literals;
@@ -167,6 +168,7 @@ namespace
 		bool VoteKickIgnoresTeamState();
 
 		PlayerListJSON m_PlayerList;
+		tf2_bot_detector::PlayerList m_PlayerListNew;
 		ModerationRules m_Rules;
 	};
 

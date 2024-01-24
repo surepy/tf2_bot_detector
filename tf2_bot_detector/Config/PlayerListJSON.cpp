@@ -141,6 +141,7 @@ namespace tf2_bot_detector
 		throw;
 	}
 }
+
 auto PlayerListData::LastSeen::Latest(const std::optional<LastSeen>& lhs, const std::optional<LastSeen>& rhs)
 	-> std::optional<LastSeen>
 {
@@ -175,13 +176,12 @@ void PlayerListJSON::PlayerListFile::Deserialize(const nlohmann::json& json)
 {
 	SharedConfigFileBase::Deserialize(json);
 
-	PlayerMap_t& map = m_Players;
 	for (const auto& player : json.at("players"))
 	{
 		const SteamID steamID = player.at("steamid");
 		PlayerListData parsed(steamID);
 		player.get_to(parsed);
-		map.emplace(steamID, std::move(parsed));
+		m_Players.emplace(steamID, std::move(parsed));
 	}
 }
 

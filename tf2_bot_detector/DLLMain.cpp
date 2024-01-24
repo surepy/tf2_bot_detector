@@ -38,6 +38,8 @@ namespace tf2_bot_detector
 	}
 }
 
+#include "PlayerList/PlayerList.h"
+
 /// <summary>
 /// main entry point for tf2bd/External window
 /// </summary>
@@ -91,7 +93,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 #endif
 
 
-#ifndef TF2BD_OVERLAY_BUILD
+#ifndef TF2BD_OVERLAY_BUILD6
 		DebugLog("Initializing TF2BDApplication...");
 		TF2BotDetectorSDLRenderer renderer;
 
@@ -99,6 +101,10 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 
 		app.get()->SetForwardedCommandLineArguments(forwarded_arg);
 		app.get()->SetLaunchedFromSteam(running_from_steam);
+
+		//PlayerList a;
+		//a.Load();
+		//a.LoadTestEntries();
 
 		// register mainwindow
 		{

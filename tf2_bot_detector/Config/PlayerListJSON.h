@@ -130,16 +130,6 @@ namespace tf2_bot_detector
 		Modified,
 	};
 
-	/*
-	template<typename T> concept ModifyPlayerCallback = requires(T x)
-	{
-#ifndef __INTELLISENSE__
-		std::invocable<T, PlayerListData&>;
-		{ x(std::declval<PlayerListData>()) } -> std::same_as<ModifyPlayerAction>;
-#endif
-	};
-	*/
-
 	using ConfigFileName = std::string;
 	struct PlayerMarks final
 	{
@@ -231,6 +221,8 @@ namespace tf2_bot_detector
 	void to_json(nlohmann::json& j, const PlayerAttribute& d);
 	void from_json(const nlohmann::json& j, PlayerAttribute& d);
 }
+
+// string formatters 
 
 MH_ENUM_REFLECT_BEGIN(tf2_bot_detector::PlayerAttribute)
 	MH_ENUM_REFLECT_VALUE(Cheater)
