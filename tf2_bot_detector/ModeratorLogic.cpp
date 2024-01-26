@@ -351,7 +351,14 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 
 			// why must i do this this feels dumb
 			std::ostringstream os;
-			os << std::quoted(msg);
+
+			// dumb way to do it, but i don't care
+			if (rule.Match(player, "")) {
+				os << rule.m_Description;
+			}
+			else {
+				os << std::quoted(msg);
+			}
 
 			OnRuleMatch(rule, player, os.str());
 			Log("Chat message rule match for {}: {}", rule.m_Description, os.str());
