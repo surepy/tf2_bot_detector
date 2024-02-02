@@ -4,7 +4,6 @@
 #include <vector>
 #include <set>
 
-enum class PlayerListSource;
 class PlayerList;
 
 namespace tf2_bot_detector::playerlist
@@ -71,11 +70,7 @@ namespace tf2_bot_detector::playerlist
 		PlayerEntry(const SteamID& id);
 
 		SteamID m_SteamID;
-
 		SteamID GetSteamID() const { return m_SteamID; }
-
-		// should this even exist?
-		PlayerListSource m_LoadedFrom;
 
 		/// <summary>
 		/// are we allowed to modify this PlayerEntry?
@@ -85,6 +80,9 @@ namespace tf2_bot_detector::playerlist
 
 		std::filesystem::path m_File;
 
+		/// <summary>
+		/// list of attributes, required
+		/// </summary>
 		PlayerAttributes m_Attributes;
 
 		struct SeenAs
@@ -93,9 +91,6 @@ namespace tf2_bot_detector::playerlist
 			std::string m_PlayerName;
 		};
 
-		/// <summary>
-		/// in version 3 of playerlist, this is populated from firstseen instead (cuz it never gets updated)
-		/// </summary>
 		std::optional<SeenAs> m_LastSeen;
 		std::optional<SeenAs> m_FirstSeen;
 
@@ -103,7 +98,6 @@ namespace tf2_bot_detector::playerlist
 	};
 
 	void to_json(nlohmann::json& j, const PlayerEntry& d);
-	void from_json(const nlohmann::json& j, PlayerEntry& d);
 
 	class SavedPlayerEntries {
 		// functions todo
@@ -111,9 +105,11 @@ namespace tf2_bot_detector::playerlist
 	public:
 		bool HasAttribute(const std::string& attr);
 		bool HasAttribute(const playerlist::PlayerAttribute2& attr);
+
+		void AddEntry(const PlayerEntry& entry) { m_Entries.insert({entry.m_File, entry}); }
 		std::size_t EraseEntry(const std::filesystem::path& file) { return m_Entries.erase(file); }
 
-		const std::unordered_map<std::filesystem::path, PlayerEntry>& GetEntries() { return m_Entries; };
+		std::unordered_map<std::filesystem::path, PlayerEntry>& GetEntries() { return m_Entries; };
 
 		friend class PlayerList;
 	};

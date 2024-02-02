@@ -1,6 +1,8 @@
 #pragma once
 #include "IPlayerListFileFormat.h"
 
+#include <nlohmann/json_fwd.hpp>
+
 namespace tf2_bot_detector::playerlist::formats {
 	/// <summary>
 	/// pazer's json format
@@ -11,6 +13,8 @@ namespace tf2_bot_detector::playerlist::formats {
 	class JsonV3 : public IPlayerListFileFormat {
 		std::filesystem::path m_File;
 		std::string m_UpdateURL;
+		std::vector<std::string> m_Authors;
+		bool m_Valid = false;
 	public:
 		JsonV3(const std::filesystem::path& path);
 

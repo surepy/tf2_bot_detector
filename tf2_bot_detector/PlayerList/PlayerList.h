@@ -21,20 +21,6 @@
 namespace tf2_bot_detector
 {
 	/// <summary>
-	/// Where is this PlayerList data coming from?
-	/// </summary>
-	enum class PlayerListSource {
-		// attributes which should be discarded after program's closure.
-		Transient,
-		// pazer's json v3 (the most common filetype)
-		JSONv3,
-		// new kid in town
-		// MACAlpha
-		// fuckin idk man
-		Other
-	};
-
-	/// <summary>
 	/// Main playerlist, combining all other playerlist sources
 	///
 	/// sources can be:
@@ -44,7 +30,7 @@ namespace tf2_bot_detector
 		/// <summary>
 		/// to keep track of metadata of files that we have loaded in, handles saving operation.
 		/// </summary>
-		// std::unordered_map<std::filesystem::path, playerlist::formats::IPlayerListFileFormat> m_loadedFiles;
+		std::unordered_map<std::filesystem::path, std::shared_ptr<playerlist::formats::IPlayerListFileFormat>> m_loadedFiles;
 
 		/// <summary>
 		/// our actual loaded playerlist
@@ -89,6 +75,11 @@ namespace tf2_bot_detector
 		// modifies default playerlist.json (for now)
 		bool ModifyPlayerEntry(SteamID playerID, const std::function<bool(playerlist::PlayerEntry& data)>& func);
 		bool ModifyPlayerEntry(SteamID playerID, std::filesystem::path source, const std::function<bool(playerlist::PlayerEntry& data)>& func);
+		bool RemovePlayerEntry(SteamID playerID, std::filesystem::path source);
+		bool SavePlayerList(const std::filesystem::path& source);
+
+
+		void LoadPlayerEntry(playerlist::PlayerEntry attr);
 
 		// probably thread-unsafe.
 		size_t UnloadPlayerList(std::filesystem::path path);

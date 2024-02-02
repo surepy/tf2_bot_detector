@@ -70,24 +70,4 @@ namespace tf2_bot_detector::playerlist {
 
 	using namespace std::string_literals;
 	using namespace std::string_view_literals;
-
-	void from_json(const nlohmann::json& j, PlayerEntry& d) try
-	{
-		if (SteamID sid = j.at("steamid"); d.GetSteamID() != sid)
-		{
-			//throw std::runtime_error("Mismatch between target PlayerEntry SteamID ("s << d.GetSteamID() << ") and json SteamID (" << sid << ')');
-		}
-
-		d.m_Attributes = j.at("attributes");
-
-		//if (auto lastSeen = j.find("last_seen"); lastSeen != j.end())
-		//	lastSeen->get_to(d.m_LastSeen.emplace());
-
-		//try_get_to_defaulted(j, d.m_Proof, "proof");
-	}
-	catch (...)
-	{
-		LogException();
-		throw;
-	}
 };

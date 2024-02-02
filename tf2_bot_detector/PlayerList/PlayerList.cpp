@@ -1,6 +1,7 @@
 #include "PlayerList.h"
 #include "Filesystem.h"
 #include <regex>
+#include <vector>
 #include <fmt/format.h>
 
 #include "PlayerList/Formats/PlayerListJSONV3.h"
@@ -37,16 +38,24 @@ bool tf2_bot_detector::PlayerList::Load()
 			if (std::regex_match(filename.begin(), filename.end(), filenameRegex)) {
 				// this will all be sync for now, no async.
 				// sorry for slowdowns (its probably not that much).
+				// TODO: make this async
 
 				// try to load as pazer's format
-				auto json_v3 = playerlist::formats::JsonV3(path);
-				//if (json_v3.valid())
+				auto json_v3 = std::make_shared<playerlist::formats::JsonV3>(path);
+
+				if (json_v3->valid())
 				{
-					std::vector<playerlist::PlayerEntry> a;
+					std::vector<playerlist::PlayerEntry> players;
 
-					json_v3.attemptLoad(a);
+					// TODO: update from update_url and load
 
-					// m_loadedFiles.insert({ path, json_v3 });
+					if (json_v3->attemptLoad(players)) {
+						for (const auto& player : players) {
+							LoadPlayerEntry(player);
+						}
+					}
+
+					m_loadedFiles.insert({ path, json_v3 });
 					continue;
 				}
 				// do loading stuff here
@@ -64,8 +73,6 @@ bool tf2_bot_detector::PlayerList::Load()
 
 bool tf2_bot_detector::PlayerList::LoadTestEntries()
 {
-	// it's me [U:1:452543165]
-
 	// account used for injecting randomass dlls, should bother nobody
 	m_TransientPlayers.insert({ SteamID(76561198851982472), { "cheater", "bot" }});
 
@@ -106,7 +113,6 @@ tf2_bot_detector::playerlist::PlayerAttribute2& tf2_bot_detector::PlayerList::Ge
 	if (!m_LoadedAttributes.contains(attribute_key)) {
 		m_LoadedAttributes.insert({
 				attribute_key,
-				//
 				playerlist::PlayerAttribute2(attribute_key, false, false)
 		});
 	}
@@ -132,7 +138,108 @@ bool tf2_bot_detector::PlayerList::ModifyPlayerEntry(SteamID playerID, const std
 
 bool tf2_bot_detector::PlayerList::ModifyPlayerEntry(SteamID playerID, std::filesystem::path source, const std::function<bool(playerlist::PlayerEntry& data)>& func)
 {
+	// TODO: local player check
+	if (!m_loadedFiles.contains(source)) {
+		return false;
+	}
+
+	const auto& file = m_loadedFiles.at(source);
+
+	// we don't own this file.
+	if (file->isRemote()) {
+		return false;
+	}
+
+	// create a new player entry if not exists
+	if (!m_Players.contains(playerID)) {
+		m_Players.insert({ playerID, {} });
+	}
+
+	auto& player_entries = m_Players.at(playerID);
+
+	// make a new pending entry, just in case we dont have an entry at all
+	tf2_bot_detector::playerlist::PlayerEntry pendingEntry(playerID);
+	pendingEntry.m_File = source;
+
+	// copy over existing entry, if it exists.
+	if (player_entries.GetEntries().contains(source)) {
+		pendingEntry = player_entries.GetEntries().at(source);
+	}
+
+	// make our modifications
+	bool retval = func(pendingEntry);
+
+	// no modifications made, just return
+	if (!retval) {
+		return true;
+	}
+
+	// attributes are empty, we should remove this entry.
+	if (pendingEntry.m_Attributes.empty()) {
+		// remove this player from list of players to save
+		file->removeID(playerID);
+		// remove this entry
+		player_entries.EraseEntry(source);
+
+		SavePlayerList(source);
+		return true;
+	}
+
+	// new entry, add to list of ids to save on file.
+	if (!player_entries.GetEntries().contains(source)) {
+		file->addID(playerID);
+	}
+
+	// replace current entry or add a new one
+	player_entries.AddEntry(pendingEntry);
+
+	// TODO: make saveplayerlist async
+	SavePlayerList(source);
+
+	return true;
+}
+
+bool tf2_bot_detector::PlayerList::RemovePlayerEntry(SteamID playerID, std::filesystem::path source)
+{
 	return false;
+}
+
+/// <summary>
+/// saves playerlist with m_Players.
+/// </summary>
+/// <param name="source"></param>
+/// <returns></returns>
+bool tf2_bot_detector::PlayerList::SavePlayerList(const std::filesystem::path& source)
+{
+	if (!m_loadedFiles.contains(source)) {
+		return false;
+	}
+
+	const auto& file = m_loadedFiles.at(source);
+
+	// we don't own this file.
+	if (file->isRemote()) {
+		return false;
+	}
+
+	const auto& pending_steamids = file->getIDs();
+
+	std::vector<playerlist::PlayerEntry> players;
+
+	for (const auto& id : pending_steamids) {
+		players.push_back(m_Players.at(id).GetEntries().at(source));
+	}
+
+	return file->save(players);
+}
+
+void tf2_bot_detector::PlayerList::LoadPlayerEntry(playerlist::PlayerEntry attr)
+{
+	if (!m_Players.contains(attr.GetSteamID())) {
+		m_Players.insert({ attr.GetSteamID(), {}});
+	}
+
+	m_Players.at(attr.GetSteamID()).AddEntry(attr);
 }
 
 size_t tf2_bot_detector::PlayerList::UnloadPlayerList(std::filesystem::path path)

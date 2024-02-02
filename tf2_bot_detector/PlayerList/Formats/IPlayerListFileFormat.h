@@ -3,6 +3,7 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
+#include <unordered_set>
 
 #include "Playerlist/PlayerAttribute.h"
 
@@ -14,9 +15,17 @@ namespace tf2_bot_detector::playerlist::formats {
 	protected:
 		std::string m_Title;
 		std::string m_Description;
+
+		/// <summary>
+		/// a list of steamids we should use for saving. 
+		/// </summary>
+		std::unordered_set<SteamID> m_SavedIDs;
 	public:
-		std::string getTitle() { return m_Title; }
-		std::string getDescription() { return m_Description; }
+		void addID(const SteamID& id) { m_SavedIDs.insert(id); }
+		void removeID(const SteamID& id) { m_SavedIDs.erase(id); }
+		const std::unordered_set<SteamID>& getIDs() const { return m_SavedIDs; }
+		std::string getTitle() const { return m_Title; }
+		std::string getDescription() const { return m_Description; }
 		virtual bool isRemote() = 0;
 
 		virtual bool attemptLoad(std::vector<PlayerEntry>& out) = 0;
@@ -25,6 +34,7 @@ namespace tf2_bot_detector::playerlist::formats {
 		/// </summary>
 		/// <returns></returns>
 		virtual bool valid() = 0;
+
 		virtual bool save(const std::vector<PlayerEntry>& in) = 0;
 	};
 }
