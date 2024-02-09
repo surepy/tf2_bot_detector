@@ -600,7 +600,7 @@ size_t ChatFmtStrLengths::Type::GetAvailableChars() const
 
 size_t ChatFmtStrLengths::Type::GetMaxWrapperLength() const
 {
-	return 3;
+	return 5;
 }
 
 ChatWrappers tf2_bot_detector::RandomizeChatWrappers(const std::filesystem::path& tfdir,
