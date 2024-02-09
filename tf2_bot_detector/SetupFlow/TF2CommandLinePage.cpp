@@ -228,7 +228,7 @@ static std::string FindUserLaunchOptions(const Settings& settings)
 /// <param name="rconPort"></param>
 static void OpenTF2(const Settings& settings, const std::string_view& rconPassword, uint16_t rconPort)
 {
-	const std::filesystem::path hl2Path = settings.GetTFDir() / ".." / "hl2.exe";
+	const std::filesystem::path hl2Path = settings.GetTFDir() / ".." / "tf_win64.exe";
 
 	std::string args = settings.m_Unsaved.m_IsLaunchedFromSteam ? settings.m_Unsaved.m_ForwardedCommandLineArguments : FindUserLaunchOptions(settings);
 
@@ -483,7 +483,7 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 	{
 		m_IsAutoLaunchAllowed = false; // Multiple instances already running for some reason, disable auto launching
 		m_Data.m_TestRCONClient.reset();
-		ImGui::TextFmt("More than one instance of hl2.exe found. Please close the other instances.");
+		ImGui::TextFmt("More than one instance of tf_win64.exe found. Please close the other instances.");
 
 		ImGui::EnabledSwitch(false, [&] { DrawLaunchTF2Button(ds); }, "TF2 is currently running. Please close it first.");
 	}

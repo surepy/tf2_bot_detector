@@ -206,7 +206,7 @@ mh::task<std::vector<std::string>> tf2_bot_detector::Processes::GetTF2CommandLin
 
 		const bstr_t query(
 			"SELECT Name,CommandLine,CreationDate FROM Win32_Process "
-			"WHERE Name = \"hl2.exe\" "
+			"WHERE Name = \"tf_win64.exe\" "
 			//"ORDER BY CreationDate DESC "
 			//"LIMIT 1"
 		);
