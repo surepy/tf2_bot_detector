@@ -228,7 +228,12 @@ static std::string FindUserLaunchOptions(const Settings& settings)
 /// <param name="rconPort"></param>
 static void OpenTF2(const Settings& settings, const std::string_view& rconPassword, uint16_t rconPort)
 {
-	const std::filesystem::path hl2Path = settings.GetTFDir() / ".." / "tf_win64.exe";
+	const std::filesystem::path hl2Path = settings.GetTFDir() / ".." / settings.GetBinaryName();
+
+	if (!std::filesystem::exists(hl2Path)) {
+		LogError("Can't open this file! (empty() returned true) path={}", hl2Path);
+		return;
+	}
 
 	std::string args = settings.m_Unsaved.m_IsLaunchedFromSteam ? settings.m_Unsaved.m_ForwardedCommandLineArguments : FindUserLaunchOptions(settings);
 
@@ -338,6 +343,35 @@ void TF2CommandLinePage::DrawAutoLaunchTF2Checkbox(const DrawState& ds)
 		ds.m_Settings->SaveFile();
 }
 
+void tf2_bot_detector::TF2CommandLinePage::DrawTF2LaunchMode(const DrawState& ds)
+{
+	// i love tech tebt
+	const auto GetTFBinaryModeString = [](TFBinaryMode mode) {
+		switch (mode) {
+		case TFBinaryMode::x64:  return "64-bit";
+		case TFBinaryMode::x86:  return "32-bit";
+		case TFBinaryMode::x86_legacy:  return "32-bit (legacy)";
+		}
+		return "64-bit (unknown value)";
+	};
+
+	if (ImGui::BeginCombo("TF2 Binary Mode", GetTFBinaryModeString(ds.m_Settings->m_TFBinaryMode)))
+	{
+		const auto ModeSelectable = [&](TFBinaryMode mode) {
+			if (ImGui::Selectable(GetTFBinaryModeString(mode), ds.m_Settings->m_TFBinaryMode == mode)) {
+				ds.m_Settings->m_TFBinaryMode = mode;
+				ds.m_Settings->SaveFile();
+			}
+		};
+
+		ModeSelectable(TFBinaryMode::x64);
+		ModeSelectable(TFBinaryMode::x86);
+		ModeSelectable(TFBinaryMode::x86_legacy);
+
+		ImGui::EndCombo();
+	}
+}
+
 void TF2CommandLinePage::DrawRconStaticParamsCheckbox(const DrawState& ds)
 {
 	if (ImGui::Checkbox("Use Static Rcon Launch Parameters (Not Recommended)", &ds.m_Settings->m_UseRconStaticParams))
@@ -400,7 +434,10 @@ void TF2CommandLinePage::DrawLaunchTF2Button(const DrawState& ds)
 		}, "Finding command line arguments...");
 
 	ImGui::NewLine();
+	ImGui::Indent();
+
 	DrawAutoLaunchTF2Checkbox(ds);
+	DrawTF2LaunchMode(ds);
 	DrawRconStaticParamsCheckbox(ds);
 }
 
@@ -483,7 +520,7 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 	{
 		m_IsAutoLaunchAllowed = false; // Multiple instances already running for some reason, disable auto launching
 		m_Data.m_TestRCONClient.reset();
-		ImGui::TextFmt("More than one instance of tf_win64.exe found. Please close the other instances.");
+		ImGui::TextFmt("More than one instance of Team Fortress 2 found. Please close the other instances.");
 
 		ImGui::EnabledSwitch(false, [&] { DrawLaunchTF2Button(ds); }, "TF2 is currently running. Please close it first.");
 	}

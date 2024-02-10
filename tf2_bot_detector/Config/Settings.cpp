@@ -181,6 +181,39 @@ namespace tf2_bot_detector
 		}
 	}
 
+	void to_json(nlohmann::json& j, const TFBinaryMode& d)
+	{
+		switch (d)
+		{
+		case TFBinaryMode::x64:
+			j = "x64"; break;
+		case TFBinaryMode::x86:
+			j = "x86"; break;
+		case TFBinaryMode::x86_legacy:
+			j = "x86_legacy"; break;
+		default:
+			LogError("Unknown TFBinaryMode {}, defaulting to x64", +std::underlying_type_t<TFBinaryMode>(d));
+			j = "x64";
+		}
+	}
+	void from_json(const nlohmann::json& j, TFBinaryMode& d)
+	{
+		auto sv = j.get<std::string_view>();
+
+		if (sv == "x86") {
+			d = TFBinaryMode::x86;
+		}
+		else if (sv == "x86_legacy") {
+			d = TFBinaryMode::x86_legacy;
+		}
+		else {
+			if (sv != "x64") {
+				LogError("Unknown TFBinaryMode {}, defaulting to x64.", std::quoted(sv));
+			}
+			d = TFBinaryMode::x64;
+		}
+	}
+
 	void to_json(nlohmann::json& j, const Settings::Mods& d)
 	{
 		j =
@@ -220,6 +253,21 @@ bool Settings::IsSteamAPIAvailable() const
 	}
 
 	return IsSteamAPISettingReady();
+}
+
+std::string GeneralSettings::GetBinaryName() const
+{
+	switch (m_TFBinaryMode) {
+	case TFBinaryMode::x64:
+		return "tf_win64.exe";
+	case TFBinaryMode::x86:
+		return "tf.exe";
+	case TFBinaryMode::x86_legacy:
+		return "hl2.exe";
+	};
+
+	// it might be probably better to error out?
+	return "tf_win64.exe";
 }
 
 std::string GeneralSettings::GetSteamAPIKey() const
@@ -479,6 +527,9 @@ void Settings::Deserialize(const nlohmann::json& json)
 
 			// bad fixes
 			try_get_to_defaulted(*custom_values, m_VoteKickIgnoreTeamStateOnCertainMaps, "vote_kick_ignore_team_state_certain_maps", DEFAULTS.m_VoteKickIgnoreTeamStateOnCertainMaps);
+
+			// m_TFBinaryMode
+			try_get_to_defaulted(*found, m_TFBinaryMode, "tf_binary_mode", DEFAULTS.m_TFBinaryMode);
 		}
 		// 
 
@@ -563,7 +614,8 @@ void Settings::Serialize(nlohmann::json& json) const
 						{ "rcon_static_password", m_RconStaticPassword },
 						{ "use_recommended_launch_params", m_UseLaunchRecommendedParams },
 						{ "min_vote_kick_interval", m_MinVoteKickInterval },
-						{ "vote_kick_ignore_team_state_certain_maps", m_VoteKickIgnoreTeamStateOnCertainMaps }
+						{ "vote_kick_ignore_team_state_certain_maps", m_VoteKickIgnoreTeamStateOnCertainMaps },
+						{ "tf_binary_mode", m_TFBinaryMode }
 					}
 				},
 				{ "sleep_when_unfocused", m_SleepWhenUnfocused },

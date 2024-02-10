@@ -476,6 +476,33 @@ void tf2_bot_detector::SettingsWindow::OnDrawMiscSettings()
 			m_Settings.SaveFile();
 
 		// PASTED: see TF2CommandLinePage.cpp
+		// i love tech tebt
+		const auto GetTFBinaryModeString = [](TFBinaryMode mode) {
+			switch (mode) {
+			case TFBinaryMode::x64:  return "64-bit";
+			case TFBinaryMode::x86:  return "32-bit";
+			case TFBinaryMode::x86_legacy:  return "32-bit (legacy)";
+			}
+			return "64-bit (unknown value)";
+			};
+
+		if (ImGui::BeginCombo("TF2 Binary Mode", GetTFBinaryModeString(m_Settings.m_TFBinaryMode)))
+		{
+			const auto ModeSelectable = [&](TFBinaryMode mode) {
+				if (ImGui::Selectable(GetTFBinaryModeString(mode), m_Settings.m_TFBinaryMode == mode)) {
+					m_Settings.m_TFBinaryMode = mode;
+					m_Settings.SaveFile();
+				}
+			};
+
+			ModeSelectable(TFBinaryMode::x64);
+			ModeSelectable(TFBinaryMode::x86);
+			ModeSelectable(TFBinaryMode::x86_legacy);
+
+			ImGui::EndCombo();
+		}
+
+		// PASTED: see TF2CommandLinePage.cpp
 		if (ImGui::Checkbox("Use Static Rcon Launch Parameters (Not Recommended)", &m_Settings.m_UseRconStaticParams))
 			m_Settings.SaveFile();
 

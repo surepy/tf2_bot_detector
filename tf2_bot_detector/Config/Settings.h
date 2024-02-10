@@ -63,6 +63,13 @@ namespace tf2_bot_detector
 		Direct,    // Requires Steam API key
 	};
 
+	enum class TFBinaryMode
+	{
+		x64,		// tf_win64.exe
+		x86,		// tf.exe
+		x86_legacy	// hl2.exe
+	};
+
 	class ISteamAPISettings
 	{
 	public:
@@ -129,6 +136,11 @@ namespace tf2_bot_detector
 		/// </summary>
 		int m_MinVoteKickInterval = 30;
 
+		/// <summary>
+		/// which binary should we run?
+		/// </summary>
+		TFBinaryMode m_TFBinaryMode = TFBinaryMode::x64;
+
 		// end custom
 
 		bool m_AutoChatWarnings = true;
@@ -148,6 +160,8 @@ namespace tf2_bot_detector
 		std::optional<ReleaseChannel> m_ReleaseChannel;
 
 		constexpr auto GetAutoVotekickDelay() const { return std::chrono::duration<float>(m_AutoVotekickDelay); }
+
+		std::string GetBinaryName() const;
 
 		std::string GetSteamAPIKey() const override;
 		void SetSteamAPIKey(std::string key) override;

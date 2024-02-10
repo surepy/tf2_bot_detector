@@ -96,7 +96,10 @@ DirectoryValidatorResult tf2_bot_detector::ValidateTFDir(std::filesystem::path p
 		if (!BasicDirChecks(result))
 			return result;
 
-		if (!ValidateFile(result, "../tf_win64.exe") ||
+		// hl2.exe is there just in case
+		bool tf2_binary_validate_result = ValidateFile(result, "../tf_win64.exe") || ValidateFile(result, "../tf.exe") || ValidateFile(result, "../hl2.exe");
+
+		if (!tf2_binary_validate_result ||
 			!ValidateFile(result, "tf2_misc_dir.vpk") ||
 			!ValidateFile(result, "tf2_sound_misc_dir.vpk") ||
 			!ValidateFile(result, "tf2_textures_dir.vpk") ||

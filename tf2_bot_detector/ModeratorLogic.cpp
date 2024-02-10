@@ -855,7 +855,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 		tf2_bot_detector::ConfigFileName fileName = marks.m_Marks.front().m_FileName;
 
 		if (std::filesystem::exists(fileName)) {
-			fileName = fileName.substr(fileName.rfind("playerlist."));
+			fileName = std::filesystem::path(fileName).filename().string();
 		}
 
 		chatMsg.fmt("[tf2bd] WARN: Marked Player ({}) Joining ({} - {}).", username, marksToString(marks), fileName);
@@ -905,7 +905,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 			tf2_bot_detector::ConfigFileName fileName = marks.m_Marks.front().m_FileName;
 
 			if (std::filesystem::exists(fileName)) {
-				fileName = fileName.substr(fileName.rfind("playerlist."));
+				fileName = std::filesystem::path(fileName).filename().string();
 			}
 
 			msg += mh::format("{} - {}, ", name, marksToString(marks), fileName);
