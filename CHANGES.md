@@ -48,6 +48,9 @@ format ``unmarked (unmarked_connected) vs marked (marked_connected)``
 ![has sourcebans tooltip](https://github.com/surepy/tf2_bot_detector/assets/24486494/793fbf8b-cce9-4bf9-96f3-b6c3ab6682a0)
 
 ### Misc
+* **64-bit TF2 support**
+![image](https://github.com/surepy/tf2_bot_detector/assets/24486494/66933098-887f-457e-ac18-8428c68888fe)
+  * legacy is ``hl2.exe``
 * **Dropped support for all installation methods that aren't the portable one**  
     * Sorry, I really don't have time nor energy for that...
 * Working version notifications for my fork (using github api)  
