@@ -12,10 +12,6 @@ add_library(tf2_bot_detector_renderer OBJECT
 	"ITF2BotDetectorDrawable.h"
 	"sdl2opengl.h"
 	"sdl2opengl.cpp"
-        "ImguiHelpers.h"
-        "ScopeGuards.h"
-        "ScopeGuards.cpp"
-        "StorageHelper.h"
 )
 
 target_include_directories(tf2_bot_detector_renderer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -39,7 +35,7 @@ set(IMGUI_DIR "${CMAKE_SOURCE_DIR}/submodules/imgui")
 # imgui source file / defn stuff
 # I'm copying a lot of stuff from pazer's imgui_desktop.
 
-add_library(imgui 
+add_library(imgui
 	"${IMGUI_DIR}/imconfig.h"
 	"${IMGUI_DIR}/imgui.cpp"
 	"${IMGUI_DIR}/imgui.h"

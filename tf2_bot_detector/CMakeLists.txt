@@ -127,7 +127,7 @@ target_sources(tf2_bot_detector PRIVATE
 	"ConsoleLog/ConsoleLines/HostNewGameLine.h"
 	"ConsoleLog/ConsoleLines/EdictUsageLine.cpp"
 	"ConsoleLog/ConsoleLines/EdictUsageLine.h"
-#	Unused Parser 
+#	Unused Parser
 #	"ConsoleLog/ConsoleLines/CvarlistConvarLine.cpp"
 #	"ConsoleLog/ConsoleLines/CvarlistConvarLine.h"
 	"ConsoleLog/ConsoleLineListener.cpp"
@@ -189,6 +189,10 @@ target_sources(tf2_bot_detector PRIVATE
 	"Util/PathUtils.h"
 	"Util/TextUtils.cpp"
 	"Util/TextUtils.h"
+	"Util/ImguiHelpers.h"
+	"Util/ScopeGuards.h"
+	"Util/ScopeGuards.cpp"
+	"Util/StorageHelper.h"
 	"Application.cpp"
 	"Application.h"
 	"BaseTextures.h"

@@ -15,7 +15,10 @@
     },
     "stb",
     "nlohmann-json",
-    "catch2",
+    {
+		"name": "catch2",
+		"version>=": "3.3.0"
+    },
     "sqlitecpp",
     {
       "name": "cpprestsdk",

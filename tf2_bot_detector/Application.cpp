@@ -26,7 +26,7 @@
 #include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
 #include "ConsoleLog/ConsoleLines/EdictUsageLine.h"
 
-#include <ScopeGuards.h>
+#include <Util/ScopeGuards.h>
 #include <libzippp/libzippp.h>
 #include <mh/math/interpolation.hpp>
 #include <mh/text/case_insensitive_string.hpp>

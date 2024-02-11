@@ -12,8 +12,8 @@
 
 #include "Networking/HTTPHelpers.h"
 
-#include <ScopeGuards.h>
-#include <StorageHelper.h>
+#include <Util/ScopeGuards.h>
+#include <Util/StorageHelper.h>
 #include <mh/math/interpolation.hpp>
 #include <mh/text/fmtstr.hpp>
 #include <mh/text/formatters/error_code.hpp>
