@@ -2,7 +2,7 @@
 
 #include "ReleaseChannel.h"
 
-#include <Util/ImGuiHelpers.h>
+#include <Util/ImguiHelpers.h>
 #include <Util/ScopeGuards.h>
 #include <imgui.h>
 #include <mh/raii/scope_exit.hpp>

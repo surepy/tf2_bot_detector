@@ -25,7 +25,7 @@
 #include "ConsoleLog/ConsoleLines/EdictUsageLine.h"
 
 #include <Util/ScopeGuards.h>
-#include <Util/ImGuiHelpers.h>
+#include <Util/ImguiHelpers.h>
 #include <imgui.h>
 #include <libzippp/libzippp.h>
 #include <misc/cpp/imgui_stdlib.h>
