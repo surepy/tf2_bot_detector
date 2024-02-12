@@ -91,8 +91,8 @@ namespace tf2_bot_detector
 		mh::task<std::error_condition> LoadFileAsync(const std::filesystem::path& filename, std::shared_ptr<const IHTTPClient> client = nullptr);
 		std::error_condition SaveFile(const std::filesystem::path& filename) const;
 
-		virtual void ValidateSchema(const ConfigSchemaInfo& schema) const = 0 {}
-		virtual void Deserialize(const nlohmann::json& json) = 0 {}
+		virtual void ValidateSchema(const ConfigSchemaInfo& schema) const {}
+		virtual void Deserialize(const nlohmann::json& json) {}
 		virtual void Serialize(nlohmann::json& json) const = 0;
 
 		std::optional<ConfigSchemaInfo> m_Schema;

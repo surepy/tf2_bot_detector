@@ -19,7 +19,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "ServerStatusHostnameLine.h"
+#include <ConsoleLog/ConsoleLines/ServerStatusHostNameLine.h>
 
 using namespace tf2_bot_detector;
 using namespace std::string_literals;

@@ -1,9 +1,11 @@
 #pragma once
 
+#ifdef WIN32
 #include "tf2_bot_detector_export.h"
 
-#ifdef WIN32
 #include <Windows.h>
+#else 
+#define TF2_BOT_DETECTOR_EXPORT
 #endif
 
 namespace tf2_bot_detector

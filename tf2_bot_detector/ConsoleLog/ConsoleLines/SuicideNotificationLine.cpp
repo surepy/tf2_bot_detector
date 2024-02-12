@@ -46,7 +46,7 @@ std::shared_ptr<IConsoleLine> SuicideNotificationLine::TryParse(const ConsoleLin
 	{
 		auto steamid = args.m_World.FindSteamIDForName(result[1].str());
 
-		return std::make_shared<SuicideNotificationLine>(args.m_Timestamp, result[1].str(), steamid.has_value() ? steamid.value() : SteamID::SteamID());
+		return std::make_shared<SuicideNotificationLine>(args.m_Timestamp, result[1].str(), steamid.has_value() ? steamid.value() : SteamID());
 	}
 
 	return nullptr;

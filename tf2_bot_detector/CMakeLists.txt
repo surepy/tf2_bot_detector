@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 
 include(GenerateExportHeader)
 
+# remove me
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+
 if (WIN32)
 	add_library(tf2_bot_detector SHARED)
 	set_target_properties(tf2_bot_detector PROPERTIES PDB_NAME "tf2_bot_detector_dll")
@@ -263,6 +266,8 @@ else()
 		"Platform/Linux/Shell.cpp"
 		"Platform/Linux/Steam.cpp"
 		"Platform/Linux/LinuxHelpers.h"
+		"Platform/Linux/PlatformInstall.cpp"
+		"Platform/Linux/Platform.cpp"
 	)
 endif()
 

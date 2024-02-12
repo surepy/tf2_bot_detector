@@ -52,8 +52,8 @@ std::shared_ptr<IConsoleLine> KillNotificationLine::TryParse(const ConsoleLineTr
 		auto victim = args.m_World.FindSteamIDForName(result[2].str());
 
 		return std::make_shared<KillNotificationLine>(args.m_Timestamp,
-			result[1].str(), attacker.has_value() ? attacker.value() : SteamID::SteamID(),
-			result[2].str(), victim.has_value() ? victim.value() : SteamID::SteamID(),
+			result[1].str(), attacker.has_value() ? attacker.value() : SteamID(),
+			result[2].str(), victim.has_value() ? victim.value() : SteamID(),
 			result[3].str(), result[4].matched
 		);
 	}

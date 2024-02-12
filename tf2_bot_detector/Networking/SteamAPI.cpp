@@ -248,7 +248,7 @@ void tf2_bot_detector::SteamAPI::from_json(const nlohmann::json& j, PlayerBans& 
 	d.m_GameBanCount = j.at("NumberOfGameBans");
 	d.m_TimeSinceLastBan = 24h * j.at("DaysSinceLastBan").get<uint32_t>();
 
-	const std::string_view economyBan = j.at("EconomyBan");
+	const std::string_view economyBan = j.at("EconomyBan").get<std::string_view>();
 	if (economyBan == "none"sv)
 		d.m_EconomyBan = PlayerEconomyBan::None;
 	else if (economyBan == "banned"sv)

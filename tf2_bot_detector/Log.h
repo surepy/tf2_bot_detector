@@ -105,7 +105,7 @@ namespace tf2_bot_detector
 #ifdef _MSC_VER
 #define NOINLINE __declspec(noinline)
 #else
-#define NOINLINE
+#define NOINLINE __attribute__((noinline)) 
 #endif
 
 	namespace detail::log_h

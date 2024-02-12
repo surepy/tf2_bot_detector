@@ -1,4 +1,3 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "NetworkHelpers.h"
 #include "Log.h"
@@ -8,9 +7,12 @@
 #include <stdexcept>
 
 #ifdef _WIN32
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WinSock2.h>
 #else
+#include <netdb.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 #endif
 
 std::string tf2_bot_detector::Networking::GetLocalIP()

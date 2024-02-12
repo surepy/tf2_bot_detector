@@ -55,7 +55,11 @@ void ConsoleLogParser::Update()
 
 		std::error_code ec;
 		{
+#ifdef _WIN32
 			FILE* temp = _wfsopen(m_FileName.c_str(), L"r", _SH_DENYNO);
+#else
+			FILE* temp = fopen(m_FileName.c_str(), "r");
+#endif
 			if (!temp)
 			{
 				auto e = errno;

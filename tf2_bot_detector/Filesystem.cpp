@@ -43,8 +43,10 @@ namespace
 
 		std::filesystem::path m_ExeDir;
 		std::filesystem::path m_WorkingDir;
+#ifndef __linux__
 		std::filesystem::path m_LocalAppDataDir;
 		std::filesystem::path m_RoamingAppDataDir;
+#endif
 		//std::filesystem::path m_MutableDataDir = ChooseMutableDataPath();
 	};
 }
@@ -67,9 +69,10 @@ void Filesystem::Init()
 			DebugLog("Initializing filesystem...");
 
 			m_ExeDir = Platform::GetCurrentExeDir();
+#ifndef __linux__
 			m_LocalAppDataDir = Platform::GetRootLocalAppDataDir() / APPDATA_SUBFOLDER;
 			m_RoamingAppDataDir = Platform::GetRootRoamingAppDataDir() / APPDATA_SUBFOLDER;
-
+#endif
 			m_SearchPaths.insert(m_SearchPaths.begin(), m_ExeDir);
 
 			m_WorkingDir = std::filesystem::current_path();
@@ -81,7 +84,7 @@ void Filesystem::Init()
 
 				// create cfg inside Team Fortress 2 folder (cuz why not)
 				if (std::filesystem::create_directories("cfg"))
-					DebugLog("Created {}", m_RoamingAppDataDir);
+					DebugLog("Created {}/cfg", m_ExeDir);
 
 				// NOTE: this creates a kind of nasty unintended behaviors where if a setting.json or something is in that directory,
 				// it will have a higher priority and just wipe the other one.

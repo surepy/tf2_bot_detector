@@ -12,7 +12,9 @@
 
 #pragma warning(push, 1)
 #include <cpprest/http_client.h>
+#ifdef _WIN32
 #include <pplawait.h>
+#endif
 #pragma warning(pop)
 
 using namespace std::chrono_literals;
@@ -163,12 +165,21 @@ mh::task<std::string> HTTPClientImpl::GetStringAsync(URL url) const try
 
 				const auto startTime = tfbd_clock_t::now();
 
+#ifdef __linux__
+				// TODO: investiagte how bad this is, we don't have pplawait.h
+				auto response = client->request(web::http::methods::GET, utility::conversions::to_string_t(url.m_Path)).get();
+#else
 				auto response = co_await client->request(web::http::methods::GET, utility::conversions::to_string_t(url.m_Path));
+#endif
 
 				if (response.status_code() >= 400 && response.status_code() < 600)
 					throw http_error((HTTPResponseCode)response.status_code(), mh::format("Failed to HTTP GET {}", url));
 
+#ifdef __linux__
+				std::string stringResponse = response.extract_utf8string(true).get();
+#else
 				std::string stringResponse = co_await response.extract_utf8string(true);
+#endif
 
 				const auto duration = tfbd_clock_t::now() - startTime;
 				DebugLog("[{}ms] HTTP GET #{}: {}", std::chrono::duration_cast<std::chrono::milliseconds>(duration).count(), requestIndex, url);

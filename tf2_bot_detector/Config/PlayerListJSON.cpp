@@ -428,7 +428,7 @@ bool tf2_bot_detector::PlayerListData::proofExists(std::string reason)
 }
 
 bool PlayerListData::operator==(const PlayerListData& other) const
-#if _MSC_VER >= 1927
+#if !_WIN32 || _MSC_VER >= 1927
 = default;
 #else
 {
