@@ -6,10 +6,9 @@
 
 #include <mh/text/string_insertion.hpp>
 
-// TODO implement
 std::filesystem::path tf2_bot_detector::Platform::GetCurrentSteamDir()
 {
-	return std::filesystem::current_path();
+	return std::filesystem::path(getenv("HOME")) / ".steam" / "steam";
 }
 
 // TODO: paste from msb people they probably figured out a detection method

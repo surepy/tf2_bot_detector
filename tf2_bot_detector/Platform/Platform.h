@@ -19,6 +19,7 @@ namespace tf2_bot_detector
 
 	inline namespace Platform
 	{
+		// NOTE: more like "GetDefaultSteamDir"
 		std::filesystem::path GetCurrentSteamDir();
 		SteamID GetCurrentActiveSteamID();
 

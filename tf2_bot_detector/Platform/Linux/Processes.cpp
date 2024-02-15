@@ -18,13 +18,16 @@
 #include <mutex>
 #include <thread>
 #include <unordered_map>
+#include <fstream>
 
 #include <unistd.h>
 #include <dirent.h>
 #include <signal.h>
 
+// PID cache
+static std::unordered_map<std::string_view, pid_t> processPids;
+
 // chatgpt generated code cuz lazy
-// TODO: probably cache all the pids we need.
 pid_t getPidFromProcessName(const std::string& processName) {
     DIR* dir = opendir("/proc");
     if (dir != nullptr) {
@@ -53,32 +56,60 @@ pid_t getPidFromProcessName(const std::string& processName) {
     return -1; // Return -1 if the process name is not found
 }
 
-// TODO: 64bit binaries
-bool tf2_bot_detector::Processes::IsTF2Running()
-{
-	static mh::cached_variable hl2_exe(std::chrono::seconds(5), []() { return IsProcessRunning("hl2_linux"); });
-	return hl2_exe.get();
+// if you dont have ~/.steam/steam.pid, this will fail
+// but i dont really understand why you won't have .steam/steam.pid
+pid_t GetSteamPID () {
+    std::filesystem::path steam_pid_path = std::filesystem::path(getenv("HOME")) / ".steam" / "steam.pid";
+    std::ifstream steam_pid_file(steam_pid_path);
 
+    pid_t ret; 
+    steam_pid_file >> ret;
+    return ret;
 }
 
-bool tf2_bot_detector::Processes::IsSteamRunning()
-{
-    // usually located at ~/.local/shrea/Steam/steam.sh
-	static mh::cached_variable m_CachedValue(std::chrono::seconds(1), []() { return IsProcessRunning("steam.sh"); });
-	return m_CachedValue.get();
-}
-
-bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& processName)
-{
-    // lmfao
-    pid_t pid = getPidFromProcessName(std::string(processName));
+bool IsProcessRunningPid(pid_t pid) {
     if (pid == -1) {
         return false;
     }
     return kill(pid, 0) == 0;
 }
 
-// deprecated and unused function it seems
+// TODO: 64bit binaries
+bool tf2_bot_detector::Processes::IsTF2Running()
+{
+	static mh::cached_variable hl2_exe(std::chrono::seconds(2), []() { return IsProcessRunning("hl2_linux"); });
+	return hl2_exe.get();
+}
+
+bool tf2_bot_detector::Processes::IsSteamRunning()
+{
+	static mh::cached_variable steam_pid(std::chrono::seconds(2), []() { return GetSteamPID(); });
+    static mh::cached_variable steam_running(std::chrono::seconds(1), []() { return IsProcessRunningPid(steam_pid.get()); });
+	return steam_running.get();
+}
+
+bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& processName)
+{
+    pid_t pid; 
+    
+    if (processPids.contains(processName)) {
+        pid = processPids.at(processName);
+    }
+    else {
+        pid = getPidFromProcessName(std::string(processName));
+        processPids.insert(std::pair<std::string_view, pid_t>(processName, pid));
+    }
+
+    bool value = IsProcessRunningPid(pid);
+
+    if (!value) {
+        processPids.erase(processName);
+    }
+
+    return value;
+}
+
+// deprecated and unused function it seems, so not even gonna bother implementing atm
 void tf2_bot_detector::Processes::RequireTF2NotRunning() {}
 
 void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable,
@@ -95,7 +126,13 @@ void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable
 void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable,
 	const std::string_view& args, bool elevated)
 {
+    std::string execute_command;
+
+    // TODO: implement elevated
+
+    execute_command = fmt::format("{} {}", executable, args);
     
+    system(execute_command.c_str());
 }
 
 int tf2_bot_detector::Processes::GetCurrentProcessID()
@@ -103,7 +140,7 @@ int tf2_bot_detector::Processes::GetCurrentProcessID()
 	return ::getpid();
 }
 
-// TODO: implement
+// TODO: implement (low priority)
 size_t tf2_bot_detector::Processes::GetCurrentRAMUsage()
 {
     return 1;

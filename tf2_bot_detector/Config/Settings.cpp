@@ -255,6 +255,7 @@ bool Settings::IsSteamAPIAvailable() const
 	return IsSteamAPISettingReady();
 }
 
+#ifdef _WIN32
 std::string GeneralSettings::GetBinaryName() const
 {
 	switch (m_TFBinaryMode) {
@@ -269,6 +270,22 @@ std::string GeneralSettings::GetBinaryName() const
 	// it might be probably better to error out?
 	return "tf_win64.exe";
 }
+#else
+std::string GeneralSettings::GetBinaryName() const
+{
+	switch (m_TFBinaryMode) {
+	case TFBinaryMode::x64:
+		return "tf_linux64";
+	case TFBinaryMode::x86:
+		return "tf_linux"; // FIXME: validate
+	case TFBinaryMode::x86_legacy:
+		return "hl2_linux";
+	};
+
+	// it might be probably better to error out?
+	return "tf_linux64";
+}
+#endif
 
 std::string GeneralSettings::GetSteamAPIKey() const
 {

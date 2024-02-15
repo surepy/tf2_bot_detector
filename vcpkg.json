@@ -2,7 +2,13 @@
   "name": "tf2-bot-detector",
   "version-string": "",
   "dependencies": [
-    "sdl2",
+    "sdl2", 
+    {
+      "name": "sdl2",
+      "default-features": true,
+      "features": [ "wayland" ],
+      "platform": "linux"
+    },
     "cryptopp",
     "libzippp",
     {
@@ -16,8 +22,8 @@
     "stb",
     "nlohmann-json",
     {
-		"name": "catch2",
-		"version>=": "3.3.0"
+		  "name": "catch2",
+		  "version>=": "3.3.0"
     },
     "sqlitecpp",
     {

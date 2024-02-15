@@ -23,7 +23,6 @@ std::vector<std::string> tf2_bot_detector::Shell::SplitCommandLineArgs(const std
 	return std::vector<std::string>();
 }
 
-// popen -> zenity --file-selection
 std::filesystem::path tf2_bot_detector::Shell::BrowseForFolderDialog() {
     return {};
 }
