@@ -138,11 +138,16 @@ DirectoryValidatorResult tf2_bot_detector::ValidateSteamDir(std::filesystem::pat
 		if (!BasicDirChecks(result))
 			return result;
 
-		//Platform::executable();
+		// here i was thinking that i would have a relatively clean impl.
+#ifdef _WIN32
+		bool game_overlay_result = ValidateFile(result, STEAM_BIN_DIR(PLATFORM_EXECUTABLE("GameOverlayUI"))); 
+#else 
+		bool game_overlay_result = ValidateFile(result, STEAM_BIN_DIR(PLATFORM_EXECUTABLE("gameoverlayui"))); 
+#endif
 
-		if (!ValidateFile(result, PLATFORM_EXECUTABLE("steam")) ||
-			!ValidateFile(result, PLATFORM_EXECUTABLE("GameOverlayUI")) ||
-			!ValidateFile(result, "streaming_client.exe") ||
+		if (!ValidateFile(result, STEAM_BIN_DIR(PLATFORM_EXECUTABLE("steam"))) ||
+			!ValidateFile(result, STEAM_BIN_DIR(PLATFORM_EXECUTABLE("streaming_client"))) ||
+			!game_overlay_result ||
 			!ValidateDirectory(result, "steamapps") ||
 			!ValidateDirectory(result, "config"))
 		{

@@ -275,9 +275,8 @@ std::string GeneralSettings::GetBinaryName() const
 {
 	switch (m_TFBinaryMode) {
 	case TFBinaryMode::x64:
+	case TFBinaryMode::x86: // ignored in linux
 		return "tf_linux64";
-	case TFBinaryMode::x86:
-		return "tf_linux"; // FIXME: validate
 	case TFBinaryMode::x86_legacy:
 		return "hl2_linux";
 	};

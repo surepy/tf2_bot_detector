@@ -30,7 +30,8 @@
 bool tf2_bot_detector::Processes::IsTF2Running()
 {
 	static mh::cached_variable hl2_exe(std::chrono::seconds(2), []() { return IsProcessRunning("hl2_linux"); });
-	return hl2_exe.get();
+	static mh::cached_variable tf64_exe(std::chrono::seconds(2), []() { return IsProcessRunning("tf_linux64"); });   
+	return tf64_exe.get() || hl2_exe.get();
 }
 
 bool tf2_bot_detector::Processes::IsSteamRunning()
@@ -100,7 +101,11 @@ size_t tf2_bot_detector::Processes::GetCurrentRAMUsage()
 
 mh::task<std::vector<std::string>> tf2_bot_detector::Processes::GetTF2CommandLineArgsAsync()
 {
+    std::vector<std::string> temp = {
+        "-usercon +developer 1 +contimes 0 +ip 0.0.0.0 +sv_rcon_whitelist_address 127.0.0.1 +sv_quota_stringcmdspersecond 1000000 +rcon_password asdf +exec autoexec.cfg +hostport 12345 +net_start +con_timestamp 1 -condebug -conclearlog -novid"
+    };
+
     // this doesn't have to be a task cuz we just get it from /proc
     // just make a ready task 
-    return mh::make_ready_task<std::vector<std::string>>();
+    return mh::make_ready_task<std::vector<std::string>>(std::move(temp));
 }

@@ -13,9 +13,11 @@
 #include <variant>
 
 #ifdef _WIN32
-#define PLATFORM_EXECUTABLE(n) n".exe"
+#define PLATFORM_EXECUTABLE(n) n ".exe"
+#define STEAM_BIN_DIR(n) n
 #else
 #define PLATFORM_EXECUTABLE(n) n
+#define STEAM_BIN_DIR(n) "ubuntu12_32/" n
 #endif
 
 namespace tf2_bot_detector

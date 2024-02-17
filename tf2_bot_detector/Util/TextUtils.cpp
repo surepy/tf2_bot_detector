@@ -29,8 +29,8 @@ std::u16string tf2_bot_detector::ToU16(const char* input, const char* input_end)
 
 std::u16string tf2_bot_detector::ToU16(const std::string_view& input)
 {
-	return mh::change_encoding<char16_t>(input);
-	//return ToU16(std::u8string_view(reinterpret_cast<const char8_t*>(input.data()), input.size()));
+	std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
+	return converter.from_bytes(input.data(), input.data() + input.size());
 }
 
 std::u16string tf2_bot_detector::ToU16(const std::wstring_view& input)
@@ -64,8 +64,8 @@ std::string tf2_bot_detector::ToMB(const std::u8string_view& input)
 
 std::string tf2_bot_detector::ToMB(const std::u16string_view& input)
 {
-	return mh::change_encoding<char>(input);
-	//return ToMB(ToU8(input));
+	std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
+	return converter.to_bytes(input.data(), input.data() + input.size());
 }
 
 std::string tf2_bot_detector::ToMB(const std::wstring_view& input)
@@ -81,7 +81,7 @@ std::wstring tf2_bot_detector::ToWC(const std::string_view& input)
 
 std::u16string tf2_bot_detector::ReadWideFile(const std::filesystem::path& filename)
 {
-	//DebugLog("ReadWideFile("s << filename << ')');
+	DebugLog("ReadWideFile("s << filename << ')');
 
 	std::u16string wideFileData;
 	{
@@ -107,7 +107,7 @@ std::u16string tf2_bot_detector::ReadWideFile(const std::filesystem::path& filen
 		// Skip BOM
 		file.seekg(2, std::ios::beg);
 
-		wideFileData.resize(length / sizeof(char16_t));
+		wideFileData.resize(length);
 
 		file.read(reinterpret_cast<char*>(wideFileData.data()), length);
 	}

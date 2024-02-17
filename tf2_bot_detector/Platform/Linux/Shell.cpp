@@ -17,10 +17,18 @@ void xdg_open(const char* url)
     system(fmt::format("xdg-open {}", url).c_str());
 }
 
-// TODO: implemet me
+// we don't need to do wchar... stuff, i think.
 std::vector<std::string> tf2_bot_detector::Shell::SplitCommandLineArgs(const std::string_view& cmdline)
 {
-	return std::vector<std::string>();
+    std::istringstream ss(cmdline.data());
+    std::string token;
+    std::vector<std::string> tokens;
+
+    while (std::getline(ss, token, ' ')) {
+        tokens.push_back(token);
+    }
+
+	return tokens;
 }
 
 std::filesystem::path tf2_bot_detector::Shell::BrowseForFolderDialog() {
