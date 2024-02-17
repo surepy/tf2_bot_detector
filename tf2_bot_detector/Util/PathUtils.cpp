@@ -2,6 +2,7 @@
 
 #include "PathUtils.h"
 #include "Log.h"
+#include "Platform/Platform.h"
 
 #include <mh/text/string_insertion.hpp>
 #include <vdf_parser.hpp>
@@ -131,8 +132,10 @@ DirectoryValidatorResult tf2_bot_detector::ValidateSteamDir(std::filesystem::pat
 		if (!BasicDirChecks(result))
 			return result;
 
-		if (!ValidateFile(result, "steam.exe") ||
-			!ValidateFile(result, "GameOverlayUI.exe") ||
+		//Platform::executable();
+
+		if (!ValidateFile(result, PLATFORM_EXECUTABLE("steam")) ||
+			!ValidateFile(result, PLATFORM_EXECUTABLE("GameOverlayUI")) ||
 			!ValidateFile(result, "streaming_client.exe") ||
 			!ValidateDirectory(result, "steamapps") ||
 			!ValidateDirectory(result, "config"))

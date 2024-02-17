@@ -24,55 +24,7 @@
 #include <dirent.h>
 #include <signal.h>
 
-// PID cache
-static std::unordered_map<std::string_view, pid_t> processPids;
-
-// chatgpt generated code cuz lazy
-pid_t getPidFromProcessName(const std::string& processName) {
-    DIR* dir = opendir("/proc");
-    if (dir != nullptr) {
-        struct dirent* entry;
-        while ((entry = readdir(dir)) != nullptr) {
-            // Check if the entry is a directory and its name is a number (PID)
-            if (entry->d_type == DT_DIR && std::isdigit(entry->d_name[0])) {
-                // Open the cmdline file to read the process name
-                std::filesystem::path cmdlinePath = std::filesystem::current_path().root_directory() / "proc" / entry->d_name / "cmdline";
-                FILE* cmdlineFile = fopen(cmdlinePath.c_str(), "r");
-                if (cmdlineFile != nullptr) {
-                    char cmdline[1024];
-                    fgets(cmdline, sizeof(cmdline), cmdlineFile);
-                    fclose(cmdlineFile);
-                    
-                    // Compare the process name with the given name
-                    if (strstr(cmdline, processName.c_str()) != nullptr) {
-                        closedir(dir);
-                        return atoi(entry->d_name); // Convert directory name to PID
-                    }
-                }
-            }
-        }
-        closedir(dir);
-    }
-    return -1; // Return -1 if the process name is not found
-}
-
-// if you dont have ~/.steam/steam.pid, this will fail
-// but i dont really understand why you won't have .steam/steam.pid
-pid_t GetSteamPID () {
-    std::filesystem::path steam_pid_path = std::filesystem::path(getenv("HOME")) / ".steam" / "steam.pid";
-    std::ifstream steam_pid_file(steam_pid_path);
-
-    pid_t ret; 
-    steam_pid_file >> ret;
-    return ret;
-}
-
-bool IsProcessRunningPid(pid_t pid) {
-    if (pid == -1) {
-        return false;
-    }
-    return kill(pid, 0) == 0;
-}
+#include "LinuxHelpers.h"
 
 // TODO: 64bit binaries
 bool tf2_bot_detector::Processes::IsTF2Running()
@@ -83,8 +35,8 @@ bool tf2_bot_detector::Processes::IsTF2Running()
 
 bool tf2_bot_detector::Processes::IsSteamRunning()
 {
-	static mh::cached_variable steam_pid(std::chrono::seconds(2), []() { return GetSteamPID(); });
-    static mh::cached_variable steam_running(std::chrono::seconds(1), []() { return IsProcessRunningPid(steam_pid.get()); });
+	static mh::cached_variable steam_pid(std::chrono::seconds(2), []() { return Linux::GetSteamPID(); });
+    static mh::cached_variable steam_running(std::chrono::seconds(1), []() { return Linux::IsProcessRunningPid(steam_pid.get()); });
 	return steam_running.get();
 }
 
@@ -92,18 +44,18 @@ bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& proce
 {
     pid_t pid; 
     
-    if (processPids.contains(processName)) {
-        pid = processPids.at(processName);
+    if (Linux::processPids.contains(processName)) {
+        pid = Linux::processPids.at(processName);
     }
     else {
-        pid = getPidFromProcessName(std::string(processName));
-        processPids.insert(std::pair<std::string_view, pid_t>(processName, pid));
+        pid = Linux::getPidFromProcessName(std::string(processName));
+        Linux::processPids.insert(std::pair<std::string_view, pid_t>(processName, pid));
     }
 
-    bool value = IsProcessRunningPid(pid);
+    bool value = Linux::IsProcessRunningPid(pid);
 
     if (!value) {
-        processPids.erase(processName);
+        Linux::processPids.erase(processName);
     }
 
     return value;

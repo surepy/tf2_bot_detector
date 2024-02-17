@@ -12,6 +12,12 @@
 #include <string>
 #include <variant>
 
+#ifdef _WIN32
+#define PLATFORM_EXECUTABLE(n) n".exe"
+#else
+#define PLATFORM_EXECUTABLE(n) n
+#endif
+
 namespace tf2_bot_detector
 {
 	class IHTTPClient;
@@ -70,6 +76,8 @@ namespace tf2_bot_detector
 		bool CanInstallUpdate(const BuildInfo& bi);
 
 		bool IsInstalled();
+
+		constexpr inline std::string_view TF64Binary();
 
 		namespace Processes
 		{

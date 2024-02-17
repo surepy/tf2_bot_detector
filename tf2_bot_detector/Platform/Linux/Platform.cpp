@@ -58,5 +58,5 @@ std::filesystem::path tf2_bot_detector::Platform::GetCurrentExeDir()
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
     std::filesystem::path path (result);
     
-    return path.remove_filename();
+    return path.parent_path();
 }

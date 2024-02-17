@@ -9,7 +9,7 @@
 #include <memory>
 
 
-/// @brief opens anything with xdg-url
+/// @brief opens anything with xdg-open
 /// @warning potentially, i mean very insecure. do not put any user data in this function.
 /// @param url 
 void xdg_open(const char* url)

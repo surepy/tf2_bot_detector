@@ -93,7 +93,12 @@ void Filesystem::Init()
 			}
 
 			// we've launched somewhere that differs from PATH, we should probably change back to our exedir cuz that's where we work.
-			if ((m_WorkingDir / "tf2_bot_detector.dll").empty()) //  || !(m_WorkingDir / "hl2.exe").empty() || !(m_WorkingDir / "hl2_linux").empty()
+			//  || !(m_WorkingDir / "hl2.exe").empty() || !(m_WorkingDir / "hl2_linux").empty()
+#ifdef _WIN32
+			if ((m_WorkingDir / "tf2_bot_detector.dll").empty()) 
+#else
+			if ((m_WorkingDir / "tf2_bot_detector").empty()) 
+#endif
 			{
 				DebugLog("We can't find tf2_bot_detector.dll in m_WorkingDir!", m_ExeDir);
 				// If we crash, we want our working directory to be somewhere we can write to.
