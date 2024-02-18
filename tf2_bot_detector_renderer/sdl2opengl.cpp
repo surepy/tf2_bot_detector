@@ -148,8 +148,8 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		ImGui::EndMainMenuBar();
 	}
 
-	if (showRendererSettings && ImGui::Begin("Renderer Settings", &showRendererSettings)) {
-
+	if (showRendererSettings) {
+	if (ImGui::Begin("Renderer Settings", &showRendererSettings)) {
 		ImGui::Text("Note: This setting will still prefer vSync.");
 
 		ImGui::SliderFloat("Set Frame Time", &frameTime, 0.0f, 66.6f);
@@ -165,8 +165,9 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		}
 #endif // _DEBUG
 		ImGui::End();
-		ImGui::EndMenu();
 	}
+	}
+
 
 	// Rendering
 	ImGui::Render();

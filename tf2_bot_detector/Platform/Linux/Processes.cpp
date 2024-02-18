@@ -19,6 +19,7 @@
 #include <thread>
 #include <unordered_map>
 #include <fstream>
+#include <filesystem>
 
 #include <unistd.h>
 #include <dirent.h>
@@ -101,9 +102,33 @@ size_t tf2_bot_detector::Processes::GetCurrentRAMUsage()
 
 mh::task<std::vector<std::string>> tf2_bot_detector::Processes::GetTF2CommandLineArgsAsync()
 {
-    std::vector<std::string> temp = {
-        "-usercon +developer 1 +contimes 0 +ip 0.0.0.0 +sv_rcon_whitelist_address 127.0.0.1 +sv_quota_stringcmdspersecond 1000000 +rcon_password asdf +exec autoexec.cfg +hostport 12345 +net_start +con_timestamp 1 -condebug -conclearlog -novid"
-    };
+    pid_t tf2_pid = 0;
+
+    if (Linux::processPids.contains("hl2_linux")) {
+        tf2_pid = Linux::processPids.at("hl2_linux");
+    }
+    
+    if (Linux::processPids.contains("tf_linux64")) {
+        tf2_pid = Linux::processPids.at("tf_linux64");
+    }
+
+    if (!tf2_pid) {
+        return mh::make_ready_task<std::vector<std::string>>();
+    }
+
+    std::filesystem::path cmdline_path = std::filesystem::path("/proc") / std::to_string(tf2_pid) / "cmdline";
+    std::ifstream cmdline_file(cmdline_path);
+    std::string cmdline;
+    std::string buf;
+
+    // skip the executable name
+    std::getline(cmdline_file, buf, '\0');
+
+    while(std::getline(cmdline_file, buf, '\0')) {
+        cmdline += buf + " ";
+    }
+
+    std::vector<std::string> temp = { cmdline };
 
     // this doesn't have to be a task cuz we just get it from /proc
     // just make a ready task 
