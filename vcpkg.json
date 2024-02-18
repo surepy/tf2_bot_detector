@@ -22,7 +22,10 @@
       "name": "discord-game-sdk",
       "platform": "!static"
     },
-    "stb",
+    {
+      "name": "stb",
+      "version>=": "2023-04-11#1"
+    },
     "nlohmann-json",
     {
 		  "name": "catch2",

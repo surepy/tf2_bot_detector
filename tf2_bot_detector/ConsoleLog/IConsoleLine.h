@@ -127,6 +127,9 @@ namespace tf2_bot_detector
 		ConsoleLineBase(time_point_t timestamp) : IConsoleLine(timestamp) {}
 
 	private:
+		#ifdef __linux__
+		[[gnu::used]]
+		#endif
 		struct AutoRegister
 		{
 			AutoRegister()
@@ -139,6 +142,6 @@ namespace tf2_bot_detector
 					});
 			}
 
-		} inline static s_AutoRegister;
+		} inline static s_AutoRegister = AutoRegister();
 	};
 }
