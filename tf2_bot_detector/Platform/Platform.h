@@ -79,8 +79,6 @@ namespace tf2_bot_detector
 
 		bool IsInstalled();
 
-		constexpr inline std::string_view TF64Binary();
-
 		namespace Processes
 		{
 			bool IsTF2Running();

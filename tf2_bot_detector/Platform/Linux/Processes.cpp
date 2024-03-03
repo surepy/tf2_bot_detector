@@ -82,9 +82,13 @@ void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable
 {
     std::string execute_command;
 
-    // TODO: implement elevated
+    // TODO: implement elevated?
 
     execute_command = fmt::format("{} {}", executable, args);
+    // we need to change cwd apparently
+    execute_command = fmt::format("cd {} && {} &", executable.parent_path(), execute_command);
+    Log(execute_command);
+
     
     system(execute_command.c_str());
 }
@@ -108,7 +112,7 @@ mh::task<std::vector<std::string>> tf2_bot_detector::Processes::GetTF2CommandLin
         tf2_pid = Linux::processPids.at("hl2_linux");
     }
     
-    if (Linux::processPids.contains("tf_linux64")) {
+    if (!tf2_pid && Linux::processPids.contains("tf_linux64")) {
         tf2_pid = Linux::processPids.at("tf_linux64");
     }
 

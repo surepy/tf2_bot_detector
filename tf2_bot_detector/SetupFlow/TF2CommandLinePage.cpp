@@ -238,8 +238,9 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 	std::string args = settings.m_Unsaved.m_IsLaunchedFromSteam ? settings.m_Unsaved.m_ForwardedCommandLineArguments : FindUserLaunchOptions(settings);
 
 	// TODO: scrub any conflicting alias or one-time-use commands from this
+	// required args
 	args <<
-		" dummy" // Dummy option in case user has mismatched command line args in their steam config
+		" bd" // Dummy option in case user has mismatched command line args in their steam config
 		" -game tf"
 		" -steam -secure"  // One or both of these is needed when launching the game directly
 		" -usercon"
@@ -249,21 +250,53 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 		" +sv_quota_stringcmdspersecond 1000000" // workaround for mastercomfig causing crashes on local servers
 		" +rcon_password " << rconPassword <<
 		" +hostport " << rconPort <<
-		" +alias cl_reload_localization_files" // This command reloads files in backwards order, so any customizations get overwritten by stuff from the base game
 		" +net_start"
 		" +con_timestamp 1"
 		" -condebug"
 		" -conclearlog"
 		;
 
-	if (settings.m_UseLaunchRecommendedParams) {
+
+#ifdef __linux__
+	if (args.length() > 437) {
+		LogWarning("forcing m_UseLaunchRecommendedParams=false as args is too long to fit!", args.length());
+	}
+
+	// 437 is the max we can go before tf2 doesn't launch (512 - RecommendedParams.length)
+	if (settings.m_UseLaunchRecommendedParams && args.length() <= 437)
+#else
+	if (settings.m_UseLaunchRecommendedParams) 
+#endif
+	{
 		args
+			<< " +alias cl_reload_localization_files" // This command reloads files in backwards order, so any customizations get overwritten by stuff from the base game
 			<< " +alias developer" // disables the "developer" command
 			<< " +contimes 0" // the text in the top left when developer >= 1
 			<< " +alias ip"; // disables the "ip" command
 	}
 
+#ifdef __linux__
+	if (args.length() > 512) {
+		// the game will not launch, but let's try anyway.
+		LogWarning("args length is >512! (={}) the game might not launch!", args.length());
+	}
+
+	// bad fix
+	char* library_path = getenv("LD_LIBRARY_PATH");
+	const std::filesystem::path libPath32 = settings.GetTFDir() / ".." / "bin" / "linux32";
+	const std::filesystem::path libPath64 = settings.GetTFDir() / ".." / "bin" / "linux64";
+
+	std::string new_library_path = fmt::format("{}:{}:$LD_LIBRARY_PATH", libPath32.string(), libPath64.string());
+	Log("[Linux] new LD_LIBRARY_PATH = {}", new_library_path);
+	setenv("LD_LIBRARY_PATH", new_library_path.c_str(), true);
+	setenv("SteamEnv", "1", true);
+#endif
 	Processes::Launch(hl2Path, args);
+#ifdef __linux__
+	if (library_path) {
+		setenv("LD_LIBRARY_PATH", library_path, true);
+	}
+#endif
 }
 
 TF2CommandLinePage::RCONClientData::RCONClientData(std::string pwd, uint16_t port) :

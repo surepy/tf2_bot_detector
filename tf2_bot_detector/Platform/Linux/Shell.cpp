@@ -32,7 +32,23 @@ std::vector<std::string> tf2_bot_detector::Shell::SplitCommandLineArgs(const std
 }
 
 std::filesystem::path tf2_bot_detector::Shell::BrowseForFolderDialog() {
-    return {};
+    // FIXME: use qt or something instead of this; but I don't want to introduce an entire library
+    // for one feature, so whatever. 
+    // NOTE: this will block execution, and I kind of don't want to bother rewriting for async.
+    FILE *pipe = popen("zenity --file-selection --directory", "r");
+
+    if (!pipe) {
+        LogError("failure to open pipe, zenity might not be installed.");
+        return {};
+    }
+
+    char buffer[PATH_MAX];
+    fgets(buffer, sizeof(buffer), pipe);
+    pclose(pipe);
+    std::string file_str = buffer;
+    Log("Selected file: {}", file_str);
+
+    return std::filesystem::path(file_str);
 }
 
 // selecting is not a feature in xdg-open

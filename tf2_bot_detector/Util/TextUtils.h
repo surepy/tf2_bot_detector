@@ -4,6 +4,8 @@
 #include <string>
 #include <string_view>
 
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
+
 namespace tf2_bot_detector
 {
 	// because unicode strings are wstring in windows, we have to do this.
