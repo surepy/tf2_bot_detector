@@ -20,7 +20,7 @@ defaults:
 
 jobs:
   config:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     outputs:
       tf2bd_version: ${{ steps.tf2bd_version.outputs.value }}
       tf2bd_workspace: ${{ steps.tf2bd_paths.outputs.workspace }}
