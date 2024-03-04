@@ -130,7 +130,6 @@ jobs:
 
     - name: Build tf2bd
       working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
-      if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
         cmake --build . --config ${{matrix.build_type}}
 

@@ -4,20 +4,8 @@
 #include <string>
 #include <string_view>
 
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
-
 namespace tf2_bot_detector
 {
-	// because unicode strings are wstring in windows, we have to do this.
-#ifdef _WINDOWS
-	// TODO: to wstring
-	typedef std::string string;
-	typedef std::string_view string_view;
-#else 
-	typedef std::string string;
-	typedef std::string_view string_view;
-#endif
-
 	std::u16string ToU16(const std::u8string_view& input);
 	std::u16string ToU16(const char* input, const char* input_end = nullptr);
 	std::u16string ToU16(const std::string_view& input);
@@ -33,5 +21,5 @@ namespace tf2_bot_detector
 	std::u16string ReadWideFile(const std::filesystem::path& filename);
 	void WriteWideFile(const std::filesystem::path& filename, const std::u16string_view& text);
 
-	string CollapseNewlines(const std::string_view& input);
+	std::string CollapseNewlines(const std::string_view& input);
 }

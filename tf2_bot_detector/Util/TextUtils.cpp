@@ -1,6 +1,3 @@
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
-//#define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING 1
-
 #include "TextUtils.h"
 #include "Log.h"
 
@@ -12,6 +9,8 @@
 #include <fstream>
 
 using namespace std::string_literals;
+
+// TODO: move to platform? might make more sense over there
 
 std::u16string tf2_bot_detector::ToU16(const std::u8string_view& input)
 {
@@ -125,9 +124,9 @@ void tf2_bot_detector::WriteWideFile(const std::filesystem::path& filename, cons
 	file.write(reinterpret_cast<const char*>(text.data()), text.size() * sizeof(text[0]));
 }
 
-tf2_bot_detector::string tf2_bot_detector::CollapseNewlines(const tf2_bot_detector::string_view& input)
+std::string tf2_bot_detector::CollapseNewlines(const std::string_view& input)
 {
-	tf2_bot_detector::string retVal;
+	std::string retVal;
 
 	// collapse groups of newlines in the message into red "(\n x <count>)" text
 	bool firstLine = true;

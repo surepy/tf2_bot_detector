@@ -20,6 +20,10 @@ if (WIN32)
 	)
 	target_compile_definitions(tf2_bot_detector_launcher PRIVATE TF2BD_LAUNCHER_USE_WINMAIN)
 
+	# to be able to just use codecvt stuff without windows screaming at us.
+	# don't feel like using MultiByteToWideChar :) 
+	target_compile_definitions(tf2_bot_detector PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+
 	target_include_directories(tf2_bot_detector_launcher PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 	target_link_libraries(tf2_bot_detector_launcher PRIVATE tf2_bot_detector)
 	set_target_properties(tf2_bot_detector_launcher PROPERTIES OUTPUT_NAME "tf2_bot_detector")
