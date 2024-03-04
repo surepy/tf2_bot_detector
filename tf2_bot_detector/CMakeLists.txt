@@ -24,6 +24,10 @@ if (WIN32)
 	# don't feel like using MultiByteToWideChar :) 
 	target_compile_definitions(tf2_bot_detector PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 
+	# because we're still on an old version of fmt, microsoft will scream at you (and it's very loud!)
+	# remove me when we update fmt to 10.1.1.
+	target_compile_definitions(tf2_bot_detector PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+
 	target_include_directories(tf2_bot_detector_launcher PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 	target_link_libraries(tf2_bot_detector_launcher PRIVATE tf2_bot_detector)
 	set_target_properties(tf2_bot_detector_launcher PROPERTIES OUTPUT_NAME "tf2_bot_detector")
