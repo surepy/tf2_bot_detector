@@ -36,6 +36,11 @@ else()
 	add_executable(tf2_bot_detector
 		"Launcher/main.cpp"
 	)
+
+	# https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#iso.2017.par2ts
+	# Note 3: The Parallel Algorithms have an external dependency on Intel TBB 2018 or later. 
+	# If the <execution> header is included then -ltbb must be used to link to TBB. 
+	target_link_options(tf2_bot_detector PRIVATE -ltbb)
 endif()
 
 target_link_libraries(tf2_bot_detector PRIVATE tf2_bot_detector_renderer)
