@@ -14,6 +14,12 @@ add_library(tf2_bot_detector_renderer OBJECT
 	"sdl2opengl.cpp"
 )
 
+if (WIN32)
+	# because we're still on an old version of fmt, microsoft will scream at you (and it's very loud!)
+	# remove me when we update fmt to 10.1.1.
+	target_compile_definitions(tf2_bot_detector_renderer PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING) 
+endif()
+
 set_target_properties(tf2_bot_detector_renderer PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(tf2_bot_detector_renderer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
