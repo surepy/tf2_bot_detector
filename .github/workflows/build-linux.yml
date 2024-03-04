@@ -112,6 +112,9 @@ jobs:
     # should be fine right
     - uses: lukka/get-cmake@latest
 
+    - name: Install Dependencies
+      run: sudo apt-get install -y libtbb-dev
+
     - name: Create Build Folder
       run: |
         mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
