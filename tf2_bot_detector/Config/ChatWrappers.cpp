@@ -1,3 +1,5 @@
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
+
 #include "ChatWrappers.h"
 #include "Util/JSONUtils.h"
 #include "Util/TextUtils.h"
