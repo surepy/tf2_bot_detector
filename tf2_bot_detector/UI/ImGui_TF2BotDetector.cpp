@@ -678,7 +678,7 @@ void ImGui::PopDisabled()
 
 float ImGui::GetCurrentFontScale()
 {
-	ImGuiContext& g = *GImGui;
+	ImGuiContext& g = *ImGui::GetCurrentContext();
 	return (g.FontSize * g.IO.FontGlobalScale) / g.FontBaseSize;
 }
 
