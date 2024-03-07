@@ -113,7 +113,7 @@ jobs:
     - uses: lukka/get-cmake@latest
 
     - name: Install Dependencies
-      run: sudo apt-get install -y libtbb-dev
+      run: sudo apt-get install -y libtbb2-dev
 
     - name: Create Build Folder
       run: |

@@ -40,6 +40,14 @@ else()
 	# https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#iso.2017.par2ts
 	# Note 3: The Parallel Algorithms have an external dependency on Intel TBB 2018 or later. 
 	# If the <execution> header is included then -ltbb must be used to link to TBB. 
+
+	find_package(TBB REQUIRED)
+	message(STATUS "Installed TBB Version: ${TBB_VERSION}")
+	if (TBB_VERSION_MAJOR VERSION_LESS "2018")
+   		message(FATAL_ERROR "This program requires tbb 2018 or higher.")
+	endif()
+
+	target_link_libraries(tf2_bot_detector PUBLIC ${TBB_IMPORTED_TARGETS})
 	target_link_options(tf2_bot_detector PRIVATE -ltbb)
 endif()
 
