@@ -249,16 +249,17 @@ namespace
 
 								BuildInfo ret;
 
-								// TODO: pre-release == ReleaseChannel::Preview
-								ret.m_ReleaseChannel = ReleaseChannel::Public;
-
+								// new stable release
 								if (result.m_Stable) {
-									ret.m_GitHubURL = result.GetURL();
+									ret.m_GitHubURL = result.m_Stable->m_URL;
 									ret.m_Version = result.m_Stable->m_Version;
 								}
-								// if result.m_Stable == null, that means no new versions to look at, so just return our current version.
-								else {
-									ret.m_Version = tf2_bot_detector::VERSION;
+
+								// new pre-release
+								if (releaseChannel >= ReleaseChannel::Preview && result.m_Preview) {
+									ret.m_ReleaseChannel = ReleaseChannel::Preview;
+									ret.m_GitHubURL = result.m_Preview->m_URL;
+									ret.m_Version = result.m_Preview->m_Version;
 								}
 
 								return ret;

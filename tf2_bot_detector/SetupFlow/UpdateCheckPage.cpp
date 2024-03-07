@@ -191,10 +191,10 @@ namespace
 			ImGui::TextFmt({ 0, 1, 1, 1 }, "Update available: v{} [{:v}] (current version v{})",
 				update->m_BuildInfo.m_Version, mh::enum_fmt(update->m_BuildInfo.m_ReleaseChannel), VERSION);
 
-			if (update->m_BuildInfo.m_ReleaseChannel == ReleaseChannel::Nightly)
+			if (update->m_BuildInfo.m_ReleaseChannel >= ReleaseChannel::Preview)
 			{
 				ImGui::NewLine();
-				ImGui::TextFmt({ 1, 1, 0, 1 }, "Reminder: Nightly builds can be unstable and/or unusable.");
+				ImGui::TextFmt({ 1, 1, 0, 1 }, "Reminder: Preview builds can be unstable and/or unusable.");
 			}
 
 			ImGui::NewLine();
