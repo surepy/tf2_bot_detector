@@ -1,5 +1,3 @@
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
-
 #include "ChatWrappers.h"
 #include "Util/JSONUtils.h"
 #include "Util/TextUtils.h"
@@ -365,13 +363,14 @@ static ChatFormatStrings FindExistingTranslations(const std::filesystem::path& t
 	ChatFormatStrings retVal;
 
 	for (const auto& filename : GetLocalizationFiles(tfdir, language)) {
+		DebugLog("Parsing {}", filename);
 		std::string translationData;
 
 		try {
 			translationData = ToMB(ReadWideFile(filename));
 		}
 		catch (std::runtime_error) {
-			LogException("Attempting to parse as-is");
+			LogException("[!] Attempting to parse {} as-is", filename);
 			translationData = IFilesystem::Get().ReadFile(filename);
 		}
 

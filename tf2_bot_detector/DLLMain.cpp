@@ -19,6 +19,32 @@
 #include <shellapi.h>
 
 #include "d3d9.h"
+#else 
+// Why do they keep deprecating simple functions for complicated functions. 
+// Instead of busting your brains on nanosecond() might as well use usleep for the time being. 
+// – user9599745 Jun 6, 2019 at 9:02
+// https://stackoverflow.com/questions/1157209/is-there-an-alternative-sleep-function-in-c-to-milliseconds#comment99538873_1157217
+int sleep_ms(int msec) {
+	struct timespec ts;
+    int res;
+
+    if (msec < 0)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    ts.tv_sec = msec / 1000;
+    ts.tv_nsec = (msec % 1000) * 1000000;
+
+    do {
+        res = nanosleep(&ts, &ts);
+    } while (res && errno == EINTR);
+
+    return res;
+}
+
+#define Sleep sleep_ms
 #endif
 
 #include "sdl2opengl.h"

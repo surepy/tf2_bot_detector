@@ -1,6 +1,6 @@
 #include "UI/ImGui_TF2BotDetector.h"
 
-#include <ScopeGuards.h>
+#include <Util/ScopeGuards.h>
 
 #include <regex>
 #include <sstream>

@@ -1,7 +1,6 @@
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING 1
-
 #include "PathUtils.h"
 #include "Log.h"
+#include "Platform/Platform.h"
 
 #include <mh/text/string_insertion.hpp>
 #include <vdf_parser.hpp>
@@ -96,8 +95,12 @@ DirectoryValidatorResult tf2_bot_detector::ValidateTFDir(std::filesystem::path p
 		if (!BasicDirChecks(result))
 			return result;
 
-		// hl2.exe is there if you need it i guess
+		// hl2.exe is there just in case
+#ifdef _WIN32
 		bool tf2_binary_validate_result = ValidateFile(result, "../tf_win64.exe") || ValidateFile(result, "../hl2.exe");
+#else
+		bool tf2_binary_validate_result = ValidateFile(result, "../tf_linux64") || ValidateFile(result, "../hl2_linux");
+#endif
 
 		// FIXME: this is kind of a bad fix, but fuck do i care
 		if (tf2_binary_validate_result) {
@@ -133,9 +136,16 @@ DirectoryValidatorResult tf2_bot_detector::ValidateSteamDir(std::filesystem::pat
 		if (!BasicDirChecks(result))
 			return result;
 
-		if (!ValidateFile(result, "steam.exe") ||
-			!ValidateFile(result, "GameOverlayUI.exe") ||
-			!ValidateFile(result, "streaming_client.exe") ||
+		// here i was thinking that i would have a relatively clean impl.
+#ifdef _WIN32
+		bool game_overlay_result = ValidateFile(result, STEAM_BIN_DIR(PLATFORM_EXECUTABLE("GameOverlayUI"))); 
+#else 
+		bool game_overlay_result = ValidateFile(result, STEAM_BIN_DIR(PLATFORM_EXECUTABLE("gameoverlayui"))); 
+#endif
+
+		if (!ValidateFile(result, STEAM_BIN_DIR(PLATFORM_EXECUTABLE("steam"))) ||
+			!ValidateFile(result, STEAM_BIN_DIR(PLATFORM_EXECUTABLE("streaming_client"))) ||
+			!game_overlay_result ||
 			!ValidateDirectory(result, "steamapps") ||
 			!ValidateDirectory(result, "config"))
 		{

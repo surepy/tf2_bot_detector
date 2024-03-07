@@ -76,18 +76,18 @@ namespace tf2_bot_detector
 			if (printCount >= 2)
 				return;
 
-			using TPeriod = std::decay_t<decltype(periodType)>;
+			using TCurrPeriod = std::decay_t<decltype(periodType)>;
 			using TPrevPeriod = std::decay_t<decltype(prevPeriodType)>;
 			static constexpr bool HAS_PREV_PERIOD = !std::is_same_v<TPrevPeriod, std::nullptr_t>;
-			constexpr TPeriod prevPeriod = []()
+			constexpr TCurrPeriod prevPeriod = []()
 			{
 				if constexpr (HAS_PREV_PERIOD)
-					return std::chrono::duration_cast<TPeriod>(TPrevPeriod(1));
+					return std::chrono::duration_cast<TCurrPeriod>(TPrevPeriod(1));
 				else
-					return TPeriod{};
+					return TCurrPeriod{};
 			}();
 
-			const auto truncated = std::chrono::duration_cast<TPeriod>(value);
+			const auto truncated = std::chrono::duration_cast<TCurrPeriod>(value);
 			const auto count = truncated.count();
 			if (count <= 0)
 			{

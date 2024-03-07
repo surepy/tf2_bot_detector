@@ -76,6 +76,8 @@ void SettingsWindow::OnDrawLoggingSettings()
 #ifdef TF2BD_ENABLE_DISCORD_INTEGRATION
 		if (ImGui::Checkbox("Discord Rich Presence", &m_Settings.m_Logging.m_DiscordRichPresence))
 			m_Settings.SaveFile();
+#else
+		ImGui::Checkbox("Discord Rich Presence ([!] Disabled On This Build)", &m_Settings.m_Logging.m_DiscordRichPresence);
 #endif
 		if (ImGui::Checkbox("RCON Packets", &m_Settings.m_Logging.m_RCONPackets))
 			m_Settings.SaveFile();

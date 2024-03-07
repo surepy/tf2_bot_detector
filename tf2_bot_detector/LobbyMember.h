@@ -21,7 +21,7 @@ namespace tf2_bot_detector
 		else if (team == LobbyMemberTeam::Defenders)
 			return LobbyMemberTeam::Invaders;
 		else
-			throw std::runtime_error(__FUNCTION__ ": Invalid LobbyMemberTeam");
+			throw std::runtime_error( __FUNCTION__ + std::string(": Invalid LobbyMemberTeam"));
 	}
 
 	enum class LobbyMemberType : uint8_t

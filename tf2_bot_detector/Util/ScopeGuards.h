@@ -29,10 +29,7 @@ SOFTWARE.
 #include <mh/types/disable_copy_move.hpp>
 
 #include <string_view>
-
-enum ImGuiCol_ : int;
-struct ImGuiContext;
-struct ImVec4;
+#include <imgui.h>
 
 namespace ImGuiDesktop
 {

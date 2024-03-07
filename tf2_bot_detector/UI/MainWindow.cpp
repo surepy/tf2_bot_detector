@@ -24,8 +24,8 @@
 #include "ConsoleLog/ConsoleLines/LobbyChangedLine.h"
 #include "ConsoleLog/ConsoleLines/EdictUsageLine.h"
 
-#include <ScopeGuards.h>
-#include <ImGuiHelpers.h>
+#include <Util/ScopeGuards.h>
+#include <Util/ImguiHelpers.h>
 #include <imgui.h>
 #include <libzippp/libzippp.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -336,7 +336,11 @@ void MainWindow::OnDrawAboutPopup()
 
 		ImGui::NewLine();
 
-		ImGui::TextFmt("You are currently using Sleepy's build - forked from tf2bd release 1.2.1\n (commit 44f7a803d5dce93ad4f8aa9f1fd83b4ffffae625)");
+		ImGui::Text("You are currently using Sleepy's build - forked from tf2bd release 1.2.1\n(commit 44f7a803d5dce93ad4f8aa9f1fd83b4ffffae625)");
+#ifdef __linux__
+		ImGui::Text("- (Linux ver)");
+#endif
+
 		ImGui::NewLine();
 
 		ImGui::Separator();

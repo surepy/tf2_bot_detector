@@ -373,7 +373,7 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 		mh::fmtstr<128> chatMsg;
 
 		int markedPlayerCount = 0;
-		std::vector<tf2_bot_detector::string> players;
+		std::vector<std::string> players;
 
 		for (IPlayer& player : m_World->GetLobbyMembers())
 		{
@@ -381,7 +381,7 @@ void ModeratorLogic::OnLocalPlayerInitialized(IWorldState & world, bool initiali
 
 				auto marks = GetPlayerAttributes(player);
 
-				tf2_bot_detector::string username = player.GetNameSafe();
+				std::string username = player.GetNameSafe();
 
 				// if username is none try getting data from steamapi
 				if (username == "") {

@@ -3,6 +3,10 @@
 #include <mh/text/fmtstr.hpp>
 #include <nlohmann/json.hpp>
 
+#if __linux__
+#define sscanf_s sscanf
+#endif
+
 using namespace tf2_bot_detector;
 
 std::optional<Version> Version::Parse(const char* str)

@@ -93,8 +93,10 @@ namespace tf2_bot_detector::DB
 		template<typename TInfo, typename TUpdateFunc>
 		mh::task<> GetOrUpdateAsync(TInfo& info, TUpdateFunc&& updateFunc)
 		{
+#ifdef _WIN32
 			assert(!mh::is_variable_on_current_stack(info));
 			assert(!mh::is_variable_on_current_stack(updateFunc));
+#endif
 
 			constexpr bool HAS_EXPIRATION = std::is_base_of_v<detail::BaseCacheInfo_Expiration, TInfo>;
 

@@ -13,13 +13,13 @@
 #include <mh/text/fmtstr.hpp>
 #include <mh/text/format.hpp>
 #include <mh/text/string_insertion.hpp>
-#include <ScopeGuards.h>
+#include <Util/ScopeGuards.h>
 
 #include <regex>
 #include <sstream>
 #include <stdexcept>
 
-#include "ServerStatusHostnameLine.h"
+#include <ConsoleLog/ConsoleLines/ServerStatusHostNameLine.h>
 
 using namespace tf2_bot_detector;
 using namespace std::string_literals;

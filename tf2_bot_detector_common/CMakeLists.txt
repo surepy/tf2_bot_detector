@@ -16,6 +16,10 @@ if (WIN32)
 	target_sources(tf2_bot_detector_common PRIVATE
 		"src/Platform/Windows/PlatformCommon.cpp"
 	)
+
+	# because we're still on an old version of fmt, microsoft will scream at you (and it's very loud!)
+	# remove me when we update fmt to 10.1.1.
+	target_compile_definitions(tf2_bot_detector_common PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
 endif()
 
 target_include_directories(tf2_bot_detector_common PUBLIC "include")

@@ -65,7 +65,7 @@ namespace tf2_bot_detector
 			return lhs;
 		}
 
-		constexpr bool operator==(const PlayerAttributesList&) const = default;
+		bool operator==(const PlayerAttributesList&) const = default;
 
 		bool empty() const { return m_Bits.none(); }
 		std::size_t count() const { return m_Bits.count(); }

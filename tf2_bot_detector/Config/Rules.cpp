@@ -122,7 +122,7 @@ namespace tf2_bot_detector
 	}
 	void from_json(const nlohmann::json& j, TextMatchMode& mode)
 	{
-		const std::string_view str = j;
+		const std::string_view str = j.get<std::string_view>();
 
 		if (str == "equal"sv)
 			mode = TextMatchMode::Equal;
@@ -382,7 +382,11 @@ namespace
 		NoMatch,
 	};
 
+#ifdef _WIN32
 	__declspec(noinline) constexpr MatchResult operator&&(MatchResult lhs, MatchResult rhs)
+#else
+	__attribute__((noinline)) constexpr MatchResult operator&&(MatchResult lhs, MatchResult rhs)
+#endif 
 	{
 		if (lhs == MatchResult::Match && rhs == MatchResult::Match)
 			return MatchResult::Match;
@@ -394,7 +398,11 @@ namespace
 			return lhs;
 	}
 
+#ifdef _WIN32
 	__declspec(noinline) constexpr MatchResult operator||(MatchResult lhs, MatchResult rhs)
+#else
+	__attribute__((noinline)) constexpr MatchResult operator||(MatchResult lhs, MatchResult rhs)
+#endif
 	{
 		if (lhs == MatchResult::Match || rhs == MatchResult::Match)
 			return MatchResult::Match;
@@ -404,7 +412,11 @@ namespace
 			return rhs;
 	}
 
+#ifdef _WIN32
 	__declspec(noinline) constexpr bool operator!(MatchResult r)
+#else
+	__attribute__((noinline)) constexpr bool operator!(MatchResult r)
+#endif
 	{
 		return !(r == MatchResult::Match);
 	}

@@ -24,6 +24,10 @@
 #include <fstream>
 #include <variant>
 
+#ifdef __linux__
+#define __FUNCSIG__ __PRETTY_FUNCTION__
+#endif
+
 using namespace std::string_view_literals;
 using namespace tf2_bot_detector;
 
@@ -35,7 +39,7 @@ namespace tf2_bot_detector
 	}
 	void from_json(const nlohmann::json& j, Platform::OS& d)
 	{
-		mh::find_enum_value(j, d);
+		mh::find_enum_value(j.get<std::string_view>(), d);
 	}
 
 	void to_json(nlohmann::json& j, const Platform::Arch& d)
@@ -44,7 +48,7 @@ namespace tf2_bot_detector
 	}
 	void from_json(const nlohmann::json& j, Platform::Arch& d)
 	{
-		mh::find_enum_value(j, d);
+		mh::find_enum_value(j.get<std::string_view>(), d);
 	}
 
 	void to_json(nlohmann::json& j, const BuildInfo& d)
@@ -204,7 +208,7 @@ namespace
 					auto value = future->get().value();
 					SetUpdateStatus(MH_SOURCE_LOCATION_CURRENT(), success, std::string(successMsg));
 					DebugLog(MH_SOURCE_LOCATION_CURRENT());
-					variant.emplace<TFutureResult>(std::move(value));
+					variant.template emplace<TFutureResult>(std::move(value));
 				}
 			}
 			catch (...)
@@ -213,7 +217,7 @@ namespace
 				LogException(MH_SOURCE_LOCATION_CURRENT(), __FUNCSIG__);
 				SetUpdateStatus(MH_SOURCE_LOCATION_CURRENT(), failure,
 					mh::format("{}:\n\t- {}\n\t- {}", failureMsg, details.type_name(), details.m_Message));
-				variant.emplace<std::monostate>();
+				variant.template emplace<std::monostate>();
 			}
 
 			return true;
@@ -245,16 +249,17 @@ namespace
 
 								BuildInfo ret;
 
-								// TODO: pre-release == ReleaseChannel::Preview
-								ret.m_ReleaseChannel = ReleaseChannel::Public;
-
+								// new stable release
 								if (result.m_Stable) {
-									ret.m_GitHubURL = result.GetURL();
+									ret.m_GitHubURL = result.m_Stable->m_URL;
 									ret.m_Version = result.m_Stable->m_Version;
 								}
-								// if result.m_Stable == null, that means no new versions to look at, so just return our current version.
-								else {
-									ret.m_Version = tf2_bot_detector::VERSION;
+
+								// new pre-release
+								if (releaseChannel >= ReleaseChannel::Preview && result.m_Preview) {
+									ret.m_ReleaseChannel = ReleaseChannel::Preview;
+									ret.m_GitHubURL = result.m_Preview->m_URL;
+									ret.m_Version = result.m_Preview->m_Version;
 								}
 
 								return ret;

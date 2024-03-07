@@ -12,8 +12,8 @@
 
 #include "Networking/HTTPHelpers.h"
 
-#include <ScopeGuards.h>
-#include <StorageHelper.h>
+#include <Util/ScopeGuards.h>
+#include <Util/StorageHelper.h>
 #include <mh/math/interpolation.hpp>
 #include <mh/text/fmtstr.hpp>
 #include <mh/text/formatters/error_code.hpp>
@@ -524,7 +524,7 @@ namespace ImGui
 				return *str;
 
 			LogError(MH_SOURCE_LOCATION_CURRENT(), "Unexpected variant index {}", m_Value.index());
-			return __FUNCTION__ ": UNEXPECTED VARIANT INDEX";
+			return __FUNCTION__ + std::string(": UNEXPECTED VARIANT INDEX");
 		}
 
 		std::optional<ImVec4> m_Color;

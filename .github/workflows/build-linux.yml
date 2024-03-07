@@ -1,0 +1,138 @@
+name: build-linux
+
+on:
+  push:
+    paths-ignore:
+      - 'schemas/**.json'
+      - 'staging/cfg/**.json'
+      - '*.md'
+      - '*.appinstaller_template'
+
+env:
+  VCPKG_ROOT: ${{ github.workspace }}/submodules/vcpkg
+  VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
+  VCPKG_FEATURE_FLAGS: manifests,binarycaching,registries
+  VCPKG_CACHE_VERSION: 9
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      tf2bd_version: ${{ steps.tf2bd_version.outputs.value }}
+      tf2bd_workspace: ${{ steps.tf2bd_paths.outputs.workspace }}
+      tf2bd_build_dir: ${{ steps.tf2bd_paths.outputs.build_dir }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Extract TF2BD_VERSION
+      id: tf2bd_version
+      run: |
+        mkdir build_dir
+        cd build_dir
+        cmake -DCMAKE_TOOLCHAIN_FILE="" ../ || true     # we know this will fail, we just need version info from CMakeCache.txt
+        TF2BD_VERSION_NOBUILD=`cat CMakeCache.txt | grep TF2BD_VERSION_NOBUILD: | cut -d "=" -f2`
+        echo "::set-output name=value::$TF2BD_VERSION_NOBUILD.${{ github.run_number }}"
+
+    - name: Debug
+      run: |
+        echo "github.event_name = ${{ github.event_name }}"
+        echo "github.sha = ${{ github.sha }}"
+        echo "github.ref = ${{ github.ref }}"
+        echo "github.run_id = ${{ github.run_id }}"
+        echo "github.run_number = ${{ github.run_number }}"
+
+    - name: Config cross-platform paths
+      id: tf2bd_paths
+      run: |
+        tf2bd_workspace=`realpath "${{ github.workspace }}"`
+        echo "::set-output name=workspace::$tf2bd_workspace"
+        echo "::set-output name=build_dir::$tf2bd_workspace/tf2bd_cmake_build_dir/"
+
+  build:
+    needs: config
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+        triplet: [ x64-ubuntu ]
+        discord_integration: [ false ] # fix soon lol
+        # discord_integration: [true, false]        
+        build_type: [ RelWithDebInfo, Release ]
+        include:
+          - os: ubuntu-latest
+            triplet: x64-ubuntu
+            tf2bd_arch: x64
+
+    steps:
+    - name: Determine artifact behavior
+      id: determine_artifact_behavior
+      if: matrix.discord_integration == true
+      run: echo "::set-output name=upload::1"
+
+    - name: Debug
+      run: |
+        echo "matrix.os = ${{ matrix.os }}"
+        echo "matrix.triplet = ${{ matrix.triplet }}"
+        echo "matrix.discord_integration = ${{ matrix.discord_integration }}"
+        echo "matrix.tf2bd_arch = ${{ matrix.tf2bd_arch }}"
+        echo "matrix.build_type = ${{ matrix.build_type }}"
+        echo "steps.determine_artifact_behavior.outputs.upload = ${{ steps.determine_artifact_behavior.outputs.upload }}"
+        echo "needs.config.outputs.tf2bd_version = ${{ needs.config.outputs.tf2bd_version }}"
+        echo "needs.config.outputs.tf2bd_workspace = ${{ needs.config.outputs.tf2bd_workspace }}"
+        echo "needs.config.outputs.tf2bd_build_dir = ${{ needs.config.outputs.tf2bd_build_dir }}"
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Setup NuGet Credentials
+      run: >
+        nuget sources add
+        -source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+        -storepasswordincleartext
+        -name "GitHub"
+        -username "${{ github.repository_owner }}"
+        -password "${{ secrets.GITHUB_TOKEN }}"
+
+    - uses: seanmiddleditch/gha-setup-ninja@v3
+    - name: Configure build tools
+      uses: ilammy/msvc-dev-cmd@v1.12.1
+      with:
+        arch: ${{ matrix.tf2bd_arch }}
+
+    # we're technically getting cmake twice
+    # should be fine right
+    - uses: lukka/get-cmake@latest
+
+    - name: Install Dependencies
+      run: sudo apt-get install -y libtbb2-dev
+
+    - name: Create Build Folder
+      run: |
+        mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
+
+    - name: Configure Build
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      run: |
+        cmake -G Ninja \
+          -DTF2BD_IS_CI_COMPILE=ON \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" \
+          -DTF2BD_ENABLE_DISCORD_INTEGRATION=${{ matrix.discord_integration }} \
+          -DTF2BD_VERSION_BUILD=${{ github.run_number }} \
+          ../
+
+    - name: Build tf2bd
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      run: |
+        cmake --build . --config ${{matrix.build_type}}
+
+# TODO: paste artifact uploading

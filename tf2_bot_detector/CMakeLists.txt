@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 
 include(GenerateExportHeader)
 
+# remove me
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+
 if (WIN32)
 	add_library(tf2_bot_detector SHARED)
 	set_target_properties(tf2_bot_detector PROPERTIES PDB_NAME "tf2_bot_detector_dll")
@@ -17,6 +20,14 @@ if (WIN32)
 	)
 	target_compile_definitions(tf2_bot_detector_launcher PRIVATE TF2BD_LAUNCHER_USE_WINMAIN)
 
+	# to be able to just use codecvt stuff without windows screaming at us.
+	# don't feel like using MultiByteToWideChar :) 
+	target_compile_definitions(tf2_bot_detector PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+
+	# because we're still on an old version of fmt, microsoft will scream at you (and it's very loud!)
+	# remove me when we update fmt to 10.1.1.
+	target_compile_definitions(tf2_bot_detector PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+
 	target_include_directories(tf2_bot_detector_launcher PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 	target_link_libraries(tf2_bot_detector_launcher PRIVATE tf2_bot_detector)
 	set_target_properties(tf2_bot_detector_launcher PROPERTIES OUTPUT_NAME "tf2_bot_detector")
@@ -25,6 +36,19 @@ else()
 	add_executable(tf2_bot_detector
 		"Launcher/main.cpp"
 	)
+
+	# https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#iso.2017.par2ts
+	# Note 3: The Parallel Algorithms have an external dependency on Intel TBB 2018 or later. 
+	# If the <execution> header is included then -ltbb must be used to link to TBB. 
+
+	find_package(TBB REQUIRED)
+	message(STATUS "Installed TBB Version: ${TBB_VERSION}")
+	if (TBB_VERSION_MAJOR VERSION_LESS "2018")
+   		message(FATAL_ERROR "This program requires tbb 2018 or higher.")
+	endif()
+
+	target_link_libraries(tf2_bot_detector PUBLIC ${TBB_IMPORTED_TARGETS})
+	target_link_options(tf2_bot_detector PRIVATE -ltbb)
 endif()
 
 target_link_libraries(tf2_bot_detector PRIVATE tf2_bot_detector_renderer)
@@ -127,7 +151,7 @@ target_sources(tf2_bot_detector PRIVATE
 	"ConsoleLog/ConsoleLines/HostNewGameLine.h"
 	"ConsoleLog/ConsoleLines/EdictUsageLine.cpp"
 	"ConsoleLog/ConsoleLines/EdictUsageLine.h"
-#	Unused Parser 
+#	Unused Parser
 #	"ConsoleLog/ConsoleLines/CvarlistConvarLine.cpp"
 #	"ConsoleLog/ConsoleLines/CvarlistConvarLine.h"
 	"ConsoleLog/ConsoleLineListener.cpp"
@@ -189,6 +213,10 @@ target_sources(tf2_bot_detector PRIVATE
 	"Util/PathUtils.h"
 	"Util/TextUtils.cpp"
 	"Util/TextUtils.h"
+	"Util/ImguiHelpers.h"
+	"Util/ScopeGuards.h"
+	"Util/ScopeGuards.cpp"
+	"Util/StorageHelper.h"
 	"Application.cpp"
 	"Application.h"
 	"BaseTextures.h"
@@ -259,6 +287,8 @@ else()
 		"Platform/Linux/Shell.cpp"
 		"Platform/Linux/Steam.cpp"
 		"Platform/Linux/LinuxHelpers.h"
+		"Platform/Linux/PlatformInstall.cpp"
+		"Platform/Linux/Platform.cpp"
 	)
 endif()
 

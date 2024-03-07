@@ -2,9 +2,18 @@
   "name": "tf2-bot-detector",
   "version-string": "",
   "dependencies": [
-    "sdl2",
+    "sdl2", 
+    {
+      "name": "sdl2",
+      "default-features": true,
+      "features": [ "wayland" ],
+      "platform": "linux"
+    },
     "cryptopp",
-    "libzippp",
+    {
+      "name": "libzippp",
+      "version>=": "6.1-1.9.2"
+    },
     {
       "name": "fmt",
       "version>=": "8.0.1"
@@ -13,9 +22,15 @@
       "name": "discord-game-sdk",
       "platform": "!static"
     },
-    "stb",
+    {
+      "name": "stb",
+      "version>=": "2023-04-11#1"
+    },
     "nlohmann-json",
-    "catch2",
+    {
+		  "name": "catch2",
+		  "version>=": "3.3.0"
+    },
     "sqlitecpp",
     {
       "name": "cpprestsdk",

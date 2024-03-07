@@ -115,7 +115,7 @@ namespace tf2_bot_detector
 		{
 			return std::any_cast<T>(FindDataStorage(typeid(T)));
 		}
-		template<typename T> inline bool SetData(T&& value)
+		template<typename T> inline void SetData(T&& value)
 		{
 			GetOrCreateDataStorage(typeid(T)) = std::move(value);
 		}

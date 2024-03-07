@@ -12,11 +12,15 @@ add_library(tf2_bot_detector_renderer OBJECT
 	"ITF2BotDetectorDrawable.h"
 	"sdl2opengl.h"
 	"sdl2opengl.cpp"
-        "ImguiHelpers.h"
-        "ScopeGuards.h"
-        "ScopeGuards.cpp"
-        "StorageHelper.h"
 )
+
+if (WIN32)
+	# because we're still on an old version of fmt, microsoft will scream at you (and it's very loud!)
+	# remove me when we update fmt to 10.1.1.
+	target_compile_definitions(tf2_bot_detector_renderer PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING) 
+endif()
+
+set_target_properties(tf2_bot_detector_renderer PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(tf2_bot_detector_renderer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -39,7 +43,7 @@ set(IMGUI_DIR "${CMAKE_SOURCE_DIR}/submodules/imgui")
 # imgui source file / defn stuff
 # I'm copying a lot of stuff from pazer's imgui_desktop.
 
-add_library(imgui 
+add_library(imgui SHARED
 	"${IMGUI_DIR}/imconfig.h"
 	"${IMGUI_DIR}/imgui.cpp"
 	"${IMGUI_DIR}/imgui.h"
@@ -54,6 +58,9 @@ add_library(imgui
 	"${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp"
 	"${IMGUI_DIR}/misc/cpp/imgui_stdlib.h"
 )
+
+set_target_properties(imgui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set_target_properties(imgui PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # imgui includes
 target_include_directories(imgui PUBLIC

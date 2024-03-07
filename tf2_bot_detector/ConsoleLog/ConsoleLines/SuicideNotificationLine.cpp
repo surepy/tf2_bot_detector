@@ -13,7 +13,7 @@
 #include <mh/text/fmtstr.hpp>
 #include <mh/text/format.hpp>
 #include <mh/text/string_insertion.hpp>
-#include <ScopeGuards.h>
+#include <Util/ScopeGuards.h>
 
 #include <regex>
 #include <sstream>
@@ -46,7 +46,7 @@ std::shared_ptr<IConsoleLine> SuicideNotificationLine::TryParse(const ConsoleLin
 	{
 		auto steamid = args.m_World.FindSteamIDForName(result[1].str());
 
-		return std::make_shared<SuicideNotificationLine>(args.m_Timestamp, result[1].str(), steamid.has_value() ? steamid.value() : SteamID::SteamID());
+		return std::make_shared<SuicideNotificationLine>(args.m_Timestamp, result[1].str(), steamid.has_value() ? steamid.value() : SteamID());
 	}
 
 	return nullptr;

@@ -57,7 +57,12 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	gl_context = SDL_GL_CreateContext(window);
 
 #ifdef IMGUI_USE_GLAD2
-	gladLoadGL([](const char* name) __declspec(noinline)
+	gladLoadGL([](const char* name) 
+#ifdef _WIN32
+	__declspec(noinline)
+#else
+	__attribute__((noinline))
+#endif
 	{
 		return reinterpret_cast<GLADapiproc>(SDL_GL_GetProcAddress(name));
 	});
@@ -143,8 +148,8 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		ImGui::EndMainMenuBar();
 	}
 
-	if (showRendererSettings && ImGui::Begin("Renderer Settings", &showRendererSettings)) {
-
+	if (showRendererSettings) {
+	if (ImGui::Begin("Renderer Settings", &showRendererSettings)) {
 		ImGui::Text("Note: This setting will still prefer vSync.");
 
 		ImGui::SliderFloat("Set Frame Time", &frameTime, 0.0f, 66.6f);
@@ -160,8 +165,9 @@ void TF2BotDetectorSDLRenderer::DrawFrame()
 		}
 #endif // _DEBUG
 		ImGui::End();
-		ImGui::EndMenu();
 	}
+	}
+
 
 	// Rendering
 	ImGui::Render();
