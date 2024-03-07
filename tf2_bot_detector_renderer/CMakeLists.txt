@@ -59,6 +59,7 @@ add_library(imgui SHARED
 	"${IMGUI_DIR}/misc/cpp/imgui_stdlib.h"
 )
 
+set_target_properties(imgui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set_target_properties(imgui PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # imgui includes
