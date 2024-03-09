@@ -72,7 +72,7 @@ jobs:
     steps:
     - name: Determine artifact behavior
       id: determine_artifact_behavior
-      if: matrix.discord_integration == true
+      # if: matrix.discord_integration == true
       run: echo "::set-output name=upload::1"
 
     - name: Debug
@@ -136,13 +136,13 @@ jobs:
         cmake --build . --config ${{matrix.build_type}}
 
     - name: "Artifacts: Prepare staging/"
-      if: steps.determine_artifact_behavior.outputs.upload
+      # if: steps.determine_artifact_behavior.outputs.upload
       run: |
         echo "Copying build artifacts to staging..."
         cp -v ${{ needs.config.outputs.tf2bd_build_dir }}/tf2_bot_detector ${{ needs.config.outputs.tf2bd_workspace }}/staging/
 
     - name: "Artifacts: Upload staging/"
-      if: steps.determine_artifact_behavior.outputs.upload
+      # if: steps.determine_artifact_behavior.outputs.upload
       uses: actions/upload-artifact@v2
       with:
         name: "tf2-bot-detector_${{ matrix.os }}_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
