@@ -162,7 +162,7 @@ jobs:
       if: steps.determine_artifact_behavior.outputs.upload && startsWith(matrix.os, 'windows')
       uses: actions/upload-artifact@v2
       with:
-        name: "tf2-bot-detector_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
+        name: "tf2-bot-detector_${{ matrix.os }}_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
         if-no-files-found: error
         path: ${{ needs.config.outputs.tf2bd_workspace }}/staging/
 

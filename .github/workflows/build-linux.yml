@@ -135,4 +135,18 @@ jobs:
       run: |
         cmake --build . --config ${{matrix.build_type}}
 
+    - name: "Artifacts: Prepare staging/"
+      if: steps.determine_artifact_behavior.outputs.upload
+      run: |
+        echo "Copying build artifacts to staging..."
+        cp -v ${{ needs.config.outputs.tf2bd_build_dir }}/tf2_bot_detector ${{ needs.config.outputs.tf2bd_workspace }}/staging/
+
+    - name: "Artifacts: Upload staging/"
+      if: steps.determine_artifact_behavior.outputs.upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: "tf2-bot-detector_${{ matrix.os }}_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
+        if-no-files-found: error
+        path: ${{ needs.config.outputs.tf2bd_workspace }}/staging/
+
 # TODO: paste artifact uploading

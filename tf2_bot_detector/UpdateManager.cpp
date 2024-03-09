@@ -142,7 +142,7 @@ namespace
 			void ClearUpdateCheck(const mh::source_location& location, UpdateStatus status, const std::string_view& msg)
 			{
 				SetUpdateStatus(location, status, msg);
-				DebugLog(MH_SOURCE_LOCATION_CURRENT());
+				DebugLog(MH_SOURCE_LOCATION_CURRENT()); // <- ??
 				m_UpdateCheckVariant.emplace<0>();
 			}
 
