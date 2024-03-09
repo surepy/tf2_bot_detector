@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 include(GenerateExportHeader)
 
-# remove me
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
-
 if (WIN32)
 	add_library(tf2_bot_detector SHARED)
 	set_target_properties(tf2_bot_detector PROPERTIES PDB_NAME "tf2_bot_detector_dll")
@@ -21,7 +18,7 @@ if (WIN32)
 	target_compile_definitions(tf2_bot_detector_launcher PRIVATE TF2BD_LAUNCHER_USE_WINMAIN)
 
 	# to be able to just use codecvt stuff without windows screaming at us.
-	# don't feel like using MultiByteToWideChar :) 
+	# don't feel like using MultiByteToWideChar :) -msse2
 	target_compile_definitions(tf2_bot_detector PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 
 	# because we're still on an old version of fmt, microsoft will scream at you (and it's very loud!)
@@ -40,7 +37,6 @@ else()
 	# https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html#iso.2017.par2ts
 	# Note 3: The Parallel Algorithms have an external dependency on Intel TBB 2018 or later. 
 	# If the <execution> header is included then -ltbb must be used to link to TBB. 
-
 	find_package(TBB REQUIRED)
 	message(STATUS "Installed TBB Version: ${TBB_VERSION}")
 	if (TBB_VERSION_MAJOR VERSION_LESS "2018")
@@ -49,6 +45,14 @@ else()
 
 	target_link_libraries(tf2_bot_detector PUBLIC ${TBB_IMPORTED_TARGETS})
 	target_link_options(tf2_bot_detector PRIVATE -ltbb)
+
+	# warnings don't exist if you pretend they don't exist
+	target_compile_options(tf2_bot_detector PRIVATE -w)
+
+	# ya
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		target_compile_definitions(tf2_bot_detector PRIVATE _DEBUG)
+	endif()
 endif()
 
 target_link_libraries(tf2_bot_detector PRIVATE tf2_bot_detector_renderer)

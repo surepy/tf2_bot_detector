@@ -3,6 +3,12 @@
 #include <mh/text/string_insertion.hpp>
 
 #define STBI_FAILURE_USERMSG 1
+#ifdef _DEBUG
+// if this isn't set this fails with
+// __builtin_ia32_psrldqi128 error thing I am not even gonna pretend that i understand
+// so for debug builds just disable simd
+#define STBI_NO_SIMD
+#endif
 #define STB_IMAGE_IMPLEMENTATION 1
 #include <stb_image.h>
 
