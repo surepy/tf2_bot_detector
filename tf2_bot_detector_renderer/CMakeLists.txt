@@ -43,7 +43,7 @@ set(IMGUI_DIR "${CMAKE_SOURCE_DIR}/submodules/imgui")
 # imgui source file / defn stuff
 # I'm copying a lot of stuff from pazer's imgui_desktop.
 
-add_library(imgui SHARED
+add_library(imgui STATIC
 	"${IMGUI_DIR}/imconfig.h"
 	"${IMGUI_DIR}/imgui.cpp"
 	"${IMGUI_DIR}/imgui.h"
