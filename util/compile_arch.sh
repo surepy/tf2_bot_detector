@@ -3,7 +3,7 @@
 # tries to compile in archlinux, i guess.
 
 # deps
-sudo pacman -Sy cmake make git gcc curl zip unzip tar cmake ninja
+sudo pacman -Sy cmake make git gcc curl zip unzip tar cmake ninja onetbb
 sudo yay -Sy discord-game-sdk
 
 # dumb script
