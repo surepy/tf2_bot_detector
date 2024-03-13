@@ -103,7 +103,7 @@ jobs:
 
     - uses: seanmiddleditch/gha-setup-ninja@v4
     - name: Configure build tools
-      run: "yea"
+      run: "echo yea"
 
     # we're technically getting cmake twice
     # should be fine right
