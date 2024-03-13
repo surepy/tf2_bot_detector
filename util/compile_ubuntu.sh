@@ -7,7 +7,7 @@ sudo apt install --no-install-recommends libtbb-dev libgl-dev gcc-11 g++-11 libs
               pkg-config cmake ninja-build libasound2-dev libpulse-dev \ 
               libaudio-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
               libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev \ 
-              libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \ 
+              libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libglu1-mesa-dev libgles2-mesa-dev \ 
               libegl1-mesa-dev libdbus-1-dev libudev-dev \
               libpipewire-0.3-dev libwayland-dev libdecor-0-dev 
 
