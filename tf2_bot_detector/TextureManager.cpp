@@ -24,6 +24,7 @@ using namespace gl21;
 #include <mh/concurrency/thread_sentinel.hpp>
 #include <mh/memory/unique_object.hpp>
 
+#include <vector>
 #include <array>
 #include <set>
 
@@ -35,9 +36,8 @@ namespace
 	{
 		static void delete_obj(GLuint t)
 		{
-			if (is_obj_valid(t)) {
-				glDeleteTextures(1, &t);
-			}
+			DebugLog("glDeleteTextures = {} / GLuint = {} ", (int64_t)glDeleteTextures, t);
+			glDeleteTextures(1, &t);
 		}
 		static GLuint release_obj(GLuint& t)
 		{
