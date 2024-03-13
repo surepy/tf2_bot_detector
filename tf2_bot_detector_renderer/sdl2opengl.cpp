@@ -30,12 +30,7 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-#ifdef _WIN32
-	OutputDebugString(
-#else
-	printf(
-#endif
-		"Error: %s\n", SDL_GetError());
+		printf("Error: %s\n", SDL_GetError());
 		// TODO: crash
 	}
 
@@ -79,7 +74,7 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 #else
 	printf(
 #endif
-		"[!] gladLoadGL returned 0! we will probably crash!");
+		"[!] gladLoadGL returned 0! we will probably crash!\n");
 	}
 #endif
 
