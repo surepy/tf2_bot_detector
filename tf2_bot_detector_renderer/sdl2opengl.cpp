@@ -30,7 +30,12 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		printf("Error: %s\n", SDL_GetError());
+#ifdef _WIN32
+	OutputDebugString(
+#else
+	printf(
+#endif
+		"Error: %s\n", SDL_GetError());
 		// TODO: crash
 	}
 
@@ -60,9 +65,7 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	SDL_GL_SetSwapInterval(1); // Enable vsync
 
 #ifdef IMGUI_USE_GLAD2
-	gladLoadGL((GLADloadfunc) SDL_GL_GetProcAddress);
-/*
-	gladLoadGL([](const char* name) 
+	if (!gladLoadGL( [](const char* name) 
 #ifdef _WIN32
 	__declspec(noinline)
 #else
@@ -70,8 +73,14 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 #endif
 	{
 		return reinterpret_cast<GLADapiproc>(SDL_GL_GetProcAddress(name));
-	});
-*/
+	})) {
+#ifdef _WIN32
+	OutputDebugString(
+#else
+	printf(
+#endif
+		"[!] gladLoadGL returned 0! we will probably crash!");
+	}
 #endif
 
 	// Setup Dear ImGui context

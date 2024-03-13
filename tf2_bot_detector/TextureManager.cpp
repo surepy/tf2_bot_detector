@@ -36,7 +36,6 @@ namespace
 	{
 		static void delete_obj(GLuint t)
 		{
-			DebugLog("glDeleteTextures = {} / GLuint = {} ", (int64_t)glDeleteTextures, t);
 			glDeleteTextures(1, &t);
 		}
 		static GLuint release_obj(GLuint& t)
