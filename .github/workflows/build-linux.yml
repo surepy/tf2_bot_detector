@@ -114,7 +114,7 @@ jobs:
       run: sudo add-apt-repository universe && sudo apt-get update
 
     - name: Install Dependencies
-      run: sudo apt-get install -y libtbb-dev libgl-dev gcc-11 g++-11 libsdl2-dev build-essential git make 
+      run: sudo apt-get install -y --no-install-recommends libtbb-dev libgl-dev gcc-11 g++-11 libsdl2-dev build-essential git make 
               pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev 
               libaudio-dev libjack-dev libsndio-dev libx11-dev libxext-dev 
               libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev 
