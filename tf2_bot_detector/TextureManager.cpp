@@ -35,7 +35,9 @@ namespace
 	{
 		static void delete_obj(GLuint t)
 		{
-			glDeleteTextures(1, &t);
+			if (is_obj_valid(t)) {
+				glDeleteTextures(1, &t);
+			}
 		}
 		static GLuint release_obj(GLuint& t)
 		{
