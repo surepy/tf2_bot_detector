@@ -54,7 +54,17 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	// it's also how pazer's imgui_desktop handled it;; but, but why??
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
 	window = SDL_CreateWindow(version_string.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
+	// uh oh.
+	if (!window) {
+		printf("[!] SDL_CreateWindow failed! (SDL_GetError(): %s)!\n", SDL_GetError());
+	}
+
 	gl_context = SDL_GL_CreateContext(window);
+
+	// uh oh.
+	if (!gl_context) {
+		printf("[!] gl_context is null (SDL_GetError(): %s)!\n", SDL_GetError());
+	}
 
 	SDL_GL_MakeCurrent(window, gl_context);
 	SDL_GL_SetSwapInterval(1); // Enable vsync
