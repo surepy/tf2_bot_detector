@@ -283,7 +283,7 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 
 	// bad fix
 	char* library_path = getenv("LD_LIBRARY_PATH");
-	const std::filesystem::path libPath32 = settings.GetTFDir() / ".." / "bin" / "linux32";
+	const std::filesystem::path libPath32 = settings.GetTFDir() / ".." / "bin";
 	const std::filesystem::path libPath64 = settings.GetTFDir() / ".." / "bin" / "linux64";
 
 	std::string new_library_path = fmt::format("{}:{}:$LD_LIBRARY_PATH", libPath32.string(), libPath64.string());
