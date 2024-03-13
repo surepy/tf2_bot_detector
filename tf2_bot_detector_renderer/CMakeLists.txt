@@ -6,12 +6,8 @@ include(../cmake/init-postproject.cmake)
 
 # our source files
 add_library(tf2_bot_detector_renderer OBJECT
-	"d3d9.cpp"
-	"d3d9.h"
+	"renderer.h"
 	"ITF2BotDetectorRenderer.h"
-	"ITF2BotDetectorDrawable.h"
-	"sdl2opengl.h"
-	"sdl2opengl.cpp"
 )
 
 if (WIN32)
@@ -25,9 +21,14 @@ set_target_properties(tf2_bot_detector_renderer PROPERTIES POSITION_INDEPENDENT_
 target_include_directories(tf2_bot_detector_renderer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # lol
-target_compile_definitions(tf2_bot_detector_renderer PRIVATE BD_VERSION="${TF2BD_VERSION_MAJOR}.${TF2BD_VERSION_MINOR}.${TF2BD_VERSION_PATCH}")
+target_compile_definitions(tf2_bot_detector_renderer PUBLIC BD_VERSION="${TF2BD_VERSION_MAJOR}.${TF2BD_VERSION_MINOR}.${TF2BD_VERSION_PATCH}")
 
-# imgui options
+# OPENGL / DX9 / VULKAN (dxvk/x64)
+set(TF2BD_RENDERER_MODE "OPENGL" CACHE STRING "render mode to compile in")
+target_compile_definitions(tf2_bot_detector_renderer PUBLIC BD_RENDERER_MODE=${TF2BD_RENDERER_MODE})
+# option(TF2BD_IS_OVERLAY "compile this as an overlay." off)
+
+# imgui options ig
 option(imgui_USE_OPENGL2 "Includes the OpenGL2 implementation." off)
 option(imgui_USE_OPENGL3 "Includes the OpenGL3 implementation." on)
 option(imgui_USE_DX9 "Includes the DirectX9 implementation." on)
@@ -68,34 +69,48 @@ target_include_directories(imgui PUBLIC
 	"${IMGUI_DIR}/misc/cpp"
 )
 
-# backend: GL2
-if(imgui_USE_OPENGL2)
-	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl2.cpp")
-	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl2.h")
+if (TF2BD_RENDERER_MODE STREQUAL "DX9")
+	target_sources(
+		tf2_bot_detector_renderer PRIVATE 
+		"d3d9.h"
+		"d3d9.cpp"
+	)
 
-	target_compile_definitions(imgui PUBLIC "IMGUI_USE_OPENGL2")
+	# backend: dx9
+	if(imgui_USE_DX9)
+	endif()
+elseif(TF2BD_RENDERER_MODE STREQUAL "VULKAN")
+	# backend: vulkan (!)
+	if(imgui_USE_VULKAN)
+	endif()
+else()
+	target_sources(
+		tf2_bot_detector_renderer PRIVATE 
+		"sdl2opengl.h"
+		"sdl2opengl.cpp"
+	)
 
-	if (WIN32)
-		target_link_libraries(imgui PRIVATE "OpenGL32.lib")
+	# backend: GL2
+	# does this even work?
+	if(imgui_USE_OPENGL2)
+		target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl2.cpp")
+		target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl2.h")
+
+		target_compile_definitions(imgui PUBLIC "IMGUI_USE_OPENGL2")
+
+		if (WIN32)
+			target_link_libraries(imgui PRIVATE "OpenGL32.lib")
+		endif()
+	endif()
+	
+	# backend: GL3	
+	if(imgui_USE_OPENGL3)
+		target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp")
+		target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl3.h")
+
+		target_compile_definitions(imgui PUBLIC "IMGUI_USE_OPENGL3")
 	endif()
 endif()
-
-# backend: GL3
-if(imgui_USE_OPENGL3)
-	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp")
-	target_sources(imgui PRIVATE "${IMGUI_DIR}/backends/imgui_impl_opengl3.h")
-
-	target_compile_definitions(imgui PUBLIC "IMGUI_USE_OPENGL3")
-endif()
-
-# backend: dx9
-if(imgui_USE_DX9)
-endif()
-
-# backend: vulkan (!)
-if(imgui_USE_VULKAN)
-endif()
-
 
 # backend: SDL2
 if(imgui_USE_SDL2)
@@ -127,7 +142,7 @@ find_package(fmt CONFIG REQUIRED)
 target_link_libraries(tf2_bot_detector_renderer
 	PUBLIC
 		imgui
-                glad2::glad2
+        glad2::glad2
 	PRIVATE
 		SDL2::SDL2
 		fmt::fmt

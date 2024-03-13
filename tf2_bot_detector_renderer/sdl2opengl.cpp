@@ -38,7 +38,6 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	const char* glsl_version = "#version 430 core";
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 
@@ -56,7 +55,12 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	window = SDL_CreateWindow(version_string.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
 	gl_context = SDL_GL_CreateContext(window);
 
+	SDL_GL_MakeCurrent(window, gl_context);
+	SDL_GL_SetSwapInterval(1); // Enable vsync
+
 #ifdef IMGUI_USE_GLAD2
+	gladLoadGL((GLADloadfunc) SDL_GL_GetProcAddress);
+/*
 	gladLoadGL([](const char* name) 
 #ifdef _WIN32
 	__declspec(noinline)
@@ -66,10 +70,8 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	{
 		return reinterpret_cast<GLADapiproc>(SDL_GL_GetProcAddress(name));
 	});
+*/
 #endif
-
-	SDL_GL_MakeCurrent(window, gl_context);
-	SDL_GL_SetSwapInterval(1); // Enable vsync
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();

@@ -58,7 +58,6 @@ public:
 	std::string RendererInfo() const;
 private:
 
-	//std::vector<ITF2BotDetectorDrawable> drawable;
 	std::vector<DrawableCallbackFn> drawFunctions;
 
 	SDL_Window* window;

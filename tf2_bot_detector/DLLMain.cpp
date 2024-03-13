@@ -47,7 +47,7 @@ int sleep_ms(int msec) {
 #define Sleep sleep_ms
 #endif
 
-#include "sdl2opengl.h"
+#include "renderer.h"
 
 using namespace std::string_literals;
 
@@ -119,7 +119,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 
 #ifndef TF2BD_OVERLAY_BUILD
 		DebugLog("Initializing TF2BDApplication...");
-		TF2BotDetectorSDLRenderer renderer;
+		TF2BDRenderer renderer;
 
 		std::shared_ptr<TF2BDApplication> app = std::make_shared<TF2BDApplication>();
 
