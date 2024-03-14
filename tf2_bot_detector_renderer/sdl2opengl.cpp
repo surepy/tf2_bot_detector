@@ -98,7 +98,9 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 	// https://github.com/ocornut/imgui/issues/2117
 	// multi window causes problems in linux, apparently; investigate?
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+#ifndef TF2BD_IMGUI_NO_MUTLI_VIEWPORTS
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+#endif
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();

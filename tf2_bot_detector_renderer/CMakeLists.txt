@@ -26,6 +26,13 @@ target_compile_definitions(tf2_bot_detector_renderer PUBLIC BD_VERSION="${TF2BD_
 # OPENGL / DX9 / VULKAN (dxvk/x64)
 set(TF2BD_RENDERER_MODE "OPENGL" CACHE STRING "render mode to compile in")
 target_compile_definitions(tf2_bot_detector_renderer PUBLIC BD_RENDERER_MODE=${TF2BD_RENDERER_MODE})
+
+option(imgui_USE_MULTI_VIEWPORTS "uses the imgui multi-viewports feature" on)
+
+if(NOT imgui_USE_MULTI_VIEWPORTS)
+	target_compile_definitions(tf2_bot_detector_renderer PUBLIC TF2BD_IMGUI_NO_MUTLI_VIEWPORTS)
+endif()
+
 # option(TF2BD_IS_OVERLAY "compile this as an overlay." off)
 
 # imgui options ig
