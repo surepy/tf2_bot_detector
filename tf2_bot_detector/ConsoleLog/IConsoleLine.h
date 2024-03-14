@@ -128,7 +128,7 @@ namespace tf2_bot_detector
 
 	private:
 		#ifdef __linux__
-		[[gnu::used]]
+		__attribute__((__used__))
 		#endif
 		struct AutoRegister
 		{
