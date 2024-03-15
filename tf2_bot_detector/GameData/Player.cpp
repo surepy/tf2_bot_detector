@@ -184,7 +184,7 @@ const mh::expected<LogsTFAPI::PlayerLogsInfo>& Player::GetLogsInfo() const
 			DB::LogsTFCacheInfo cacheInfo{};
 			cacheInfo.m_ID = pThis->GetSteamID();
 
-			co_await cacheDB.GetOrUpdateAsync(cacheInfo, [client](DB::LogsTFCacheInfo& info) -> mh::task<>
+			co_await cacheDB.GetOrUpdateAsync(cacheInfo, [&client](DB::LogsTFCacheInfo& info) -> mh::task<>
 				{
 					info = co_await LogsTFAPI::GetPlayerLogsInfoAsync(client, info.m_ID);
 				});
@@ -226,7 +226,7 @@ const mh::expected<SteamAPI::PlayerInventoryInfo>& Player::GetInventoryInfo() co
 			if (!settings.IsSteamAPIAvailable())
 				co_return SteamAPI::ErrorCode::SteamAPIDisabled;
 
-			co_await cacheDB.GetOrUpdateAsync(cacheInfo, [&settings, client](DB::AccountInventorySizeInfo& info) -> mh::task<>
+			co_await cacheDB.GetOrUpdateAsync(cacheInfo, [&settings, &client](DB::AccountInventorySizeInfo& info) -> mh::task<>
 				{
 					info = co_await SteamAPI::GetTF2InventoryInfoAsync(settings, info.GetSteamID(), *client);
 				});
