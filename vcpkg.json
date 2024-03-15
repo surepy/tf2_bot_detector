@@ -2,9 +2,11 @@
   "name": "tf2-bot-detector",
   "version-string": "",
   "dependencies": [
+    "sdl2",
     {
       "name": "sdl2",
-      "features": [ "wayland", "x11", "vulkan" ]
+      "features": [ "wayland", "x11", "vulkan" ],
+      "platform": "linux"
     },
     "cryptopp",
     {
