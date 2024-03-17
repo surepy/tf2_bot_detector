@@ -11,6 +11,7 @@
 #include "UI/MainWindow.h"
 #include "UI/SettingsWindow.h"
 #include "UI/PlayerListManagementWindow.h"
+#include <chrono>
 
 #ifdef WIN32
 #include "Platform/Windows/WindowsHelpers.h"
@@ -134,19 +135,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			mainwin->OpenGLInit();
 
 			// renderer.RegisterDrawCallback([]() {});
-			renderer.RegisterDrawCallback([main_window = std::move(mainwin), &renderer, app]() {
-				// TODO: Put this in a different thread?
-				// update our main state instantly, if we are focused or we're forced by application log
-				if ((renderer.InFocus() || app->ShouldUpdate())) {
-					app->Update();
-				}
-				// update our main state, after we wait 100ms anyway (FIXME/HACK: this replicates the "FIXME" behaivor in imgui_desktop).
-				// https://github.com/PazerOP/imgui_desktop/blob/2e103fd66a39725a75fe93267bff1c701f246c34/imgui_desktop/src/Application.cpp#L52-L53
-				else {
-					Sleep(100);
-					app->Update();
-				}
-
+			renderer.RegisterDrawCallback([main_window = std::move(mainwin), &renderer]() {
 				// important note: while mainwindow handles only drawing related stuff,
 				// it also handles "wake from sleep", when our application log (not tf2 log!) has new stuff
 				main_window->Draw();
@@ -162,8 +151,27 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			});
 		}
 
+		std::chrono::milliseconds last_update;
+		auto now_milis = []() {
+			return std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::steady_clock::now().time_since_epoch()
+			);
+		};
+
 		DebugLog("Entering event loop...");
 		while (!renderer.ShouldQuit()) {
+			// app is in focus or app queued update (/sleep disabled)
+			if ((renderer.InFocus() || app->ShouldUpdate())) {
+				app->Update();
+				last_update = now_milis();
+			}
+			// 100ms since last update (and sleeping)
+			// TODO: make this configurable?
+			else if (last_update + std::chrono::milliseconds(100) < now_milis()) {
+				app->Update();
+				last_update = now_milis();
+			}
+
 			renderer.DrawFrame();
 		}
 #endif

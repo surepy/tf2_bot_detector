@@ -601,6 +601,7 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		if (member.m_Index < vec.size())
 			vec[member.m_Index] = member;
 
+		// FIXME: this seems to never update, so we might as well just not bother.
 		const TFTeam tfTeam = member.m_Team == LobbyMemberTeam::Defenders ? TFTeam::Red : TFTeam::Blue;
 		FindOrCreatePlayer(member.m_SteamID).m_Team = tfTeam;
 
