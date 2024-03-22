@@ -15,5 +15,5 @@ git clone https://github.com/surepy/tf2_bot_detector.git tf2_bot_detector --recu
 mkdir build/x64-release
 cd build/x64-release
 
-cmake -DCMAKE_BUILD_TYPE=Release -DDISCORD_GAME_SDK_INCLUDE=/usr/src/ ../../
+cmake -DCMAKE_BUILD_TYPE=Release -DDISCORD_GAME_SDK_INCLUDE=/usr/src/discord-game-sdk ../../
 cmake --build . --config Release

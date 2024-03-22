@@ -146,6 +146,7 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" \
           -DTF2BD_ENABLE_DISCORD_INTEGRATION=${{ matrix.discord_integration }} \
           -DTF2BD_VERSION_BUILD=${{ github.run_number }} \
+          -DDISCORD_GAME_SDK_INCLUDE=/usr/src/discord-game-sdk \
           ../
 
     - name: Build tf2bd
