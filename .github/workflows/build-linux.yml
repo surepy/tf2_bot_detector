@@ -127,10 +127,11 @@ jobs:
     - name: Install discord-game-sdk 3.2.1
       if: matrix.discord_integration == true
       run: wget https://dl-game-sdk.discordapp.net/3.2.1/discord_game_sdk.zip && 
-            unzip discord_game_sdk.zip && 
-            sudo mv lib/x86_64/discord_game_sdk.so /usr/lib/libdiscord_game_sdk.so && 
-            sudo mv cpp /usr/src/discord-game-sdk &&
-            sudo mv c /usr/include/discord-game-sdk
+            mkdir discord_game_sdk &&
+            unzip discord_game_sdk.zip -d discord_game_sdk && 
+            sudo mv discord_game_sdk/lib/x86_64/discord_game_sdk.so /usr/lib/libdiscord_game_sdk.so && 
+            sudo mv discord_game_sdk/cpp /usr/src/discord-game-sdk &&
+            sudo mv discord_game_sdk/c /usr/include/discord-game-sdk
 
     - name: Create Build Folder
       run: |
