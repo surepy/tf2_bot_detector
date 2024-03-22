@@ -63,9 +63,6 @@ bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& proce
     return value;
 }
 
-// deprecated and unused function it seems, so not even gonna bother implementing atm
-void tf2_bot_detector::Processes::RequireTF2NotRunning() {}
-
 void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable,
 	const std::vector<std::string>& args, bool elevated)
 {

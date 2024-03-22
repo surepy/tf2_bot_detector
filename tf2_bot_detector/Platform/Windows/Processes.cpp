@@ -275,26 +275,6 @@ bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& proce
 	return false;
 }
 
-void tf2_bot_detector::Processes::RequireTF2NotRunning()
-{
-	if (!IsTF2Running())
-		return;
-
-#ifdef _DEBUG
-	if (g_SkipOpenTF2Check)
-	{
-		LogWarning("TF2 was found running, but --allow-open-tf2 was on the command line. Letting execution proceed.");
-	}
-	else
-#endif
-	{
-		MessageBoxA(nullptr, "TF2 Bot Detector must be started before Team Fortress 2.",
-			"TF2 Currently Open", MB_OK | MB_ICONEXCLAMATION);
-
-		std::exit(1);
-	}
-}
-
 void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable,
 	const std::vector<std::string>& args, bool elevated)
 {

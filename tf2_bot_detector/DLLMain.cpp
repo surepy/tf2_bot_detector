@@ -56,13 +56,7 @@ namespace tf2_bot_detector
 {
 #ifdef _DEBUG
 	uint32_t g_StaticRandomSeed = 0;
-	bool g_SkipOpenTF2Check = false;
 #endif
-
-	static void ImGuiDesktopLogFunc(const std::string_view& msg, const mh::source_location& location)
-	{
-		DebugLog(location, "[ImGuiDesktop] {}", msg);
-	}
 }
 
 /// <summary>
@@ -88,15 +82,12 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			if (!strcmp(argv[i], "-forward") || !strcmp(argv[i], "-game") || !strcmp(argv[i], "-steam")) {
 				running_from_steam = true;
 			}
-
 			if (!strcmp(argv[i], "-forward") && (i + 1) < argc) {
 				forwarded_arg = argv[i + 1];
 			}
 #ifdef _DEBUG
 			if (!strcmp(argv[i], "--static-seed") && (i + 1) < argc)
 				tf2_bot_detector::g_StaticRandomSeed = atoi(argv[i + 1]);
-			else if (!strcmp(argv[i], "--allow-open-tf2"))
-				tf2_bot_detector::g_SkipOpenTF2Check = true;
 			else if (!strcmp(argv[i], "--run-tests"))
 			{
 #ifdef TF2BD_ENABLE_TESTS
@@ -116,7 +107,6 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 		// Always run the tests debug builds (but don't quit afterwards)
 		tf2_bot_detector::RunTests();
 #endif
-
 
 #ifndef TF2BD_OVERLAY_BUILD
 		DebugLog("Initializing TF2BDApplication...");
@@ -175,12 +165,6 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 			renderer.DrawFrame();
 		}
 #endif
-
-		// this was used for "PrintLogMsg" in imgui_desktop, i'm leaving it out because
-		// 1, we're launching in 1 and only 1 possible opengl configuration which is GL 4.3 + GLSL 430
-		//  realistically *nobody* will need before gl 3 because even the GeForce 400 series supports it.
-		// 2. lazy
-		//ImGuiDesktop::SetLogFunction(&tf2_bot_detector::ImGuiDesktopLogFunc);
 	}
 
 	ILogManager::GetInstance().CleanupEmptyLogs();

@@ -85,7 +85,6 @@ namespace tf2_bot_detector
 			mh::task<std::vector<std::string>> GetTF2CommandLineArgsAsync();
 			bool IsSteamRunning();
 			bool IsProcessRunning(const std::string_view& processName);
-			void RequireTF2NotRunning();
 
 			void Launch(const std::filesystem::path& executable, const std::vector<std::string>& args = {},
 				bool elevated = false);
