@@ -4,7 +4,10 @@
 
 # deps
 sudo pacman -Sy cmake make git gcc curl zip unzip tar cmake ninja onetbb
+
 sudo yay -Sy discord-game-sdk
+# it doesnt have the lib prefix so just make a symlink
+sudo ln -s /usr/lib/discord_game_sdk.so /usr/lib/libdiscord_game_sdk.so
 
 # dumb script
 git clone https://github.com/surepy/tf2_bot_detector.git tf2_bot_detector --recurse-submodules
@@ -12,5 +15,5 @@ git clone https://github.com/surepy/tf2_bot_detector.git tf2_bot_detector --recu
 mkdir build/x64-release
 cd build/x64-release
 
-cmake -DCMAKE_BUILD_TYPE=Release -DDISCORD_GAME_SDK=/usr/lib/discord_game_sdk.so -DDISCORD_CPP_GAME_SDK=/usr/lib/discord_game_sdk.so ../../
+cmake -DCMAKE_BUILD_TYPE=Release -DDISCORD_GAME_SDK_INCLUDE=/usr/src/ ../../
 cmake --build . --config Release

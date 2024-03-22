@@ -299,15 +299,60 @@ endif()
 
 if (TF2BD_ENABLE_DISCORD_INTEGRATION)
 	target_compile_definitions(tf2_bot_detector PRIVATE TF2BD_ENABLE_DISCORD_INTEGRATION)
-	find_library(DISCORD_GAME_SDK discord_game_sdk)
+	find_library(DISCORD_GAME_SDK discord_game_sdk) 
 	message("DISCORD_GAME_SDK = ${DISCORD_GAME_SDK}")
+
+	# (linux) try to find it as discord_game_sdk.so 
+	if (NOT DISCORD_GAME_SDK)
+		message("-- Retrying DISCORD_GAME_SDK as discord_game_sdk.so")
+		find_library(DISCORD_GAME_SDK discord_game_sdk.so) 
+		message("DISCORD_GAME_SDK = ${DISCORD_GAME_SDK}")
+	endif()
+
 	target_link_libraries(tf2_bot_detector PRIVATE ${DISCORD_GAME_SDK})
 
 	find_path(GAME_SDK_INCLUDE discord-game-sdk/discord.h)
 	target_include_directories(tf2_bot_detector PRIVATE ${DISCORD_GAME_SDK_INCLUDE})
+	message("DISCORD_GAME_SDK_INCLUDE = ${DISCORD_GAME_SDK_INCLUDE}")
 
 	find_library(DISCORD_CPP_GAME_SDK discord_game_sdk_cpp)
+
+	# (linux) discord_game_sdk_cpp <- "_cpp" why is that needed in windows target
+	# i will never know
+	if (NOT DISCORD_CPP_GAME_SDK)
+		find_library(DISCORD_CPP_GAME_SDK discord_game_sdk)
+	endif()
+
 	message("DISCORD_CPP_GAME_SDK = ${DISCORD_CPP_GAME_SDK}")
+
+	# (linux) try to find it as discord_game_sdk.so 
+	if (NOT DISCORD_CPP_GAME_SDK)
+		message("-- Retrying DISCORD_CPP_GAME_SDK as discord_game_sdk.so")
+		find_library(DISCORD_CPP_GAME_SDK discord_game_sdk.so) 
+		message("DISCORD_CPP_GAME_SDK = ${DISCORD_CPP_GAME_SDK}")
+		message("NOTE: this may not build! try renaming your discord_game_sdk.so to libdiscord_game_sdk.so!")
+	endif()
+
+	# lol.
+	if(LINUX)
+		target_sources(tf2_bot_detector PRIVATE
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/voice_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/user_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/types.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/store_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/storage_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/relationship_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/overlay_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/network_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/lobby_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/image_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/application_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/activity_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/achievement_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/core.cpp"
+		)
+	endif()
+
 	target_link_libraries(tf2_bot_detector PRIVATE ${DISCORD_CPP_GAME_SDK})
 
 	target_sources(tf2_bot_detector PRIVATE
@@ -319,7 +364,6 @@ if (TF2BD_ENABLE_DISCORD_INTEGRATION)
 	# Later on it will probably be moved out of this if statement when it is required elsewhere in the code.
 	find_package(cryptopp CONFIG REQUIRED)
 	target_link_libraries(tf2_bot_detector PRIVATE cryptopp-static)
-
 endif()
 
 find_package(nlohmann_json CONFIG REQUIRED)

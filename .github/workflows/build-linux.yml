@@ -61,8 +61,8 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         triplet: [ x64-ubuntu ]
-        discord_integration: [ false ] # fix soon lol
-        # discord_integration: [true, false]        
+        # discord_integration: [ false ] # fix soon lol
+        discord_integration: [true, false]        
         build_type: [ RelWithDebInfo, Release ]
         include:
           - os: ubuntu-latest
@@ -72,7 +72,7 @@ jobs:
     steps:
     - name: Determine artifact behavior
       id: determine_artifact_behavior
-      # if: matrix.discord_integration == true      
+      if: matrix.discord_integration == true      
       run: echo "upload=1" >> $GITHUB_OUTPUT
 
     - name: Debug
@@ -124,6 +124,14 @@ jobs:
               libpipewire-0.3-dev libwayland-dev libdecor-0-dev libxrender-dev 
               mesa-common-dev libxft-dev
 
+    - name: Install discord-game-sdk 3.2.1
+      if: matrix.discord_integration == true
+      run: wget https://dl-game-sdk.discordapp.net/3.2.1/discord_game_sdk.zip && 
+            unzip discord_game_sdk.zip && 
+            sudo mv lib/x86_64/discord_game_sdk.so /usr/lib/libdiscord_game_sdk.so && 
+            sudo mv cpp /usr/src/discord-game-sdk &&
+            sudo mv c /usr/include/discord-game-sdk
+
     - name: Create Build Folder
       run: |
         mkdir "${{needs.config.outputs.tf2bd_build_dir}}"
@@ -145,18 +153,16 @@ jobs:
         cmake --build . --config ${{matrix.build_type}}
 
     - name: "Artifacts: Prepare staging/"
-      # if: steps.determine_artifact_behavior.outputs.upload
+      if: steps.determine_artifact_behavior.outputs.upload
       run: |
         echo "Copying build artifacts to staging..."
         cp -v ${{ needs.config.outputs.tf2bd_build_dir }}/tf2_bot_detector/tf2_bot_detector ${{ needs.config.outputs.tf2bd_workspace }}/staging/
         cp -v ${{ needs.config.outputs.tf2bd_build_dir }}/submodules/mh_stuff/libmh-stuff.so ${{ needs.config.outputs.tf2bd_workspace }}/staging/
 
     - name: "Artifacts: Upload staging/"
-      # if: steps.determine_artifact_behavior.outputs.upload
+      if: steps.determine_artifact_behavior.outputs.upload
       uses: actions/upload-artifact@v2
       with:
         name: "tf2-bot-detector_${{ matrix.os }}_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
         if-no-files-found: error
         path: ${{ needs.config.outputs.tf2bd_workspace }}/staging/
-
-# TODO: paste artifact uploading
