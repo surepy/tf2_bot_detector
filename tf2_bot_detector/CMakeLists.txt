@@ -336,20 +336,20 @@ if (TF2BD_ENABLE_DISCORD_INTEGRATION)
 	# lol.
 	if(LINUX)
 		target_sources(tf2_bot_detector PRIVATE
-			"${DISCORD_GAME_SDK_INCLUDE}/voice_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/user_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/types.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/store_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/storage_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/relationship_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/overlay_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/network_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/lobby_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/image_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/application_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/activity_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/achievement_manager.cpp"
-			"${DISCORD_GAME_SDK_INCLUDE}/core.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/voice_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/user_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/types.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/store_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/storage_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/relationship_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/overlay_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/network_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/lobby_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/image_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/application_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/activity_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/achievement_manager.cpp"
+			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/core.cpp"
 		)
 	endif()
 
