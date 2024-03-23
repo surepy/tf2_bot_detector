@@ -545,7 +545,7 @@ void Settings::Deserialize(const nlohmann::json& json)
 			try_get_to_defaulted(*custom_values, m_VoteKickIgnoreTeamStateOnCertainMaps, "vote_kick_ignore_team_state_certain_maps", DEFAULTS.m_VoteKickIgnoreTeamStateOnCertainMaps);
 
 			// m_TFBinaryMode
-			try_get_to_defaulted(*found, m_TFBinaryMode, "tf_binary_mode", DEFAULTS.m_TFBinaryMode);
+			try_get_to_defaulted(*custom_values, m_TFBinaryMode, "tf_binary_mode", DEFAULTS.m_TFBinaryMode);
 		}
 		// 
 
