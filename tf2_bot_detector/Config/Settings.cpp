@@ -496,10 +496,12 @@ void Settings::Deserialize(const nlohmann::json& json)
 
 			try_get_to_defaulted(*custom_values, m_ChatWarningInterval, "chat_warning_interval", DEFAULTS.m_ChatWarningInterval);
 
-			// invalid settings, this shouldn't be a negative value or faster than tf2's chat speed cap.
+			// revert invalid settings, this shouldn't be a negative value or faster than tf2's chat speed cap.
 			if (m_ChatWarningInterval < 2) {
 				m_ChatWarningInterval = 10;
 			}
+
+			try_get_to_defaulted(*custom_values, m_ChatWarningSendOnce, "chat_warning_warn_once", DEFAULTS.m_ChatWarningSendOnce);
 
 			// custom warning messages
 			{
@@ -511,10 +513,6 @@ void Settings::Deserialize(const nlohmann::json& json)
 				try_get_to_defaulted(*custom_values, m_OneCheaterWarningMessage, "one_cheater_warning", DEFAULTS.m_OneCheaterWarningMessage);
 				try_get_to_defaulted(*custom_values, m_MultipleCheaterWarningMessage, "muti_cheater_warning", DEFAULTS.m_MultipleCheaterWarningMessage);
 			}
-
-			try_get_to_defaulted(*custom_values, m_AutoChatWarningsMarkedVSNotifications, "auto_chat_warnings_marked_vs_notifications", DEFAULTS.m_AutoChatWarningsMarkedVSNotifications);
-
-			// 
 
 			// XVF's SteamHistory Service. (used for SourceBans)
 			if (auto integrations = custom_values.value().find("integrations"); integrations != custom_values.value().end()) {
@@ -621,6 +619,7 @@ void Settings::Serialize(nlohmann::json& json) const
 						{ "kill_logs_in_chat", m_KillLogsInChat },
 						{ "chat_warning_interval", m_ChatWarningInterval },
 						{ "use_custom_chat_warnings", m_UseCustomChatWarnings },
+						{ "chat_warning_warn_once", m_ChatWarningSendOnce },
 						{ "one_cheater_connecting", m_OneCheaterConnectingMessage },
 						{ "muti_cheater_connecting", m_MultipleCheaterConnectingMessage },
 						{ "one_cheater_warning", m_OneCheaterWarningMessage },

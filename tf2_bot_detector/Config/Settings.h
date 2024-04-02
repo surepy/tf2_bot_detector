@@ -95,19 +95,24 @@ namespace tf2_bot_detector
 
 		// bool m_AutoChatWarningsPartyIgnore[4] = { false, false, false, false };
 
-		// (unimplemented)
+		// (unimplemented/scrapped)
 		bool m_AutoChatWarningsMarkedVSNotifications = true;
 
 		// put kill logs in chat
 		bool m_KillLogsInChat = false;
 
-		// how many times until chat warning, in seconds
+		// how many times until sending another chat warning, in seconds
 		int m_ChatWarningInterval = 10;
+
+		// send all chat warnings for cheaters **once** per player
+		bool m_ChatWarningSendOnce = false;
 
 		// custom chat warnings (most requested feature)
 		bool m_UseCustomChatWarnings = false;
+
 		// maybe?
 		// bool m_IgnoreBotLeaderPriority = false;
+
 		std::string m_OneCheaterConnectingMessage = "Heads up! There is a known cheater joining the other team! Name unknown until they fully join.";
 		std::string m_MultipleCheaterConnectingMessage = "Heads up! There are {} known cheaters joining the other team! Names unknown until they fully join.";
 

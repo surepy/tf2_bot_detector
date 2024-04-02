@@ -98,6 +98,9 @@ namespace
 			// (we don't know the cheater's name yet, so don't spam if they can't do anything about it yet)
 			bool m_PreWarnedOtherTeam = false;
 
+			// for the "only send chat warnings once" feature
+			bool m_WarnedOnce = false;
+
 			// same as above, but we don't want to spam party chat.
 			bool m_PartyWarned = false;
 
@@ -105,12 +108,6 @@ namespace
 			// any warnings (but still participates in other warnings!!!)
 			std::optional<time_point_t> m_ConnectingWarningDelayEnd;
 			std::optional<time_point_t> m_WarningDelayEnd;
-
-			struct
-			{
-				time_point_t m_LastTransmission{};
-				duration_t m_TotalTransmissions{};
-			} m_Voice;
 		};
 
 		// Steam IDs of players that we think are running the tool.
@@ -562,13 +559,22 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 	std::multimap<std::string, Cheater> cheaterDebugWarnings;
 	for (auto& cheater : enemyCheaters)
 	{
+		// Theoretically this should never happen, but don't embarass ourselves
 		if (cheater->GetNameSafe().empty())
-			continue; // Theoretically this should never happen, but don't embarass ourselves
+			continue; 
 
 		mh::format_to(std::back_inserter(logMsg), "\n\t{}", cheater);
-		chatMsgCheaterNames.emplace_back(cheater->GetNameSafe());
 
 		auto& cheaterData = cheater->GetOrCreateData<PlayerExtraData>();
+
+		// we should warn if either
+		// 1. m_ChatWarningSendOnce is false
+		// 2. m_WarnedOnce is false
+		if (!m_Settings->m_ChatWarningSendOnce || !cheaterData.m_WarnedOnce) {		
+			chatMsgCheaterNames.emplace_back(cheater->GetNameSafe());
+		}
+		// we've warned for this guy, dont send again if m_ChatWarningSendOnce is true
+		cheaterData.m_WarnedOnce = true;
 
 		if (isBotLeader)
 		{
@@ -669,6 +675,7 @@ std::string ModeratorLogic::GenerateCheaterWarnMessage(const std::vector<std::st
 
 	// FIXME: multiple potential crashes if user puts a really long custom chat message
 	// or simply multiple offending players have too long of a name.
+	// if that happens, probably do "name, (+2 more)"
 	assert(max_names_length_one >= 32);
 
 	mh::fmtstr<MAX_CHATMSG_LENGTH + 1> chatMsg;
