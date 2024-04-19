@@ -36,9 +36,7 @@
     <br />
     <a href="#installation">Install</a>
     ·
-    <a href="https://github.com/surepy/tf2_bot_detector/issues/new?assignees=&labels=Priority%3A+Medium%2C+Type%3A+Bug&template=bug_report.md&title=%5BBUG%5D">Report a Bug</a>
-    ·
-    <a href="https://github.com/surepy/tf2_bot_detector/issues/new?assignees=&labels=Priority%3A+Low%2C+Type%3A+Enhancement&template=feature_request.md&title=">Request a Feature</a>
+    <a href="https://github.com/surepy/tf2_bot_detector/issues/new/choose">Report a Bug / Request a Feature</a>
     ·
     <a href="https://discord.gg/W8ZSh3Z">Join the Discord</a>
   </p>
@@ -76,8 +74,6 @@
 - [Acknowledgements](#acknowledgements)
   - [Sponsors](#sponsors)
 
-
-
 ## Installation
 
 ### Typical Install
@@ -95,7 +91,7 @@ All of the installation methods in that page are not supported in this fork.
 ## General Usage
 
 ### How to launch TF2BD
-Double click `tf2_bot_detector.exe` in the folder you downloaded from the installation section.
+Double click `tf2_bot_detector.exe` or ``tf2_bot_detector`` executable in the folder you downloaded from the installation section.
 
 ### First run
 When you first run the tool it will ask if you would like to allow internet connectivity and which update channel you would like. These can be changed later in the settings menu.
@@ -121,6 +117,7 @@ You can quickly pause all functionality (chat warnings, vote-kicks, auto-marks, 
 ![pause-box]
 
 There are several of these check boxes, hover over them for more information.
+
 ![chat-warning]
 
 ### How to update
@@ -147,7 +144,7 @@ TF2 Bot Detector is a standalone application that calls a votekick against known
 
 ### What ISN'T TF2 Bot Detector?
 
-TF2BD isn't a perfect solution. It does not (and can not) perfectly detect every single cheater. TF2BD also isn't finished. This is an ongoing project that will continue to be improved with new features, more powerful detection, and better customization.
+TF2BD isn't a perfect solution. It does not (and can not) perfectly detect every single cheater. 
 
 ### Why would I want this? It's easy to identify and kick bots!
 
@@ -163,13 +160,22 @@ It monitors the console output (saved to a log file) to get information about th
 
 ### How is the list of known cheaters curated?
 
-The official list that is included with the program was maintained by Pazer exclusively, and no user submissions will be accepted.   
+The "official" list that is included with the program was maintained by Pazer exclusively.
 
-While this approach this may seem limiting, it is to avoid false positives and to maintain the integrity of the project as a whole. There are some community player lists that can be added to your own detector. These are not maintained by Pazer. For more information on installing community lists go [here][wiki-customization-link].
+As pazer retired and archived the upstream repository, the "official" list will never recieve any changes moving forward.
+
+While this approach this may seem limiting, it is to avoid false positives and to maintain the integrity of the project as a whole. There are some community player lists that can be added to your own detector. For more information on installing community lists go [here][wiki-customization-link].  
+
+**It is very highly recommended that you curate your own bot/cheater lists, instead.**
 
 ### I don't like how the tool spams chat. Can I change that?
 
-You can turn off chat warnings by unchecking the checkbox labeled "Enable Chat Warnings." By default if there are multiple tool users in the same server, a "Bot Leader" is chosen and only their tool will send messages. There is no other way to customize chat messages outside of editing the code yourself which is not advised as it will break some functionality. User message customization is currently in the works.
+Use the "Chat Warning Frequency" or "Warn Cheaters Once" setting in the settings menu.  
+\- or You can turn off chat warnings by unchecking the checkbox labeled "Enable Chat Warnings." 
+
+Note that by default if there are multiple tool users in the same server, a "Bot Leader" is chosen and only their tool will send messages*.
+
+\* "Bot Leader" is only supported with the old chat format, and will take priority over default format. 
 
 ### I downloaded the tool but I don't see an executable. What went wrong?
 

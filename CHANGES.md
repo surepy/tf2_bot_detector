@@ -100,4 +100,12 @@ format ``unmarked (unmarked_connected) vs marked (marked_connected)``
   * **note that steam overlay may or may not freak the fuck out when using this feature, use it at your own risk lmfao**
 * TF2BD will not infinitely retry rcon connections and leak ports on launch screen (#25)
   * lol.
+* **[ALPHA]** Linux Support from the Linux branch (wow) 
+  * aka PazerOP#56
+  * dependencies: ``libtbb (ubuntu)``, ``zenity``, and probably more idk don't remember
+  * I recommend you just build yourself instead of using the binaries
+  * it works I think, see pr #26 for more details
+  * did not play with this that long either, so report issues probably 
+  * builds and launches on archlinux and ubuntu 22.04 at least, other distros... you're kind of on your own. sorry.
+![early screenshots](https://github.com/surepy/tf2_bot_detector/assets/24486494/dfc56089-6f95-462b-80d2-260ef6c7f3f9)
 * more todo...
