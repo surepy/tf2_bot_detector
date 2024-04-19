@@ -17,6 +17,7 @@
 
 #include <chrono>
 #include <random>
+#include <ITF2BotDetectorRenderer.h>
 
 #undef DrawState
 
@@ -47,6 +48,7 @@ void TF2CommandLinePage::Data::TryUpdateCmdlineArgs()
 	if (m_CommandLineArgsTask.is_ready())
 	{
 		const auto& args = m_CommandLineArgsTask.get();
+		Log(fmt::format("m_CommandLineArgsTask is ready. (args={})", args.at(0)));
 		m_MultipleInstances = args.size() > 1;
 		if (!m_MultipleInstances)
 		{
@@ -63,7 +65,7 @@ void TF2CommandLinePage::Data::TryUpdateCmdlineArgs()
 	if (!m_CommandLineArgsTask.valid())
 	{
 		// See about starting a new update
-
+		Log("Starting a new m_CommandLineArgsTask.");
 		const auto curTime = clock_t::now();
 		if (!m_AtLeastOneUpdateRun || (curTime >= (m_LastCLUpdate + CL_UPDATE_INTERVAL)))
 		{
@@ -532,10 +534,19 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 	{
 		if (Platform::Processes::IsTF2Running())
 		{
+			// 
+			if (ds.m_Settings->m_ShouldCloseWhenTFCloses) {
+				ds.m_Settings->m_Unsaved.m_GameLaunchedAndShouldClose = true;
+			}
+
 			ImGui::TextFmt("TF2 is currently running. Fetching command line arguments...");
 		}
 		else
 		{
+			if (ds.m_Settings->m_Unsaved.m_GameLaunchedAndShouldClose) {
+				TF2BotDetectorRendererBase::GetRenderer()->RequestQuit();
+			}
+
 			m_Data.m_TestRCONClient.reset();
 			ImGui::TextFmt("TF2 must be launched via TF2 Bot Detector. You can open it by clicking the button below.");
 

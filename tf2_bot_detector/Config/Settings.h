@@ -146,6 +146,11 @@ namespace tf2_bot_detector
 		/// </summary>
 		TFBinaryMode m_TFBinaryMode = TFBinaryMode::x64;
 
+		/// <summary>
+		/// automatically quit when tf2 quits
+		/// </summary>
+		bool m_ShouldCloseWhenTFCloses = false;
+
 		// end custom
 
 		bool m_AutoChatWarnings = true;
@@ -210,6 +215,8 @@ namespace tf2_bot_detector
 
 			bool m_IsLaunchedFromSteam;
 			std::string m_ForwardedCommandLineArguments;
+
+			bool m_GameLaunchedAndShouldClose = false;
 
 		} m_Unsaved;
 

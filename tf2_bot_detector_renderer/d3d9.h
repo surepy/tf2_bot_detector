@@ -35,6 +35,13 @@ public:
 	bool ShouldQuit() const;
 
 	/// <summary>
+	/// Request application destruction.
+	/// </summary>
+	/// <returns></returns>
+	void RequestQuit();
+
+
+	/// <summary>
 	/// how frequent should DrawFrame run?
 	///
 	/// note: ignored in hook mode.

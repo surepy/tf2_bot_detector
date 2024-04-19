@@ -56,6 +56,12 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	virtual bool ShouldQuit() const = 0;
+
+	/// <summary>
+	/// Request application destruction.
+	/// </summary>
+	/// <returns></returns>
+	virtual void RequestQuit() = 0;
 	
 	/// <summary>
 	/// how frequent should DrawFrame run?

@@ -223,6 +223,11 @@ bool TF2BotDetectorSDLRenderer::ShouldQuit() const
 	return !running;
 }
 
+void TF2BotDetectorSDLRenderer::RequestQuit()
+{
+	running = false;
+}
+
 /// <summary>
 /// sets frame time, so we can limit how much we render (60fps is a good target)
 /// </summary>
