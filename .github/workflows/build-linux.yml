@@ -122,7 +122,7 @@ jobs:
               libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libglu1-mesa-dev libgles2-mesa-dev 
               libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev 
               libpipewire-0.3-dev libwayland-dev libdecor-0-dev libxrender-dev 
-              mesa-common-dev libxft-dev libfmt-dev
+              mesa-common-dev libxft-dev
 
     - name: Install discord-game-sdk 3.2.1
       if: matrix.discord_integration == true
