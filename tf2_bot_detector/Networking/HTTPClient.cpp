@@ -209,9 +209,9 @@ mh::task<std::string> HTTPClientImpl::GetStringAsync(URL url) const try
 				// retry a few times for http 500-class errors, might be tf2bd-util being broken
 				PrintRetryWarning();
 			}
-			else if (mh::any_eq(e.code(), HTTPResponseCode::BadGateway, HTTPResponseCode::ServiceUnavailable))
+			else if (mh::any_eq(e.code(), HTTPResponseCode::BadGateway, HTTPResponseCode::ServiceUnavailable) && retryCount < 20)
 			{
-				// retry forever for these two (after a slightly longer delay), since they are likely indicitive of an api being temporarily down
+				// give a good like 20 tries, since they are likely indicitive of an api being temporarily down
 				PrintRetryWarning();
 			}
 			else
