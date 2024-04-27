@@ -263,7 +263,7 @@ void ModeratorLogic::OnRuleMatch(const ModerationRule& rule, const IPlayer& play
 {
 	for (PlayerAttribute attribute : rule.m_Actions.m_Mark)
 	{
-		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, true, "[auto] automatically marked: " + to_string(attribute) + " | reason: " + reason))
+		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, true, fmt::format("[auto] automatically marked: {} | reason: {}", to_string(attribute), reason)))
 			Log("Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
 	}
 	for (PlayerAttribute attribute : rule.m_Actions.m_TransientMark)
@@ -344,11 +344,23 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 			if (!rule.Match(player, msg))
 				continue;
 
+			std::string reason = rule.m_Description;
+
 			// why must i do this this feels dumb
 			std::ostringstream os;
 			os << std::quoted(msg);
 
-			OnRuleMatch(rule, player, os.str());
+			// this fix is dogshit, this is actually a terrible way to "fix" this
+			// but i want to write less code rn so this is what you get 
+			// what this is doing is it's only running through chatMsgMatch (this makes it run it twice)
+			// so it doesn't actually append a chat message to reason when it's an avatar match for example
+			// the proper fix would be changing how rule.Match works and the return data
+			// but I actually cannot be arsed do to so gg
+			if (rule.Match(msg)) {
+				reason = os.str();
+			}
+
+			OnRuleMatch(rule, player, reason);
 			Log("Chat message rule match for {}: {}", rule.m_Description, os.str());
 		}
 	}

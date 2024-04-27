@@ -62,6 +62,7 @@ namespace tf2_bot_detector
 
 		bool Match(const IPlayer& player) const;
 		bool Match(const IPlayer& player, const std::string_view& chatMsg) const;
+		bool Match(const std::string_view& chatMsg) const;
 
 		struct Triggers
 		{

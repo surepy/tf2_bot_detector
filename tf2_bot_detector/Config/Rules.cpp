@@ -613,6 +613,25 @@ bool ModerationRule::Match(const IPlayer& player, const std::string_view& chatMs
 	return MatchRules(m_Triggers.m_Mode, usernameMatch, chatMsgMatch, avatarMatch, personanameMatch);
 }
 
+bool ModerationRule::Match(const std::string_view& chatMsg) const
+{
+	const auto chatMsgMatch = [&]()
+	{
+		if (!m_Triggers.m_ChatMsgTextMatch)
+			return MatchResult::Unset;
+
+		if (chatMsg.empty())
+			return MatchResult::NoMatch;
+
+		if (!m_Triggers.m_ChatMsgTextMatch->Match(chatMsg))
+			return MatchResult::NoMatch;
+
+		return MatchResult::Match;
+	};
+
+	return MatchRules(m_Triggers.m_Mode, chatMsgMatch);
+}
+
 bool AvatarMatch::Match(const std::string_view& avatarHash) const
 {
 	return m_AvatarHash == avatarHash;
