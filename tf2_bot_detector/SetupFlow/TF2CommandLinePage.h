@@ -45,7 +45,7 @@ namespace tf2_bot_detector
 			bool IsPopulated() const;
 		};
 
-		void DrawAutoLaunchTF2Checkbox(const DrawState& ds);
+		void DrawQuickStartOptions(const DrawState& ds);
 		void DrawTF2LaunchMode(const DrawState& ds);
 		void DrawLaunchTF2Button(const DrawState& ds);
 		void DrawRconStaticParamsCheckbox(const DrawState& ds);

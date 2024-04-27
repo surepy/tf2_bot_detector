@@ -544,8 +544,10 @@ void Settings::Deserialize(const nlohmann::json& json)
 
 			// m_TFBinaryMode
 			try_get_to_defaulted(*custom_values, m_TFBinaryMode, "tf_binary_mode", DEFAULTS.m_TFBinaryMode);
+
+			// m_ShouldCloseWhenTFCloses
+			try_get_to_defaulted(*custom_values, m_ShouldCloseWhenTFCloses, "quit_when_tf_closes", DEFAULTS.m_ShouldCloseWhenTFCloses);
 		}
-		// 
 
 		try_get_to_defaulted(*found, m_LocalSteamIDOverride, "local_steamid_override");
 		try_get_to_defaulted(*found, m_SleepWhenUnfocused, "sleep_when_unfocused");
@@ -630,7 +632,8 @@ void Settings::Serialize(nlohmann::json& json) const
 						{ "use_recommended_launch_params", m_UseLaunchRecommendedParams },
 						{ "min_vote_kick_interval", m_MinVoteKickInterval },
 						{ "vote_kick_ignore_team_state_certain_maps", m_VoteKickIgnoreTeamStateOnCertainMaps },
-						{ "tf_binary_mode", m_TFBinaryMode }
+						{ "tf_binary_mode", m_TFBinaryMode },
+						{ "quit_when_tf_closes", m_ShouldCloseWhenTFCloses }
 					}
 				},
 				{ "sleep_when_unfocused", m_SleepWhenUnfocused },

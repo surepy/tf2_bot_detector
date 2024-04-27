@@ -48,7 +48,6 @@ void TF2CommandLinePage::Data::TryUpdateCmdlineArgs()
 	if (m_CommandLineArgsTask.is_ready())
 	{
 		const auto& args = m_CommandLineArgsTask.get();
-		Log(fmt::format("m_CommandLineArgsTask is ready. (args={})", args.at(0)));
 		m_MultipleInstances = args.size() > 1;
 		if (!m_MultipleInstances)
 		{
@@ -64,8 +63,6 @@ void TF2CommandLinePage::Data::TryUpdateCmdlineArgs()
 
 	if (!m_CommandLineArgsTask.valid())
 	{
-		// See about starting a new update
-		Log("Starting a new m_CommandLineArgsTask.");
 		const auto curTime = clock_t::now();
 		if (!m_AtLeastOneUpdateRun || (curTime >= (m_LastCLUpdate + CL_UPDATE_INTERVAL)))
 		{
@@ -100,6 +97,8 @@ auto TF2CommandLinePage::ValidateSettings(const Settings& settings) const -> Val
 auto TF2CommandLinePage::TF2CommandLine::Parse(const std::string_view& cmdLine) -> TF2CommandLine
 {
 	const auto args = Shell::SplitCommandLineArgs(cmdLine);
+
+	Log("Attempting to parse command line \"{}\"", cmdLine);
 
 	TF2CommandLine cli{};
 	cli.m_FullCommandLine = cmdLine;
@@ -280,7 +279,7 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 #ifdef __linux__
 	if (args.length() > 512) {
 		// the game will not launch, but let's try anyway.
-		LogWarning("args length is >512! (={}) the game might not launch!", args.length());
+		LogWarning("args length is >512! (={}) the game might (will) not launch!", args.length());
 	}
 
 	// bad fix
@@ -372,9 +371,12 @@ bool TF2CommandLinePage::RCONClientData::Update()
 	return m_Success;
 }
 
-void TF2CommandLinePage::DrawAutoLaunchTF2Checkbox(const DrawState& ds)
+void TF2CommandLinePage::DrawQuickStartOptions(const DrawState& ds)
 {
 	if (tf2_bot_detector::AutoLaunchTF2Checkbox(ds.m_Settings->m_AutoLaunchTF2))
+		ds.m_Settings->SaveFile();
+
+	if (tf2_bot_detector::CloseAppOnTFCloseCheckbox(ds.m_Settings->m_ShouldCloseWhenTFCloses))
 		ds.m_Settings->SaveFile();
 }
 
@@ -471,7 +473,7 @@ void TF2CommandLinePage::DrawLaunchTF2Button(const DrawState& ds)
 	ImGui::NewLine();
 	ImGui::Indent();
 
-	DrawAutoLaunchTF2Checkbox(ds);
+	DrawQuickStartOptions(ds);
 	DrawTF2LaunchMode(ds);
 	DrawRconStaticParamsCheckbox(ds);
 }
@@ -544,6 +546,7 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 		else
 		{
 			if (ds.m_Settings->m_Unsaved.m_GameLaunchedAndShouldClose) {
+				Log("Game has Launched once, and we should probably quit.");
 				TF2BotDetectorRendererBase::GetRenderer()->RequestQuit();
 			}
 
@@ -588,7 +591,7 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 		m_Data.m_RCONSuccess = m_Data.m_TestRCONClient.value().Update();
 
 		ImGui::NewLine();
-		DrawAutoLaunchTF2Checkbox(ds);
+		DrawQuickStartOptions(ds);
 	}
 	else
 	{

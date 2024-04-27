@@ -602,6 +602,11 @@ bool tf2_bot_detector::AutoLaunchTF2Checkbox(bool& value)
 	return ImGui::Checkbox("Automatically launch TF2 when TF2 Bot Detector is opened", &value);
 }
 
+bool tf2_bot_detector::CloseAppOnTFCloseCheckbox(bool& value)
+{
+	return ImGui::Checkbox("Automatically close Bot Detector when TF2 quits.", &value);
+}
+
 void tf2_bot_detector::DrawPlayerContextCopyMenu(const char* name, const SteamID& steamID)
 {
 	// Just so we can be 100% sure of who we clicked on

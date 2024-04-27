@@ -34,6 +34,9 @@ void SettingsWindow::OnDraw()
 
 	if (AutoLaunchTF2Checkbox(m_Settings.m_AutoLaunchTF2))
 		m_Settings.SaveFile();
+
+	if (CloseAppOnTFCloseCheckbox(m_Settings.m_ShouldCloseWhenTFCloses))
+		m_Settings.SaveFile();
 }
 
 void SettingsWindow::OnDrawASOSettings()
