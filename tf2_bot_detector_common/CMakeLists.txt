@@ -28,6 +28,6 @@ find_package(fmt CONFIG REQUIRED)
 
 target_link_libraries(tf2_bot_detector_common
 	PUBLIC
-		mh::stuff
 		fmt::fmt
+		mh::stuff
 )

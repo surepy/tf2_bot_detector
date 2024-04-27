@@ -141,7 +141,15 @@ void SettingsWindow::OnDrawModerationSettings()
 				"Looks like: \"Heads up! There are N known cheaters joining the other team! Names unknown until they fully join.\"");
 		}
 
+		{
+			if (ImGui::Checkbox("Send Chat Warnings Once Per Player", &m_Settings.m_ChatWarningSendOnce))
+				m_Settings.SaveFile();
+			ImGui::SetHoverTooltip("Sends chat message warnings once per cheater.");
+		}
+
 		// Chat Warning Frequency
+
+		ImGui::BeginDisabled((&m_Settings.m_ChatWarningSendOnce));
 		{
 			if (ImGui::SliderInt("Chat Warning Frequency", &m_Settings.m_ChatWarningInterval, 2, 60, "%d seconds"))
 				m_Settings.SaveFile();
@@ -157,6 +165,7 @@ void SettingsWindow::OnDrawModerationSettings()
 				);
 			}
 		}
+		ImGui::EndDisabled();
 
 		{
 			if (ImGui::Checkbox("Custom chat message warnings", &m_Settings.m_UseCustomChatWarnings))

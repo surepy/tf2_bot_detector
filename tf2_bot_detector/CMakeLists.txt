@@ -45,7 +45,7 @@ else()
 
 	# in some platforms TBB_IMPORTED_TARGETS = nothing cuz ???
 	target_link_libraries(tf2_bot_detector PUBLIC TBB::tbb TBB::tbbmalloc)
-	target_link_options(tf2_bot_detector PRIVATE -ltbb -lfmt)
+	target_link_options(tf2_bot_detector PRIVATE -ltbb)
 
 	# warnings don't exist if you pretend they don't exist
 	target_compile_options(tf2_bot_detector PRIVATE -w)
