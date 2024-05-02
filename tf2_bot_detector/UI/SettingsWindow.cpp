@@ -149,7 +149,7 @@ void SettingsWindow::OnDrawModerationSettings()
 
 		// Chat Warning Frequency
 
-		ImGui::BeginDisabled((&m_Settings.m_ChatWarningSendOnce));
+		ImGui::BeginDisabled(m_Settings.m_ChatWarningSendOnce);
 		{
 			if (ImGui::SliderInt("Chat Warning Frequency", &m_Settings.m_ChatWarningInterval, 2, 60, "%d seconds"))
 				m_Settings.SaveFile();
