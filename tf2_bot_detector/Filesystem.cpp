@@ -25,7 +25,6 @@ namespace
 		void WriteFile(std::filesystem::path path, const void* begin, const void* end, PathUsage usage) const override;
 
 		std::filesystem::path GetLocalAppDataDir() const override;
-		std::filesystem::path GetRoamingAppDataDir() const override;
 		std::filesystem::path GetTempDir() const override;
 
 		mh::generator<std::filesystem::directory_entry> IterateDir(std::filesystem::path path, bool recursive,
@@ -45,7 +44,6 @@ namespace
 		std::filesystem::path m_WorkingDir;
 #ifndef __linux__
 		std::filesystem::path m_LocalAppDataDir;
-		std::filesystem::path m_RoamingAppDataDir;
 #endif
 		//std::filesystem::path m_MutableDataDir = ChooseMutableDataPath();
 	};
@@ -71,7 +69,6 @@ void Filesystem::Init()
 			m_ExeDir = Platform::GetCurrentExeDir();
 #ifndef __linux__
 			m_LocalAppDataDir = Platform::GetRootLocalAppDataDir() / APPDATA_SUBFOLDER;
-			m_RoamingAppDataDir = Platform::GetRootRoamingAppDataDir() / APPDATA_SUBFOLDER;
 #endif
 			m_SearchPaths.insert(m_SearchPaths.begin(), m_ExeDir);
 
@@ -115,7 +112,6 @@ void Filesystem::Init()
 
 			DebugLog("\tWorkingDir: {}", m_WorkingDir);
 			DebugLog("\tLocalAppDataDir: {}", GetLocalAppDataDir());
-			DebugLog("\tRoamingAppDataDir: {}", GetRoamingAppDataDir());
 			DebugLog("\tTempDir: {}", GetTempDir());
 			std::filesystem::create_directories(GetTempDir());
 		}
@@ -165,13 +161,9 @@ std::filesystem::path Filesystem::ResolvePath(const std::filesystem::path& path,
 			DebugLogWarning(debugMsg);
 			return {};
 		}
-		else if (usage == PathUsage::WriteLocal)
+		else if (usage == PathUsage::WriteLocal || usage == PathUsage::WriteRoaming)
 		{
 			return GetLocalAppDataDir() / path;
-		}
-		else if (usage == PathUsage::WriteRoaming)
-		{
-			return GetRoamingAppDataDir() / path;
 		}
 		else
 		{
@@ -232,13 +224,6 @@ catch (...)
 }
 
 std::filesystem::path Filesystem::GetLocalAppDataDir() const
-{
-	EnsureInit();
-
-	return m_ExeDir;
-}
-
-std::filesystem::path Filesystem::GetRoamingAppDataDir() const
 {
 	EnsureInit();
 

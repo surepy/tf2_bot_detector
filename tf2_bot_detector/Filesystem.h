@@ -35,7 +35,6 @@ namespace tf2_bot_detector
 		virtual std::filesystem::path ResolvePath(const std::filesystem::path& path, PathUsage usage) const = 0;
 
 		virtual std::filesystem::path GetLocalAppDataDir() const = 0;
-		virtual std::filesystem::path GetRoamingAppDataDir() const = 0;
 		virtual std::filesystem::path GetTempDir() const = 0;
 
 		//virtual std::fstream OpenFile(const std::filesystem::path& path) = 0;
@@ -60,7 +59,7 @@ namespace tf2_bot_detector
 		{
 			return baseDataDir / "cfg";
 		}
-		std::filesystem::path GetConfigDir() const { return GetConfigDir(GetRoamingAppDataDir()); }
+		std::filesystem::path GetConfigDir() const { return GetConfigDir(GetLocalAppDataDir()); }
 
 		bool Exists(const std::filesystem::path& path) const
 		{
