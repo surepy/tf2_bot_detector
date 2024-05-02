@@ -155,7 +155,7 @@ void LogManager::Init()
 
 		// console log file
 		{
-			auto logDir = std::filesystem::path("logs") / "console";
+			auto logDir = IFilesystem::Get().GetLogsDir() / "console";
 			std::error_code ec;
 			std::filesystem::create_directories(logDir, ec);
 			if (ec)
@@ -175,7 +175,7 @@ void LogManager::Init()
 
 		// chat log file (not pasted)
 		{
-			auto logDir = std::filesystem::path("logs") / "chat";
+			auto logDir = IFilesystem::Get().GetLogsDir() / "chat";
 			std::error_code ec;
 			std::filesystem::create_directories(logDir, ec);
 			if (ec)
