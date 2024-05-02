@@ -159,7 +159,6 @@ void MainWindow::OnImGuiInit()
 {
 	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
 	SetupFonts();
-	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
 }
 
 void MainWindow::OpenGLInit()
@@ -172,10 +171,6 @@ ImFont* MainWindow::GetFontPointer(Font f) const
 	const auto defaultFont = ImGui::GetIO().Fonts->Fonts[0];
 	switch (f)
 	{
-	default:
-		LogError("Unknown font {}", mh::enum_fmt(f));
-	case Font::ProggyClean_13px:
-		return defaultFont;
 	case Font::ProggyClean_26px:
 		return m_ProggyClean26Font ? m_ProggyClean26Font : defaultFont;
 	case Font::ProggyTiny_10px:
@@ -186,6 +181,10 @@ ImFont* MainWindow::GetFontPointer(Font f) const
 		return m_Unifont14Font ? m_Unifont14Font : defaultFont;
 	case Font::UniFont_24px:
 		return m_Unifont24Font ? m_Unifont24Font : defaultFont;
+	default:
+		LogError("Unknown font {}", mh::enum_fmt(f));
+	case Font::ProggyClean_13px:
+		return defaultFont;
 	}
 }
 
@@ -495,9 +494,6 @@ void MainWindow::OnDrawServerStats()
 
 void MainWindow::OnDraw()
 {
-	ImGui::GetIO().FontDefault = GetFontPointer(m_Settings.m_Theme.m_Font);
-	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
-
 	//if (m_SettingsWindow && m_SettingsWindow->ShouldClose())
 	//	m_SettingsWindow.reset();
 
@@ -827,6 +823,9 @@ void MainWindow::Draw()
 	ImGui::SetNextWindowSize(viewport->WorkSize);
 	ImGui::SetNextWindowViewport(viewport->ID);
 
+	ImGui::PushFont(GetFontPointer(m_Settings.m_Theme.m_Font));
+	ImGui::GetIO().FontGlobalScale = m_Settings.m_Theme.m_GlobalScale;
+
 	if (ImGui::Begin("TF2 Bot Detector", 0, bd_external_flags)) {
 		this->OnDraw();
 		ImGui::End();
@@ -835,6 +834,8 @@ void MainWindow::Draw()
 	this->OnDrawSettings();
 
 	this->OnEndFrame();
+
+	ImGui::PopFont();
 }
 
 bool MainWindow::IsSleepingEnabled() const

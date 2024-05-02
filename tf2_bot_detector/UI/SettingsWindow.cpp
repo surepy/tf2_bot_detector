@@ -456,13 +456,13 @@ void SettingsWindow::OnDrawUISettings()
 				if (!fontPtr)
 					return;
 
+				ImGui::PushFont(fontPtr);
 				if (ImGui::Selectable(GetFontComboString(f), m_Settings.m_Theme.m_Font == f))
 				{
-					//static bool s_HasPushedFont
-					ImGui::GetIO().FontDefault = fontPtr;
 					m_Settings.m_Theme.m_Font = f;
 					m_Settings.SaveFile();
 				}
+				ImGui::PopFont();
 			};
 
 			// FIXME <- fix what please elaborate
