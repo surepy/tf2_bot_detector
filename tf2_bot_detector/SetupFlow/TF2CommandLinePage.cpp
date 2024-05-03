@@ -595,6 +595,10 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 	}
 	else
 	{
+		if (ds.m_Settings->m_ShouldCloseWhenTFCloses) {
+			ds.m_Settings->m_Unsaved.m_GameLaunchedAndShouldClose = true;
+		}
+
 		return OnDrawResult::EndDrawing;
 	}
 
