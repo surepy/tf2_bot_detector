@@ -351,7 +351,7 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 			os << std::quoted(msg);
 
 			// this fix is dogshit, this is actually a terrible way to "fix" this
-			// but i want to write less code rn so this is what you get 
+			// but i want to write less code rn so this is what you get
 			// what this is doing is it's only running through chatMsgMatch (this makes it run it twice)
 			// so it doesn't actually append a chat message to reason when it's an avatar match for example
 			// the proper fix would be changing how rule.Match works and the return data
@@ -474,7 +474,7 @@ void ModeratorLogic::HandleFriendlyCheaters(uint8_t friendlyPlayerCount, uint8_t
 	// determine if we should start over our kick iterator.
 	// FLAW: when there's like two bots in the server, and one joins the moment that one leaves-
 	// there's a chance of this code just missing players, especially when all the bots are not connected.
-	// however this should be fine, because the worst that can happen is 
+	// however this should be fine, because the worst that can happen is
 	auto startOver = [friendlyCheaters] {
 		// we've apparently exhaused our list of cheaters to try,
 		// so we should start over from the first player again.
@@ -563,7 +563,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 	const auto now = tfbd_clock_t::now();
 
 	// There are enough people on the other team to votekick the cheater(s)
-	std::string logMsg = mh::format("Telling the other team about {} cheater(s) named ", enemyCheaters.size());
+	std::string logMsg = fmt::format("Telling the other team about {} cheater(s) named ", enemyCheaters.size());
 
 	const bool isBotLeader = IsBotLeader();
 	bool needsWarning = false;
@@ -573,7 +573,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 	{
 		// Theoretically this should never happen, but don't embarass ourselves
 		if (cheater->GetNameSafe().empty())
-			continue; 
+			continue;
 
 		mh::format_to(std::back_inserter(logMsg), "\n\t{}", cheater);
 
@@ -582,7 +582,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 		// we should warn if either
 		// 1. m_ChatWarningSendOnce is false
 		// 2. m_WarnedOnce is false
-		if (!m_Settings->m_ChatWarningSendOnce || !cheaterData.m_WarnedOnce) {		
+		if (!m_Settings->m_ChatWarningSendOnce || !cheaterData.m_WarnedOnce) {
 			chatMsgCheaterNames.emplace_back(cheater->GetNameSafe());
 		}
 		// we've warned for this guy, dont send again if m_ChatWarningSendOnce is true
@@ -604,7 +604,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 			else
 			{
 				cheaterDebugWarnings.emplace(
-					mh::format("We're not bot leader: {} seconds remaining for ACTIVE cheater(s) ", to_seconds(cheaterData.m_WarningDelayEnd.value() - now)),
+					fmt::format("We're not bot leader: {} seconds remaining for ACTIVE cheater(s) ", to_seconds(cheaterData.m_WarningDelayEnd.value() - now)),
 					cheater);
 			}
 		}
@@ -927,7 +927,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 				fileName = std::filesystem::path(fileName).filename().string();
 			}
 
-			msg += mh::format("{} - {}, ", name, marksToString(marks), fileName);
+			msg += fmt::format("{} - {}, ", name, marksToString(marks), fileName);
 		}
 
 		msg.pop_back();

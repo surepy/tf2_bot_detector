@@ -1,9 +1,9 @@
 #include "SteamAPI.h"
 #include "SteamHistoryAPI.h"
 
-
 #include "HTTPHelpers.h"
 
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
 /// <summary>
@@ -24,16 +24,16 @@ mh::task<tf2_bot_detector::SteamHistoryAPI::PlayerSourceBansResponse>
 {
 	if (steamIDs.empty())
 		co_return{};
-	
+
 	std::string requestSteamIDs = tf2_bot_detector::SteamAPI::GenerateSteamIDsQueryParam(steamIDs, 100);
 	requestSteamIDs.at(0) = '&';
 
 	// copied segments of GenerateSteamAPIURL; consolidate later?
-	
+
 	// Might have an option in the future that you can choose between sh api and roto's api
 	// - which exists (https://bd-api.roto.lol/profile?steamids=<ids, comma seperated> apparently).
 	// in case one or the other goes down.
-	URL requestURL = URL(mh::format(MH_FMT_STRING("https://steamhistory.net/api/sourcebans?shouldkey=1&key={}{}"), apiKey, requestSteamIDs));
+	URL requestURL = URL(fmt::format(MH_FMT_STRING("https://steamhistory.net/api/sourcebans?shouldkey=1&key={}{}"), apiKey, requestSteamIDs));
 
 	auto clientPtr = client.shared_from_this();
 	const std::string data = co_await clientPtr->GetStringAsync(requestURL);
@@ -78,7 +78,7 @@ void tf2_bot_detector::SteamHistoryAPI::from_json(const nlohmann::json& j, Playe
 	}
 
 	d.m_BanState = j.at("CurrentState").get<BanState>();
-	
+
 	if (j.at("BanReason").is_string()) {
 		d.m_BanReason = j.at("BanReason");
 	}

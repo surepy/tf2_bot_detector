@@ -15,6 +15,8 @@
 #include <srcon/srcon.h>
 #include <vdf_parser.hpp>
 
+#include <fmt/format.h>
+
 #include <chrono>
 #include <random>
 #include <ITF2BotDetectorRenderer.h>
@@ -266,7 +268,7 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 	// 437 is the max we can go before tf2 doesn't launch (512 - RecommendedParams.length)
 	if (settings.m_UseLaunchRecommendedParams && args.length() <= 437)
 #else
-	if (settings.m_UseLaunchRecommendedParams) 
+	if (settings.m_UseLaunchRecommendedParams)
 #endif
 	{
 		args
@@ -348,7 +350,7 @@ bool TF2CommandLinePage::RCONClientData::Update()
 					break;
 				default:
 					m_MessageColor = { 1, 1, 0, 1 };
-					m_Message = mh::format("Unexpected error: {}", e.what());
+					m_Message = fmt::format("Unexpected error: {}", e.what());
 					break;
 				}
 				m_Future = {};
@@ -357,7 +359,7 @@ bool TF2CommandLinePage::RCONClientData::Update()
 			{
 				DebugLogWarning(MH_SOURCE_LOCATION_CURRENT(), e.what());
 				m_MessageColor = { 1, 0, 0, 1 };
-				m_Message = mh::format("RCON connection unsuccessful: {}", e.what());
+				m_Message = fmt::format("RCON connection unsuccessful: {}", e.what());
 				m_Future = {};
 			}
 		}
@@ -536,7 +538,7 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 	{
 		if (Platform::Processes::IsTF2Running())
 		{
-			// 
+			//
 			if (ds.m_Settings->m_ShouldCloseWhenTFCloses) {
 				ds.m_Settings->m_Unsaved.m_GameLaunchedAndShouldClose = true;
 			}

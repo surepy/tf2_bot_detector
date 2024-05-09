@@ -29,6 +29,8 @@
 #include <discord-game-sdk/core.h>
 #include <cryptopp/sha.h>
 
+#include <fmt/format.h>
+
 #include <array>
 #include <cassert>
 #include <compare>

@@ -6,6 +6,7 @@
 
 #include <catch2/catch.hpp>
 #include <mh/text/format.hpp>
+#include <fmt/format.h>
 
 namespace Catch
 {
@@ -27,7 +28,7 @@ namespace Catch
 
 		int sync() override
 		{
-			auto message = mh::format("[Catch2] {}", str());
+			auto message = fmt::format("[Catch2] {}", str());
 			switch (m_Type)
 			{
 			case LogBufType::Out:

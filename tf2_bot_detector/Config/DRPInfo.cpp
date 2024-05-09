@@ -90,11 +90,11 @@ void DRPInfo::DRPFile::ValidateSchema(const ConfigSchemaInfo& schema) const
 	BaseClass::ValidateSchema(schema);
 
 	if (schema.m_Type != "discord_rich_presence")
-		throw std::runtime_error(mh::format("Schema {} is not a sponsors list", std::quoted(schema.m_Type)));
+		throw std::runtime_error(fmt::format("Schema {} is not a sponsors list", std::quoted(schema.m_Type)));
 
 	if (schema.m_Version != DRP_SCHEMA_VERSION)
 	{
-		throw std::runtime_error(mh::format("DRP schema must be version {}, but was {}",
+		throw std::runtime_error(fmt::format("DRP schema must be version {}, but was {}",
 			DRP_SCHEMA_VERSION, schema.m_Version));
 	}
 }
