@@ -123,7 +123,7 @@ std::string PlayerSummary::GetAvatarURL(AvatarQuality quality) const
 		break;
 	}
 
-	return mh::format("https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/{0:.2}/{0}{1}.jpg",
+	return fmt::format("https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/{0:.2}/{0}{1}.jpg",
 		m_AvatarHash, qualityStr);
 }
 
@@ -182,7 +182,7 @@ static std::string GenerateSteamAPIURL(const ISteamAPISettings& apiSettings,
 	if (!query.empty())
 		query[0] = '&';
 
-	return mh::format(MH_FMT_STRING("https://api.steampowered.com{}/?key={}{}"), endpoint, apiSettings.GetSteamAPIKey(), query);
+	return fmt::format(MH_FMT_STRING("https://api.steampowered.com{}/?key={}{}"), endpoint, apiSettings.GetSteamAPIKey(), query);
 }
 catch (...)
 {
@@ -312,7 +312,7 @@ mh::task<duration_t> tf2_bot_detector::SteamAPI::GetTF2PlaytimeAsync(
 	}
 
 	std::string url = GenerateSteamAPIURL(apiSettings, "/IPlayerService/GetOwnedGames/v0001",
-		mh::format(MH_FMT_STRING("?input_json=%7B%22appids_filter%22%3A%5B440%5D,%22include_played_free_games%22%3Atrue,%22steamid%22%3A{}%7D"),
+		fmt::format(FMT_STRING("?input_json=%7B%22appids_filter%22%3A%5B440%5D,%22include_played_free_games%22%3Atrue,%22steamid%22%3A{}%7D"),
 			steamID.ID64));
 
 	auto clientPtr = client.shared_from_this();
@@ -350,14 +350,14 @@ mh::task<duration_t> tf2_bot_detector::SteamAPI::GetTF2PlaytimeAsync(
 	if (games->size() != 1)
 	{
 		throw SteamAPIError(ErrorCode::UnexpectedDataFormat,
-			mh::format(MH_FMT_STRING("Unexpected games array size {}"), games->size()));
+			fmt::format(FMT_STRING("Unexpected games array size {}"), games->size()));
 	}
 
 	auto& firstElem = games->at(0);
 	if (uint32_t appid = firstElem.at("appid"); appid != 440)
 	{
 		throw SteamAPIError(ErrorCode::UnexpectedDataFormat,
-			mh::format(MH_FMT_STRING("Unexpected appid {} at response.games[0].appid"), appid));
+			fmt::format(FMT_STRING("Unexpected appid {} at response.games[0].appid"), appid));
 	}
 
 	co_return std::chrono::minutes(firstElem.at("playtime_forever"));
@@ -397,7 +397,7 @@ namespace tf2_bot_detector::SteamAPI
 				return "Steam API support has been disabled via the tool settings.";
 			}
 
-			return mh::format("Unknown SteamAPI error ({})", condition);
+			return fmt::format("Unknown SteamAPI error ({})", condition);
 		}
 	};
 
@@ -422,7 +422,7 @@ mh::task<std::unordered_set<SteamID>> tf2_bot_detector::SteamAPI::GetFriendList(
 		co_return {};
 	}
 
-	auto url = GenerateSteamAPIURL(apiSettings, "/ISteamUser/GetFriendList/v0001", mh::format("?steamid={}", steamID.ID64));
+	auto url = GenerateSteamAPIURL(apiSettings, "/ISteamUser/GetFriendList/v0001", fmt::format("?steamid={}", steamID.ID64));
 
 	auto clientPtr = client.shared_from_this();
 	std::string data = co_await clientPtr->GetStringAsync(url);
@@ -475,7 +475,7 @@ mh::task<PlayerInventoryInfo> SteamAPI::GetTF2InventoryInfoAsync(const ISteamAPI
 	auto clientPtr = client.shared_from_this();
 	std::string data;
 
-	auto url = GenerateSteamAPIURL(apiSettings, "/IEconItems_440/GetPlayerItems/v0001", mh::format("?steamid={}", steamID.ID64));
+	auto url = GenerateSteamAPIURL(apiSettings, "/IEconItems_440/GetPlayerItems/v0001", fmt::format("?steamid={}", steamID.ID64));
 
 	try
 	{

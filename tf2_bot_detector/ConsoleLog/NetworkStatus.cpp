@@ -40,7 +40,7 @@ std::shared_ptr<IConsoleLine> SplitPacketLine::TryParse(const ConsoleLineTryPars
 			else if (socket == "lan"sv)
 				packet.m_SocketType = SocketType::LAN;
 			else
-				throw std::runtime_error(mh::format("Unknown socket type {}", std::quoted(socket)));
+				throw std::runtime_error(fmt::format("Unknown socket type {}", std::quoted(socket)));
 		}
 
 		from_chars_throw(result[2], packet.m_Index);

@@ -137,7 +137,7 @@ std::error_condition tf2_bot_detector::make_error_condition(HTTPResponseCode e)
 				return "Gateway Timeout";
 			}
 
-			return mh::format("<UNKNOWN>(HTTP {})", condition);
+			return fmt::format("<UNKNOWN>(HTTP {})", condition);
 		}
 
 	} static const s_Category;

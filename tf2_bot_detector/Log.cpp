@@ -216,7 +216,7 @@ void LogManager::LogToStream(std::string msg, std::ostream& output, time_point_t
 		WriteToStream(std::cout);
 
 #ifdef _WIN32
-	OutputDebugStringA(mh::format("Log: {}\n", msg).c_str());
+	OutputDebugStringA(fmt::format("Log: {}\n", msg).c_str());
 #endif
 }
 
@@ -263,8 +263,10 @@ void tf2_bot_detector::LogFatalError(const mh::source_location& location, const 
 {
 	LogError(location, msg);
 
+
+
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error",
-		mh::format(
+		fmt::format(
 R"({}
 
 Error source filename: {}:{}
@@ -297,7 +299,7 @@ void tf2_bot_detector::LogException(const mh::source_location& location, const s
 
 	if (severity == LogSeverity::Fatal)
 	{
-		auto dialogText = mh::format(
+		auto dialogText = fmt::format(
 			R"({}
 
 Exception type: {}

@@ -529,7 +529,7 @@ discord::Activity DiscordGameState::ConstructActivity() const
 	if (m_ConnectionState != ConnectionState::Disconnected && !m_MapName.empty())
 	{
 		if (auto map = m_DRPInfo->FindMap(m_MapName))
-			retVal.GetAssets().SetLargeImage(mh::format("map_{}", map->m_MapNames.at(0)).c_str());
+			retVal.GetAssets().SetLargeImage(fmt::format("map_{}", map->m_MapNames.at(0)).c_str());
 		else
 			retVal.GetAssets().SetLargeImage("map_unknown");
 
@@ -595,7 +595,7 @@ discord::Activity DiscordGameState::ConstructActivity() const
 			if (details.empty())
 				details = GetGameState();
 			else
-				details = mh::format("{} - {}", GetGameState(), details);
+				details = fmt::format("{} - {}", GetGameState(), details);
 		}
 	}
 	else

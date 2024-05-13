@@ -168,14 +168,14 @@ namespace tf2_bot_detector
 			const T* defaultMutableList = GetDefaultMutableList();
 			const T* localList = GetLocalList();
 			if (localList)
-				localList->SaveFile(mh::format("cfg/{}.json", GetBaseFileName()));
+				localList->SaveFile(fmt::format("cfg/{}.json", GetBaseFileName()));
 
 			if (defaultMutableList && defaultMutableList != localList)
 			{
 				const std::filesystem::path filename = mh::format("cfg/{}.official.json", GetBaseFileName());
 
 				if (!IsOfficial())
-					throw std::runtime_error(mh::format("Attempted to save non-official data to {}", filename));
+					throw std::runtime_error(fmt::format("Attempted to save non-official data to {}", filename));
 
 				defaultMutableList->SaveFile(filename);
 			}

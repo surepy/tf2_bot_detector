@@ -104,7 +104,7 @@ std::string DRPInfo::Map::GetLargeImageKey() const
 	if (!m_LargeImageKeyOverride.empty())
 		return m_LargeImageKeyOverride;
 
-	return mh::format("map_{}", m_MapNames.at(0));
+	return fmt::format("map_{}", m_MapNames.at(0));
 }
 
 std::string DRPInfo::Map::GetFriendlyName() const

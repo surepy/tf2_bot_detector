@@ -152,7 +152,7 @@ std::filesystem::path Filesystem::ResolvePath(const std::filesystem::path& path,
 				}
 			}
 
-			std::string debugMsg = mh::format("Unable to find {} in any search path. Full search paths [{} paths]:",
+			std::string debugMsg = fmt::format("Unable to find {} in any search path. Full search paths [{} paths]:",
 				path, fullSearchPaths.size());
 
 			for (const std::filesystem::path& fsp : fullSearchPaths)
@@ -167,7 +167,7 @@ std::filesystem::path Filesystem::ResolvePath(const std::filesystem::path& path,
 		}
 		else
 		{
-			throw std::invalid_argument(mh::format("{}: Unknown PathUsage value {}", __FUNCTION__, int(usage)));
+			throw std::invalid_argument(fmt::format("{}: Unknown PathUsage value {}", __FUNCTION__, int(usage)));
 		}
 	});
 

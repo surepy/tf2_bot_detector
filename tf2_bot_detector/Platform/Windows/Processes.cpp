@@ -325,7 +325,7 @@ void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable
 			errorCode << reinterpret_cast<intptr_t>(result);
 			break;
 		}
-		auto exception = std::runtime_error(mh::format("ShellExecuteW returned {}", errorCode));
+		auto exception = std::runtime_error(fmt::format("ShellExecuteW returned {}", errorCode));
 
 		LogException(MH_SOURCE_LOCATION_CURRENT(), exception);
 		throw exception;
