@@ -104,7 +104,7 @@ namespace
 				std::filesystem::remove(testFile, m_ErrorCode);
 				if (m_ErrorCode)
 				{
-					m_ValidationMessage = mh::format(
+					m_ValidationMessage = fmt::format(
 						"Filesystem error when trying to delete {}: {}", testFile, m_ErrorCode);
 					return false;
 				}
@@ -141,7 +141,7 @@ namespace
 		catch (const std::exception& e)
 		{
 			LogException(MH_SOURCE_LOCATION_CURRENT(), e);
-			m_ValidationMessage = mh::format("Exception: {}: {}\n\nPlease report this issue if possible.",
+			m_ValidationMessage = fmt::format("Exception: {}: {}\n\nPlease report this issue if possible.",
 				typeid(e).name(), e.what());
 		}
 	};

@@ -360,7 +360,7 @@ bool TextMatch::Match(const std::string_view& text) const try
 	}
 	}
 
-	throw std::runtime_error(mh::format("{}: Unknown value {}", MH_SOURCE_LOCATION_CURRENT(), mh::enum_fmt(m_Mode)));
+	throw std::runtime_error(mh::format("{}: Unknown value {}", std::source_location::current(), mh::enum_fmt(m_Mode)));
 }
 catch (...)
 {

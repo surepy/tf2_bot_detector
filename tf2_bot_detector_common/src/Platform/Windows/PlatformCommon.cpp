@@ -3,11 +3,11 @@
 #include <mh/text/format.hpp>
 #include <fmt/format.h>
 #include <stdexcept>
-
+#include <source_location>
 #include <Windows.h>
 
 void* tf2_bot_detector::Platform::GetProcAddressHelper(const char* moduleName, const char* symbolName,
-	bool isCritical, const mh::source_location& location)
+	bool isCritical, const std::source_location location)
 {
 	if (!moduleName)
 		throw std::invalid_argument("moduleName was nullptr");
@@ -34,7 +34,7 @@ void* tf2_bot_detector::Platform::GetProcAddressHelper(const char* moduleName, c
 
 		if (isCritical)
 		{
-			throw std::system_error(ec, mh::format(FMT_STRING("{}: Failed to find function {} in {}"), location, symbolName, moduleName));
+			throw std::system_error(ec, fmt::format(FMT_STRING("{}: Failed to find function {} in {}"), std::source_location::current(), symbolName, moduleName));
 		}
 	}
 

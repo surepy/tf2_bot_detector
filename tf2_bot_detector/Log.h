@@ -143,7 +143,7 @@ namespace tf2_bot_detector
 			}
 
 			std::string_view m_Value;
-			mh::source_location m_Location;
+			std::source_location m_Location;
 		};
 	}
 

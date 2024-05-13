@@ -172,7 +172,7 @@ namespace tf2_bot_detector
 
 			if (defaultMutableList && defaultMutableList != localList)
 			{
-				const std::filesystem::path filename = mh::format("cfg/{}.official.json", GetBaseFileName());
+				const std::filesystem::path filename = fmt::format("cfg/{}.official.json", GetBaseFileName());
 
 				if (!IsOfficial())
 					throw std::runtime_error(fmt::format("Attempted to save non-official data to {}", filename));

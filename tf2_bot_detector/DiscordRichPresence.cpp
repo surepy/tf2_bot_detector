@@ -116,7 +116,8 @@ static auto DiscordDebugLog(const mh::source_location& location,
 	if (fmtStr.empty())
 		DebugLog(DISCORD_LOG_COLOR, location);
 	else
-		DebugLog(DISCORD_LOG_COLOR, location, "DRP: {}", mh::format(mh::runtime(fmtStr), args...));
+		DebugLog(DISCORD_LOG_COLOR, location, "DRP: {}", fmt::format(fmt::runtime(fmtStr), args...));
+	// TODO: instead of 
 }
 
 static void DiscordLogHookFunc(discord::LogLevel level, const char* logMsg)
@@ -1027,7 +1028,7 @@ void DiscordState::Update()
 		// Run discord callbacks
 		if (auto result = m_Core->RunCallbacks(); result != discord::Result::Ok)
 		{
-			auto errMsg = mh::format("Failed to run discord callbacks: {}", mh::enum_fmt(result));
+			auto errMsg = fmt::format("Failed to run discord callbacks: {}", mh::enum_fmt(result));
 			switch (result)
 			{
 			case discord::Result::NotRunning:

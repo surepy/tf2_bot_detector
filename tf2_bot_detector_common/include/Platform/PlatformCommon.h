@@ -1,8 +1,10 @@
 #pragma once
 
+#include <source_location>
+// remove me 
 #include <mh/source_location.hpp>
 
 namespace tf2_bot_detector::Platform
 {
-	void* GetProcAddressHelper(const char* moduleName, const char* symbolName, bool isCritical = false, MH_SOURCE_LOCATION_AUTO(location));
+	void* GetProcAddressHelper(const char* moduleName, const char* symbolName, bool isCritical = false, const ::std::source_location location = ::std::source_location::current());
 }
