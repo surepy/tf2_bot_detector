@@ -308,7 +308,7 @@ mh::task<duration_t> tf2_bot_detector::SteamAPI::GetTF2PlaytimeAsync(
 	if (!steamID.IsValid())
 	{
 		throw SteamAPIError(ErrorCode::InvalidSteamID,
-			mh::format(MH_FMT_STRING("Invalid SteamID {}"), steamID));
+			fmt::format(FMT_STRING("Invalid SteamID {}"), steamID));
 	}
 
 	std::string url = GenerateSteamAPIURL(apiSettings, "/IPlayerService/GetOwnedGames/v0001",
@@ -441,8 +441,8 @@ mh::task<std::unordered_set<SteamID>> tf2_bot_detector::SteamAPI::GetFriendList(
 }
 
 tf2_bot_detector::SteamAPI::SteamAPIError::SteamAPIError(
-	std::error_condition code, const std::string_view& detail, const mh::source_location& location) :
-	mh::error_condition_exception(code, mh::format(MH_FMT_STRING("{}: {}"), location, detail)),
+	std::error_condition code, const std::string_view& detail, const std::source_location& location) :
+	mh::error_condition_exception(code, fmt::format(FMT_STRING("{}: {}"), location, detail)),
 	m_SourceLocation(location)
 {
 	if (code != ErrorCode::InfoPrivate && code != ErrorCode::GameNotOwned)

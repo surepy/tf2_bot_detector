@@ -575,7 +575,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 		if (cheater->GetNameSafe().empty())
 			continue;
 
-		mh::format_to(std::back_inserter(logMsg), "\n\t{}", cheater);
+		fmt::format_to(std::back_inserter(logMsg), "\n\t{}", cheater);
 
 		auto& cheaterData = cheater->GetOrCreateData<PlayerExtraData>();
 
@@ -1071,7 +1071,7 @@ bool ModeratorLogic::SetPlayerAttribute(const SteamID& player, std::string name,
 				case AttributePersistence::Transient:  return data.m_TransientAttributes;
 				}
 
-				throw std::invalid_argument(mh::format("{}", MH_SOURCE_LOCATION_CURRENT()));
+				throw std::invalid_argument(mh::format("{}", ::std::source_location::current()));
 			}();
 
 			attributeChanged = attribs.SetAttribute(attribute, set);
@@ -1266,9 +1266,9 @@ bool ModeratorLogic::InitiateVotekick(const IPlayer& player, KickReason reason, 
 
 	if (m_ActionManager->QueueAction<KickAction>(userID.value(), reason))
 	{
-		std::string logMsg = mh::format("InitiateVotekick on {}: {:v}", player, mh::enum_fmt(reason));
+		std::string logMsg = fmt::format("InitiateVotekick on {}: {:v}", player, mh::enum_fmt(reason));
 		if (marks)
-			mh::format_to_container(logMsg, ", in playerlist(s){}", *marks);
+			fmt::format_to(std::back_inserter(logMsg), ", in playerlist(s){}", *marks);
 
 		Log(std::move(logMsg));
 

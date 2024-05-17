@@ -430,7 +430,7 @@ namespace
 
 			bool OnChange(const ConnectionState& newValue) const override
 			{
-				DiscordDebugLog(mh::format("ConnectionState {} -> {}", mh::enum_fmt(get()), mh::enum_fmt(newValue)));
+				DiscordDebugLog(fmt::format("ConnectionState {} -> {}", mh::enum_fmt(get()), mh::enum_fmt(newValue)));
 				return true;
 			}
 

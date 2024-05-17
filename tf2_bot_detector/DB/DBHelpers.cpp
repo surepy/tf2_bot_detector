@@ -11,7 +11,7 @@ using namespace tf2_bot_detector::DB;
 
 IStatementGenerator& IStatementGenerator::TextQuoted(const std::string_view& text)
 {
-	return Text(mh::format("{}", std::quoted(text)));
+	return Text(fmt::format("{}", std::quoted(text)));
 }
 
 void tf2_bot_detector::DB::CreateTable(SQLite::Database& db, const std::string_view& tableName,
@@ -129,7 +129,7 @@ void tf2_bot_detector::DB::InsertInto(SQLite::Database& db, const std::string_vi
 			if (&column != columns.begin())
 				query.append(", ");
 
-			mh::format_to(std::back_inserter(query), "?{}", ++i);
+			fmt::format_to(std::back_inserter(query), "?{}", ++i);
 		}
 	}
 

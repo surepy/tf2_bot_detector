@@ -92,7 +92,7 @@ SteamID::SteamID(const std::string_view& str)
 
 std::string SteamID::str() const
 {
-	return mh::format("{}", *this);
+	return fmt::format("{}", *this);
 }
 
 void tf2_bot_detector::to_json(nlohmann::json& j, const SteamID& d)

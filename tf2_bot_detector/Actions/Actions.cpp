@@ -122,7 +122,7 @@ void tf2_bot_detector::from_json(const nlohmann::json& j, KickReason& d)
 	else if (value == "scamming")
 		d = KickReason::Scamming;
 	else
-		throw std::invalid_argument(mh::format("{}: unexpected value {}", MH_SOURCE_LOCATION_CURRENT(), std::quoted(value)));
+		throw std::invalid_argument(fmt::format("{}: unexpected value {}", ::std::source_location::current(), std::quoted(value)));
 }
 
 

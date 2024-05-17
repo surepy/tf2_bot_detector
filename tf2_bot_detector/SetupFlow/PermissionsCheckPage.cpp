@@ -81,7 +81,7 @@ namespace
 				bool exists = std::filesystem::exists(cfgDir, m_ErrorCode);
 				if (m_ErrorCode)
 				{
-					m_ValidationMessage = mh::format("Filesystem error when checking status of {}: {}", cfgDir, m_ErrorCode);
+					m_ValidationMessage = fmt::format("Filesystem error when checking status of {}: {}", cfgDir, m_ErrorCode);
 					return;
 				}
 
@@ -90,7 +90,7 @@ namespace
 					std::filesystem::create_directories(cfgDir, m_ErrorCode);
 					if (m_ErrorCode)
 					{
-						m_ValidationMessage = mh::format("Filesystem error when creating {}: {}", cfgDir, m_ErrorCode);
+						m_ValidationMessage = fmt::format("Filesystem error when creating {}: {}", cfgDir, m_ErrorCode);
 						return;
 					}
 				}
@@ -120,14 +120,14 @@ namespace
 				std::ofstream file(testFile, std::ios::trunc | std::ios::binary);
 				if (!file.good())
 				{
-					m_ValidationMessage = mh::format("Filesystem error when trying to create {}", testFile);
+					m_ValidationMessage = fmt::format("Filesystem error when trying to create {}", testFile);
 					return;
 				}
 
 				file << "hello world permissions test" << std::flush;
 				if (!file.good())
 				{
-					m_ValidationMessage = mh::format("Filesystem error when writing to {}", testFile);
+					m_ValidationMessage = fmt::format("Filesystem error when writing to {}", testFile);
 					return;
 				}
 			}

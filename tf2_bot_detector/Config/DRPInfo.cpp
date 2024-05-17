@@ -150,7 +150,7 @@ bool DRPInfo::Map::Matches(const std::string_view& mapName) const
 		}
 		catch (const std::exception& e)
 		{
-			LogError(MH_SOURCE_LOCATION_CURRENT(), mh::format("{}: {}", typeid(e).name(), e.what()));
+			LogError(MH_SOURCE_LOCATION_CURRENT(), fmt::format("{}: {}", typeid(e).name(), e.what()));
 		}
 	}
 

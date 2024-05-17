@@ -327,7 +327,7 @@ void tf2_bot_detector::from_json(const nlohmann::json& j, Font& d)
 	else if (value == "unifont_24px")
 		d = Font::UniFont_24px;
 	else
-		throw std::invalid_argument(mh::format("{}: Unknown font {}", mh::source_location::current(), std::quoted(value)));
+		throw std::invalid_argument(fmt::format("{}: Unknown font {}", mh::source_location::current(), std::quoted(value)));
 }
 
 void tf2_bot_detector::to_json(nlohmann::json& j, const ReleaseChannel& d)
@@ -340,7 +340,7 @@ void tf2_bot_detector::to_json(nlohmann::json& j, const ReleaseChannel& d)
 	case ReleaseChannel::Nightly:   j = "nightly"; return;
 	}
 
-	throw std::invalid_argument(mh::format("Unexpected value {}", mh::enum_fmt(d)));
+	throw std::invalid_argument(fmt::format("Unexpected value {}", mh::enum_fmt(d)));
 }
 
 void tf2_bot_detector::from_json(const nlohmann::json& j, ReleaseChannel& d)
