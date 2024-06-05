@@ -22,6 +22,17 @@
 
 #include "nlohmann/json.hpp"
 
+enum ScoreboardColumnID
+{
+	ScoreboardColumnID_ID,
+	ScoreboardColumnID_Name,
+	ScoreboardColumnID_Kills,
+	ScoreboardColumnID_Death,
+	ScoreboardColumnID_Time,
+	ScoreboardColumnID_Ping
+};
+
+
 using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 using namespace tf2_bot_detector;
@@ -31,7 +42,7 @@ void MainWindow::OnDrawScoreboard()
 	const auto& style = ImGui::GetStyle();
 	const auto currentFontScale = ImGui::GetCurrentFontScale();
 
-	constexpr bool forceRecalc = false;
+	constexpr bool forceRecalc = false; // <- this is forever false, what is this for
 
 	static constexpr float contentWidthMin = 500;
 	float contentWidthMinOuter = contentWidthMin + style.WindowPadding.x * 2;
@@ -53,7 +64,6 @@ void MainWindow::OnDrawScoreboard()
 
 	const auto availableSpaceOuter = ImGui::GetContentRegionAvail();
 
-	//ImGui::SetNextWindowContentSizeConstraints(ImVec2(contentWidthMin, -1), ImVec2(-1, -1));
 	float extraScoreboardHeight = 0;
 	if (availableSpaceOuter.x < contentWidthMinOuter)
 	{
@@ -65,6 +75,8 @@ void MainWindow::OnDrawScoreboard()
 	const auto lastScoreboardHeight = s_ScoreboardHeightStorage.Snapshot();
 	const float minScoreboardHeight = ImGui::GetContentRegionAvail().y / (m_Settings.m_UIState.m_MainWindow.m_AppLogEnabled ? 2 : 1);
 	const auto actualScoreboardHeight = std::max(minScoreboardHeight, lastScoreboardHeight.Get()) + extraScoreboardHeight;
+
+	// this shit is ass
 	if (ImGui::BeginChild("Scoreboard", { 0, actualScoreboardHeight }, true, ImGuiWindowFlags_HorizontalScrollbar))
 	{
 		{
@@ -77,61 +89,60 @@ void MainWindow::OnDrawScoreboard()
 				return changed || forceRecalc;
 			}();
 
-			//const auto windowContentWidth = ImGui::GetWindowContentRegionWidth();
 			const auto windowWidth = ImGui::GetWindowWidth();
+
 			ImGui::BeginGroup();
-			ImGui::Columns(7, "PlayersColumns");
+
+			// Real table begins here.
+
+			ImGui::BeginTable("ScoreboardTable", 7, ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoPadInnerX | ImGuiTableFlags_NoPadOuterX);
 
 			// Columns setup
 			{
 				float nameColumnWidth = windowWidth;
 
-				const auto AddColumnHeader = [&](const char* name, float widthOverride = -1)
+				const auto AddColumnHeader = [&](const char* name, int id, ImGuiTableColumnFlags flags = ImGuiTableColumnFlags_None, float widthOverride = 0)
 				{
-					ImGui::TextFmt(name);
-					if (scoreboardResized)
-					{
-						float width;
+					float width;
 
-						if (widthOverride > 0)
-							width = widthOverride * currentFontScale;
-						else
-							width = (ImGui::GetItemRectSize().x + style.ItemSpacing.x * 2);
+					/*
+					if (widthOverride > 0)
+						width = widthOverride * currentFontScale;
+					else
+						width = (ImGui::GetItemRectSize().x + style.ItemSpacing.x * 2);*/
 
-						nameColumnWidth -= width;
-						ImGui::SetColumnWidth(-1, width);
-					}
+					width = widthOverride * currentFontScale;
 
-					ImGui::NextColumn();
+					nameColumnWidth -= width;
+
+					ImGui::TableSetupColumn(name, flags, width);
+					ImGui::TableNextColumn();
 				};
 
-				AddColumnHeader("User ID");
+				AddColumnHeader("User ID", ScoreboardColumnID_ID, ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoResize);
 
 				// Name header and column setup
-				ImGui::TextFmt("Name"); ImGui::NextColumn();
+				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_None | ImGuiTableColumnFlags_WidthStretch, 0.0f, ScoreboardColumnID_Name);
+				ImGui::TableNextColumn();
 
-				AddColumnHeader("Kills");
-				AddColumnHeader("Deaths");
-				AddColumnHeader("Time", 60);
-				AddColumnHeader("Ping");
+				AddColumnHeader("Kills", ScoreboardColumnID_Kills, ImGuiTableColumnFlags_DefaultSort, 20);
+				AddColumnHeader("Deaths", ScoreboardColumnID_Death, ImGuiTableColumnFlags_WidthFixed, 20);
+				AddColumnHeader("Time", ScoreboardColumnID_Time, ImGuiTableColumnFlags_WidthFixed, 60);
+				AddColumnHeader("Ping", ScoreboardColumnID_Ping, ImGuiTableColumnFlags_WidthFixed, 20);
 
 				// SteamID header and column setup
 				{
-					ImGui::TextFmt("Steam ID");
-					if (scoreboardResized)
-					{
-						nameColumnWidth -= 100 * currentFontScale;// +ImGui::GetStyle().ItemSpacing.x * 2;
-						ImGui::SetColumnWidth(1, std::max(10.0f, nameColumnWidth - style.ItemSpacing.x * 2));
-					}
-
-					ImGui::NextColumn();
+					nameColumnWidth -= 100 * currentFontScale;
+					ImGui::TableSetupColumn("Steam ID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, std::max(10.0f, nameColumnWidth - style.ItemSpacing.x * 2), ScoreboardColumnID_Ping);
 				}
-				ImGui::Separator();
 			}
+			//ImGui::TableSetupScrollFreeze();
+			ImGui::TableHeadersRow();
 
 			for (IPlayer& player : m_Application->m_MainState->GeneratePlayerPrintData())
 				OnDrawScoreboardRow(player);
 
+			ImGui::EndTable();
 			ImGui::EndGroup();
 
 			// Save the height of the scoreboard contents so we can resize to fit it next frame
@@ -163,6 +174,9 @@ static ImVec4 BlendColors(const std::array<float, 4>& dstColor, const std::array
 
 void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 {
+	ImGui::TableNextRow();
+	ImGui::TableSetColumnIndex(0);
+
 	if (!m_Settings.m_LazyLoadAPIData)
 		TryGetAvatarTexture(player);
 
@@ -225,7 +239,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 
 		shouldDrawPlayerTooltip = ImGui::IsItemHovered();
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	OnDrawScoreboardContextMenu(player);
@@ -355,7 +369,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 			}
 		}
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Kills column
@@ -365,7 +379,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 		else
 			ImGui::TextRightAlignedF("%u", player.GetScores().m_Kills);
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Deaths column
@@ -375,7 +389,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 		else
 			ImGui::TextRightAlignedF("%u", player.GetScores().m_Deaths);
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Connected time column
@@ -391,7 +405,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 				std::chrono::duration_cast<std::chrono::seconds>(player.GetConnectedTime()).count() % 60);
 		}
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Ping column
@@ -401,7 +415,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 		else
 			ImGui::TextRightAlignedF("%u", player.GetPing());
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Steam ID column
@@ -412,7 +426,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 		else
 			ImGui::TextFmt(str);
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	if (shouldDrawPlayerTooltip)

@@ -22,4 +22,6 @@ namespace tf2_bot_detector
 	void WriteWideFile(const std::filesystem::path& filename, const std::u16string_view& text);
 
 	std::string CollapseNewlines(const std::string_view& input);
+	std::string FilterInvisChars(const std::string_view& input);
+	std::string FilterUnicode(const std::string_view& input);
 }
