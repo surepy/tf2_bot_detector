@@ -3,13 +3,30 @@
 #include "Clock.h"
 
 #include <mh/coroutine/generator.hpp>
-#include <mh/text/format.hpp>
 #include <mh/source_location.hpp>
+#include <mh/reflection/enum.hpp>
+#include <mh/text/format.hpp>
 
 #include <filesystem>
 #include <string>
 
 struct ImVec4;
+
+// copied from mh/format.hpp.
+template<typename... TFmtStr>
+constexpr inline auto try_format(fmt::format_string<TFmtStr...> fmtStr, TFmtStr&&... args)
+-> decltype(fmt::format(fmtStr, std::forward<TFmtStr>(args)...))
+{
+	try
+	{
+		return fmt::format(fmtStr, args...);
+	}
+	catch (const fmt::format_error& e)
+	{
+		// std::quoted can't be evaluated constexpr-ly, so we're just removing std::quoted
+		return fmt::format(FMT_STRING("FORMATTING ERROR: Unable to construct string with fmtstr \"{}\": {}"), fmtStr, e.what());
+	}
+}
 
 namespace tf2_bot_detector
 {
@@ -108,36 +125,43 @@ namespace tf2_bot_detector
 #define NOINLINE __attribute__((noinline)) 
 #endif
 
+
+
 	namespace detail::log_h
 	{
 		void LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility, std::string str);
 		void LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
 			const mh::source_location& location, const std::string_view& str);
 		NOINLINE void LogImplBase(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-			const std::string_view& fmtStr, const mh::format_args& args);
+			const std::string_view& fmtStr, const fmt::format_args& args);
 		NOINLINE void LogImplBase(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-			const mh::source_location& location, const std::string_view& fmtStr, const mh::format_args& args);
+			const std::source_location& location, const std::string_view& fmtStr, const fmt::format_args& args);
 
+		// TODO: make fmtStr not always fmt::runtime() <- possible even?
 		template<typename... TArgs>
-		NOINLINE inline auto LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-		const std::string_view& fmtStr, const TArgs&... args)
-			-> decltype(mh::try_format(mh::runtime(fmtStr), mh::make_format_args(args...)), void())
+		NOINLINE inline auto LogImpl(
+			const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
+			const std::string_view& fmtStr, const TArgs&... args
+		)
+			-> decltype(::try_format(fmt::runtime(fmtStr), fmt::make_format_args(args...)), void())
 		{
-			LogImplBase(color, severity, visibility, fmtStr, mh::make_format_args(args...));
+			LogImplBase(color, severity, visibility, fmtStr, fmt::make_format_args(args...));
 		}
 
 		template<typename... TArgs>
-		NOINLINE inline auto LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-		const mh::source_location& location, const std::string_view& fmtStr, const TArgs&... args)
-			-> decltype(mh::try_format(mh::runtime(fmtStr), mh::make_format_args(args...)), void())
+		NOINLINE inline auto LogImpl(
+			const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
+			const std::source_location& location, const std::string_view& fmtStr, const TArgs&... args
+		)
+			-> decltype(::try_format(fmt::runtime(fmtStr), fmt::make_format_args(args...)), void())
 		{
-			LogImplBase(color, severity, visibility, location, fmtStr, mh::make_format_args(args...));
+			LogImplBase(color, severity, visibility, location, fmtStr, fmt::make_format_args(args...));
 		}
 
 		struct src_location_wrapper
 		{
 			template<typename T, typename = std::enable_if_t<std::is_constructible_v<std::string_view, T>>>
-			constexpr src_location_wrapper(const T& value, MH_SOURCE_LOCATION_AUTO(location)) :
+			constexpr src_location_wrapper(const T& value, const ::std::source_location& location = ::std::source_location::current()) :
 				m_Value(value), m_Location(location)
 			{
 			}
@@ -149,7 +173,7 @@ namespace tf2_bot_detector
 
 #undef LOG_DEFINITION_HELPER
 
-#define LOG_DEFINITION_HELPER(name, defaultColor, severity, visibility) \
+#define LOG_DEFINITION_HELPER_LOGS(name, defaultColor, severity, visibility) \
 	template<typename... TArgs> \
 	inline auto name(const LogMessageColor& color, const mh::source_location& location, const std::string_view& fmtStr, const TArgs&... args) \
 	{ \
@@ -175,23 +199,22 @@ namespace tf2_bot_detector
 	void name(const LogMessageColor& color, MH_SOURCE_LOCATION_AUTO(location)); \
 	void name(MH_SOURCE_LOCATION_AUTO(location));
 
-	LOG_DEFINITION_HELPER(Log, LogColors::DEFAULT, LogSeverity::Info, LogVisibility::Default);
-	LOG_DEFINITION_HELPER(DebugLog, LogColors::DEFAULT_DEBUG, LogSeverity::Info, LogVisibility::Debug);
-	LOG_DEFINITION_HELPER(LogWarning, LogColors::WARN, LogSeverity::Warning, LogVisibility::Default);
-	LOG_DEFINITION_HELPER(DebugLogWarning, LogColors::WARN_DEBUG, LogSeverity::Warning, LogVisibility::Debug);
-	LOG_DEFINITION_HELPER(LogError, LogColors::ERROR, LogSeverity::Error, LogVisibility::Default);
+	LOG_DEFINITION_HELPER_LOGS(Log, LogColors::DEFAULT, LogSeverity::Info, LogVisibility::Default);
+	LOG_DEFINITION_HELPER_LOGS(DebugLog, LogColors::DEFAULT_DEBUG, LogSeverity::Info, LogVisibility::Debug);
+	LOG_DEFINITION_HELPER_LOGS(LogWarning, LogColors::WARN, LogSeverity::Warning, LogVisibility::Default);
+	LOG_DEFINITION_HELPER_LOGS(DebugLogWarning, LogColors::WARN_DEBUG, LogSeverity::Warning, LogVisibility::Debug);
+	LOG_DEFINITION_HELPER_LOGS(LogError, LogColors::ERROR, LogSeverity::Error, LogVisibility::Default);
 
-#undef LOG_DEFINITION_HELPER
 
 	void LogException(const mh::source_location& location, const std::exception_ptr& e,
 		LogSeverity severity, LogVisibility visibility, const std::string_view& msg = {});
 
-#define LOG_DEFINITION_HELPER(name, attr, severity, visibility) \
+#define LOG_DEFINITION_HELPER_DEBUG(name, attr, severity, visibility) \
 	template<typename... TArgs> \
 	attr void name(const mh::source_location& location, const std::exception_ptr& e, \
 		const std::string_view& fmtStr = {}, const TArgs&... args) \
 	{ \
-		LogException(location, e, severity, visibility, mh::format(mh::runtime(fmtStr), args...)); /* NOTE: we're losing compile-time evaluation on fmtStr, but I can't be arsed to bother. */ \
+		LogException(location, e, severity, visibility, fmt::format(fmt::runtime(fmtStr), args...)); /* NOTE: we're losing compile-time evaluation on fmtStr, but I can't be arsed to bother. */ \
 	} \
 	template<typename... TArgs> \
 	attr void name(const std::exception_ptr& e, const detail::log_h::src_location_wrapper& fmtStr = {}, const TArgs&... args) \
@@ -224,11 +247,9 @@ namespace tf2_bot_detector
 	attr void name(MH_SOURCE_LOCATION_AUTO(location)); \
 	attr void name(const std::exception& e, MH_SOURCE_LOCATION_AUTO(location));
 
-	LOG_DEFINITION_HELPER(DebugLogException, , LogSeverity::Error, LogVisibility::Debug);
-	LOG_DEFINITION_HELPER(LogException, , LogSeverity::Error, LogVisibility::Default);
-	LOG_DEFINITION_HELPER(LogFatalException, [[noreturn]], LogSeverity::Fatal, LogVisibility::Default);
-
-#undef LOG_DEFINITION_HELPER
+	LOG_DEFINITION_HELPER_DEBUG(DebugLogException, , LogSeverity::Error, LogVisibility::Debug);
+	LOG_DEFINITION_HELPER_DEBUG(LogException, , LogSeverity::Error, LogVisibility::Default);
+	LOG_DEFINITION_HELPER_DEBUG(LogFatalException, [[noreturn]], LogSeverity::Fatal, LogVisibility::Default);
 
 #undef NOINLINE
 #pragma pop_macro("NOINLINE")

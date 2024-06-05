@@ -97,18 +97,18 @@ static bool s_DiscordDebugLogEnabled = true;
 
 template<typename... TArgs>
 static auto DiscordDebugLog(const std::string_view& fmtStr, const TArgs&... args) ->
-	decltype(mh::format(fmtStr, args...), void())
+	decltype(fmt::format(fmtStr, args...), void())
 {
 	if (!s_DiscordDebugLogEnabled)
 		return;
 
-	DebugLog(DISCORD_LOG_COLOR, "DRP: {}", mh::format(mh::runtime(fmtStr), args...));
+	DebugLog(DISCORD_LOG_COLOR, "DRP: {}", fmt::format(fmt::runtime(fmtStr), args...));
 }
 
 template<typename... TArgs>
-static auto DiscordDebugLog(const mh::source_location& location,
+static auto DiscordDebugLog(const std::source_location& location,
 	const std::string_view& fmtStr = {}, const TArgs&... args) ->
-	decltype(mh::format(fmtStr, args...), void())
+	decltype(fmt::format(fmtStr, args...), void())
 {
 	if (!s_DiscordDebugLogEnabled)
 		return;

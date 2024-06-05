@@ -1071,7 +1071,7 @@ bool ModeratorLogic::SetPlayerAttribute(const SteamID& player, std::string name,
 				case AttributePersistence::Transient:  return data.m_TransientAttributes;
 				}
 
-				throw std::invalid_argument(mh::format("{}", ::std::source_location::current()));
+				throw std::invalid_argument(fmt::format("{}", ::std::source_location::current()));
 			}();
 
 			attributeChanged = attribs.SetAttribute(attribute, set);
