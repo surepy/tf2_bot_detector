@@ -95,7 +95,15 @@ void MainWindow::OnDrawScoreboard()
 
 			// Real table begins here.
 
-			ImGui::BeginTable("ScoreboardTable", 7, ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoPadInnerX | ImGuiTableFlags_NoPadOuterX);
+			ImGuiTableFlags flags = ImGuiTableFlags_NoSavedSettings |
+				ImGuiTableFlags_Resizable |
+				ImGuiTableFlags_Sortable |
+				ImGuiTableFlags_SizingStretchProp |
+				ImGuiTableFlags_NoPadInnerX |
+				ImGuiTableFlags_NoPadOuterX |
+				ImGuiTableFlags_NoBordersInBody;
+
+			ImGui::BeginTable("ScoreboardTable", 7, flags);
 
 			// Columns setup
 			{
@@ -471,6 +479,23 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 		DrawPlayerContextMarkMenu(player.GetSteamID(), player.GetNameSafe(), data.m_pendingReason);
 
+		/*
+		TODO: get moderatorlogic playerextradata and make a checkbox for m_IgnoreRules
+		if (ImGui::BeginMenu("Misc"))
+		{
+			const auto extra_data = player.GetData<IModeratorLogic>();
+			if (extra_data != nullptr) {
+
+			}
+			else {
+
+				ImGui::Checkbox("");
+			}
+
+
+
+			ImGui::EndMenu();
+		}*/
 #ifdef _DEBUG
 		ImGui::Separator();
 
