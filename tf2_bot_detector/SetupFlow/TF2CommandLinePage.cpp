@@ -229,10 +229,10 @@ static std::string FindUserLaunchOptions(const Settings& settings)
 /// <param name="rconPort"></param>
 static void OpenTF2(const Settings& settings, const std::string_view& rconPassword, uint16_t rconPort)
 {
-	const std::filesystem::path hl2Path = settings.GetTFDir() / ".." / settings.GetBinaryName();
+	const std::filesystem::path gameEXE = settings.GetTFDir() / ".." / settings.GetBinaryName();
 
-	if (!std::filesystem::exists(hl2Path)) {
-		LogError("Can't open this file! (empty() returned true) path={}", hl2Path);
+	if (!std::filesystem::exists(gameEXE)) {
+		LogError("Can't open this file! (empty() returned true) path={}", gameEXE);
 		return;
 	}
 
@@ -280,23 +280,21 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 	if (args.length() > 512) {
 		// the game will not launch, but let's try anyway.
 		LogWarning("args length is >512! (={}) the game might (will) not launch!", args.length());
+		// TODO: fail more dramatically, warn the user.
 	}
 
-	// bad fix
-	char* library_path = getenv("LD_LIBRARY_PATH");
-	const std::filesystem::path libPath32 = settings.GetTFDir() / ".." / "bin";
-	const std::filesystem::path libPath64 = settings.GetTFDir() / ".." / "bin" / "linux64";
+	// we have to run w/ sniper runtime lib apparently.
+	// TODO: is this correct path for sniper in all linux vers??
+	// "TF2 requires the sniper container runtime" - tf.sh
+	const std::filesystem::path runtime_sniper = settings.GetSteamDir() / "ubuntu12_64" / "steam-runtime-sniper" / "run";
 
-	std::string new_library_path = fmt::format("{}:{}:$LD_LIBRARY_PATH", libPath32.string(), libPath64.string());
-	Log("[Linux] new LD_LIBRARY_PATH = {}", new_library_path);
-	setenv("LD_LIBRARY_PATH", new_library_path.c_str(), true);
-	setenv("SteamEnv", "1", true);
-#endif
-	Processes::Launch(hl2Path, args);
-#ifdef __linux__
-	if (library_path) {
-		setenv("LD_LIBRARY_PATH", library_path, true);
-	}
+	// run the game with sniper w/ args.
+	// we now use tf.sh to handle libraries instead of calling tf_linux64 directly and handling libraries ourselves.
+	std::string sniper_args = fmt::format("\"{}\" -- \"{}\"", gameEXE.string(), args);
+	Processes::Launch(runtime_sniper, sniper_args);
+#else
+	// if not linux we don't have to do all of that and just launch the game.
+	Processes::Launch(gameEXE, args);
 #endif
 }
 
