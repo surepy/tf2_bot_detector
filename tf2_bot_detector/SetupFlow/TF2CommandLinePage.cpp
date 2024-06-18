@@ -290,7 +290,11 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 
 	// run the game with sniper w/ args.
 	// we now use tf.sh to handle libraries instead of calling tf_linux64 directly and handling libraries ourselves.
-	std::string sniper_args = fmt::format("\"{}\" -- \"{}\"", gameEXE.string(), args);
+	std::string sniper_args = fmt::format("--steam-app-id=440 --systemd-scope --keep-game-overlay \"{}\" -- {}", gameEXE.string(), args);
+	// probably do not need
+	setenv("SteamEnv", "1", true);
+
+	// getenv("TF2BD_TF2_LD_PRELOAD")
 	Processes::Launch(runtime_sniper, sniper_args);
 #else
 	// if not linux we don't have to do all of that and just launch the game.
