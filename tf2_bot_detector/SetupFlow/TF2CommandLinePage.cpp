@@ -284,16 +284,31 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 	}
 
 	// we have to run w/ sniper runtime lib apparently.
-	// TODO: is this correct path for sniper in all linux vers??
 	// "TF2 requires the sniper container runtime" - tf.sh
-	const std::filesystem::path runtime_sniper = settings.GetSteamDir() / "ubuntu12_64" / "steam-runtime-sniper" / "run";
+	const std::filesystem::path runtime_sniper = settings.GetSteamDir()/"steamapps"/"common"/"SteamLinuxRuntime_sniper"/"run";
 
 	// run the game with sniper w/ args.
 	// we now use tf.sh to handle libraries instead of calling tf_linux64 directly and handling libraries ourselves.
 	std::string sniper_args = fmt::format("--steam-app-id=440 --systemd-scope --keep-game-overlay \"{}\" -- {}", gameEXE.string(), args);
 	// probably do not need
 	setenv("SteamEnv", "1", true);
+	/*
+	setenv("PRESSURE_VESSEL_PREFIX", "1", true);
+	setenv("PRESSURE_VESSEL_VARIABLE_DIR", "1", true);
+	// TODO: disable game overlay if the user wants it disabled
+	
+	setenv("LD_PRELOAD", "1", true);
 
+	setenv("STEAM_RUNTIME", "1", true);
+
+	// copied from "steam-runtime-launch-options -- %command% -novid"
+	// https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/docs/slr-for-game-developers.md#using-steam-runtime-launch-options
+	std::string tf2_cmd = fmt::format("{} {}", gameEXE, args);
+	const std::string sniper_entrypoint = fmt::format("{}/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun -- {}", settings.GetSteamDir(), tf2_cmd);
+	const std::string steam_launch_wrapper = fmt::format("{}/ubuntu12_32/steam-launch-wrapper -- {}", settings.GetSteamDir(), sniper_entrypoint);
+	// steam reaper
+	const std::string final_cmd = fmt::format("{}/ubuntu12_32/reaper SteamLaunch AppId=440 -- {}", settings.GetSteamDir(), steam_launch_wrapper);
+	*/
 	// getenv("TF2BD_TF2_LD_PRELOAD")
 	Processes::Launch(runtime_sniper, sniper_args);
 #else
