@@ -291,6 +291,7 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 	Log("[Linux] new LD_LIBRARY_PATH = {}", new_library_path);
 	setenv("LD_LIBRARY_PATH", new_library_path.c_str(), true);
 	setenv("SteamEnv", "1", true);
+	// TODO: manually set SDL_DYNAMIC_API (see #37)
 #endif
 	Processes::Launch(hl2Path, args);
 #ifdef __linux__

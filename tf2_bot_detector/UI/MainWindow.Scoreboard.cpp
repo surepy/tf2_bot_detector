@@ -29,7 +29,8 @@ enum ScoreboardColumnID
 	ScoreboardColumnID_Kills,
 	ScoreboardColumnID_Death,
 	ScoreboardColumnID_Time,
-	ScoreboardColumnID_Ping
+	ScoreboardColumnID_Ping,
+	ScoreboardColumnID_SteamID
 };
 
 
@@ -71,98 +72,42 @@ void MainWindow::OnDrawScoreboard()
 		extraScoreboardHeight += style.ScrollbarSize;
 	}
 
-	static ImGuiDesktop::Storage<float> s_ScoreboardHeightStorage;
-	const auto lastScoreboardHeight = s_ScoreboardHeightStorage.Snapshot();
-	const float minScoreboardHeight = ImGui::GetContentRegionAvail().y / (m_Settings.m_UIState.m_MainWindow.m_AppLogEnabled ? 2 : 1);
-	const auto actualScoreboardHeight = std::max(minScoreboardHeight, lastScoreboardHeight.Get()) + extraScoreboardHeight;
+	const float scoreboardHeight = ImGui::GetContentRegionAvail().y / (m_Settings.m_UIState.m_MainWindow.m_AppLogEnabled ? 2 : 1);
 
 	// this shit is ass
-	if (ImGui::BeginChild("Scoreboard", { 0, actualScoreboardHeight }, true, ImGuiWindowFlags_HorizontalScrollbar))
+	if (ImGui::BeginChild("Scoreboard", { 0, scoreboardHeight + extraScoreboardHeight }, true, ImGuiWindowFlags_HorizontalScrollbar))
 	{
 		{
-			static ImVec2 s_LastFrameSize;
-			const bool scoreboardResized = [&]()
-			{
-				const auto thisFrameSize = ImGui::GetWindowSize();
-				const bool changed = s_LastFrameSize != thisFrameSize;
-				s_LastFrameSize = thisFrameSize;
-				return changed || forceRecalc;
-			}();
-
-			const auto windowWidth = ImGui::GetWindowWidth();
-
-			ImGui::BeginGroup();
-
 			// Real table begins here.
-
 			ImGuiTableFlags flags = ImGuiTableFlags_NoSavedSettings |
 				ImGuiTableFlags_Resizable |
 				ImGuiTableFlags_Sortable |
-				ImGuiTableFlags_SizingStretchProp |
-				ImGuiTableFlags_NoPadInnerX |
-				ImGuiTableFlags_NoPadOuterX |
-				ImGuiTableFlags_NoBordersInBody;
+				ImGuiTableFlags_SizingStretchSame;
 
-			ImGui::BeginTable("ScoreboardTable", 7, flags);
-
-			// Columns setup
-			{
-				float nameColumnWidth = windowWidth;
-
-				const auto AddColumnHeader = [&](const char* name, int id, ImGuiTableColumnFlags flags = ImGuiTableColumnFlags_None, float widthOverride = 0)
-				{
-					float width;
-
-					/*
-					if (widthOverride > 0)
-						width = widthOverride * currentFontScale;
-					else
-						width = (ImGui::GetItemRectSize().x + style.ItemSpacing.x * 2);*/
-
-					width = widthOverride * currentFontScale;
-
-					nameColumnWidth -= width;
-
-					ImGui::TableSetupColumn(name, flags, width);
-					ImGui::TableNextColumn();
-				};
-
-				AddColumnHeader("User ID", ScoreboardColumnID_ID, ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoResize);
-
+			if (ImGui::BeginTable("ScoreboardTable", 7, flags)) {
 				// Name header and column setup
-				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_None | ImGuiTableColumnFlags_WidthStretch, 0.0f, ScoreboardColumnID_Name);
-				ImGui::TableNextColumn();
-
-				AddColumnHeader("Kills", ScoreboardColumnID_Kills, ImGuiTableColumnFlags_DefaultSort, 20);
-				AddColumnHeader("Deaths", ScoreboardColumnID_Death, ImGuiTableColumnFlags_WidthFixed, 20);
-				AddColumnHeader("Time", ScoreboardColumnID_Time, ImGuiTableColumnFlags_WidthFixed, 60);
-				AddColumnHeader("Ping", ScoreboardColumnID_Ping, ImGuiTableColumnFlags_WidthFixed, 20);
-
-				// SteamID header and column setup
 				{
-					nameColumnWidth -= 100 * currentFontScale;
-					ImGui::TableSetupColumn("Steam ID", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize, std::max(10.0f, nameColumnWidth - style.ItemSpacing.x * 2), ScoreboardColumnID_Ping);
+					ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoResize, .5f, ScoreboardColumnID_ID);
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_None, 2.5f, ScoreboardColumnID_Name);
+					ImGui::TableSetupColumn("Kills", ImGuiTableColumnFlags_None, .6f, ScoreboardColumnID_Kills);
+					ImGui::TableSetupColumn("Deaths", ImGuiTableColumnFlags_None, .6f, ScoreboardColumnID_Kills);
+					ImGui::TableSetupColumn("Time", ImGuiTableColumnFlags_None, .75f, ScoreboardColumnID_Kills);
+					ImGui::TableSetupColumn("Ping", ImGuiTableColumnFlags_None, .5f, ScoreboardColumnID_Kills);
+					ImGui::TableSetupColumn("Steam ID", ImGuiTableColumnFlags_None, 1.5f, ScoreboardColumnID_SteamID);
 				}
-			}
-			//ImGui::TableSetupScrollFreeze();
-			ImGui::TableHeadersRow();
 
-			for (IPlayer& player : m_Application->m_MainState->GeneratePlayerPrintData())
-				OnDrawScoreboardRow(player);
+				//ImGui::TableSetupScrollFreeze();
+				ImGui::TableHeadersRow();
+				
+				for (IPlayer& player : m_Application->m_MainState->GeneratePlayerPrintData())
+					OnDrawScoreboardRow(player);
 
-			ImGui::EndTable();
-			ImGui::EndGroup();
-
-			// Save the height of the scoreboard contents so we can resize to fit it next frame
-			{
-				float height = ImGui::GetItemRectSize().y;
-				height += style.WindowPadding.y * 2;
-				lastScoreboardHeight = height;
+				ImGui::EndTable();
 			}
 		}
-	}
 
-	ImGui::EndChild();
+		ImGui::EndChild();
+	}
 }
 
 // src/dest terminology is mirroring that of opengl: dest color is the base color, src color is the color we are blending towards
@@ -429,12 +374,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 	// Steam ID column
 	{
 		const auto str = player.GetSteamID().str();
-		if (player.GetSteamID().Type != SteamAccountType::Invalid)
-			ImGui::TextFmt(ImGui::GetStyle().Colors[ImGuiCol_Text], str);
-		else
-			ImGui::TextFmt(str);
-
-		ImGui::TableNextColumn();
+		ImGui::TextFmt(str);
 	}
 
 	if (shouldDrawPlayerTooltip)
@@ -491,8 +431,6 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 				ImGui::Checkbox("");
 			}
-
-
 
 			ImGui::EndMenu();
 		}*/
