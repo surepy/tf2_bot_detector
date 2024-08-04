@@ -80,13 +80,11 @@ void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable
     std::string execute_command;
 
     // TODO: implement elevated?
-
     execute_command = fmt::format("{} {}", executable, args);
-    // we need to change cwd apparently
+    // we need to change cwd apparently?
     execute_command = fmt::format("cd {} && {} &", executable.parent_path(), execute_command);
     Log(execute_command);
 
-    
     system(execute_command.c_str());
 }
 
