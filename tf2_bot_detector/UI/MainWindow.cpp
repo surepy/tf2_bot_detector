@@ -516,6 +516,8 @@ void MainWindow::OnDraw()
 	const auto& mainWindowState = m_Settings.m_UIState.m_MainWindow;
 	const bool columnsEnabled = (mainWindowState.m_ChatEnabled && (mainWindowState.m_AppLogEnabled || mainWindowState.m_ScoreboardEnabled));
 
+	// TODO: make this.... not using the columns api.
+	// for now i am lazy.
 	if (columnsEnabled)
 		ImGui::Columns(2, "MainWindowSplit");
 

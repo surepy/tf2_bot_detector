@@ -32,3 +32,13 @@ std::string IPlayer::GetNameSafe() const
 {
 	return CollapseNewlines(GetNameUnsafe());
 }
+
+std::string IPlayer::GetNameSafe_NoInvis() const
+{
+	return FilterInvisChars(GetNameSafe());
+}
+
+std::string IPlayer::GetNameAscii() const
+{
+	return FilterUnicode(GetNameSafe());
+}
