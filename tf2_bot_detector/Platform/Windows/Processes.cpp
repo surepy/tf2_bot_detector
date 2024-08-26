@@ -174,7 +174,7 @@ mh::task<std::vector<std::string>> tf2_bot_detector::Processes::GetTF2CommandLin
 {
 	try
 	{
-		CHECK_HR(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
+		CHECK_HR(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED));
 
 		ComPtr<IWbemLocator> pLoc;
 		CHECK_HR(CoCreateInstance(
