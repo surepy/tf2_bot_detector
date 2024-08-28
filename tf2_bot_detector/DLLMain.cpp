@@ -67,10 +67,14 @@ namespace tf2_bot_detector
 /// <returns></returns>
 TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** argv)
 {
-	DebugLog("Hello from RunProgram!");
+#if _WIN32
+	OutputDebugStringA("Hello from RunProgram (pre-log!)");
+#endif
 	{
 		IFilesystem::Get().Init();
 		ILogManager::GetInstance().Init();
+
+		DebugLog("Hello from RunProgram!");
 
 		std::string forwarded_arg;
 		bool running_from_steam = false;
