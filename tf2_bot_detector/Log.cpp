@@ -66,7 +66,7 @@ namespace
 		std::filesystem::path m_FileName;
 		std::optional<std::stringstream> m_TempLogs = std::stringstream();   // Logs before we have been initialized
 		std::optional<std::ofstream> m_File;
-		mutable std::recursive_mutex m_LogMutex;
+		mutable std::recursive_mutex m_LogMutex = std::recursive_mutex(); // crash on #42
 		std::deque<LogMessage> m_LogMessages;
 		size_t m_VisibleLogMessagesStart = 0;
 

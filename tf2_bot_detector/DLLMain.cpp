@@ -71,8 +71,8 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** 
 	OutputDebugStringA("Hello from RunProgram (pre-log!)");
 #endif
 	{
-		IFilesystem::Get().Init();
 		ILogManager::GetInstance().Init();
+		IFilesystem::Get().Init();
 
 		DebugLog("Hello from RunProgram!");
 
