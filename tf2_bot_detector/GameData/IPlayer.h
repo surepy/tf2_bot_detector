@@ -64,6 +64,10 @@ namespace tf2_bot_detector
 
 		// Player name with evil characters collapsed/removed
 		std::string GetNameSafe() const;
+		// (real) Player name with evil characters collapsed/removed
+		std::string GetNameSafe_NoInvis() const;
+		// Player name with only ascii characters.
+		std::string GetNameAscii() const;
 
 		virtual SteamID GetSteamID() const = 0;
 		virtual const mh::expected<SteamAPI::PlayerSummary>& GetPlayerSummary() const = 0;

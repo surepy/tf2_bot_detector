@@ -104,6 +104,11 @@ namespace
 			// same as above, but we don't want to spam party chat.
 			bool m_PartyWarned = false;
 
+			// ignore rules for this player
+			// reason: if you have a hilariously agressive rule and
+			//  don't want to call this person out constantly 
+			bool m_IgnoreRules = false;
+
 			// If we're not the bot leader, prevent this player from triggering
 			// any warnings (but still participates in other warnings!!!)
 			std::optional<time_point_t> m_ConnectingWarningDelayEnd;
@@ -285,6 +290,11 @@ void ModeratorLogic::OnPlayerStatusUpdate(IWorldState& world, const IPlayer& pla
 
 	if (m_Settings->m_AutoMark)
 	{
+		const auto extra_data = player.GetData<PlayerExtraData>();
+		if (extra_data != nullptr && extra_data->m_IgnoreRules) {
+			return;
+		}
+
 		for (const ModerationRule& rule : m_Rules.GetRules())
 		{
 			if (!rule.Match(player))
@@ -339,6 +349,12 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 
 	if (m_Settings->m_AutoMark && !botMsgDetected)
 	{
+		// ignore any rule processing for this player.
+		const auto extra_data = player.GetData<PlayerExtraData>();
+		if (extra_data != nullptr && extra_data->m_IgnoreRules) {
+			return;
+		}
+
 		for (const ModerationRule& rule : m_Rules.GetRules())
 		{
 			if (!rule.Match(player, msg))

@@ -3,6 +3,13 @@
 #include "Clock.h"
 #include "Log.h"
 
+#ifdef _WIN32
+// https://developercommunity.visualstudio.com/t/Access-violation-in-_Thrd_yield-after-up/10664660
+// https://stackoverflow.com/questions/44998460/c-stdmutex-lock-access-violation-in-visual-studio-2017
+// thank you mr microsoft
+#define _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR 
+#endif
+
 #include <mutex>
 #include <unordered_set>
 

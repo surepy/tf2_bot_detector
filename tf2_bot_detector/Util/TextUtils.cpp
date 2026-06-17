@@ -7,6 +7,7 @@
 
 #include <codecvt>
 #include <fstream>
+#include <set>
 
 using namespace std::string_literals;
 
@@ -159,5 +160,34 @@ std::string tf2_bot_detector::CollapseNewlines(const std::string_view& input)
 		firstLine = false;
 	}
 
+	return retVal;
+}
+
+/*
+const static std::set<std::string> common_invis_chars = {
+	"\u0e3a", // 0xE0 0xB8 0xBA 0x00
+	"\u0e4a", // 0xE0 0xB9 0x8A 0x00
+	"\u0e47", // 0xE0 0xB9 0x87 0x00
+	"\u0e48", // 0xE0 0xB9 0x87 0x00
+};*/
+
+// TODO
+std::string tf2_bot_detector::FilterInvisChars(const std::string_view& input)
+{
+	std::string retVal = std::string(input);
+
+
+	return retVal;
+}
+
+bool is_not_unicode(char c)
+{
+	return !(c >= 0 && c < 128);
+}
+
+std::string tf2_bot_detector::FilterUnicode(const std::string_view& input)
+{
+	std::string retVal = std::string(input);
+	retVal.erase(std::remove_if(retVal.begin(), retVal.end(), is_not_unicode), retVal.end());
 	return retVal;
 }

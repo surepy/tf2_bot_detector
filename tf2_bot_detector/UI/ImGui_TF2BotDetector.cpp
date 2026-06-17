@@ -41,7 +41,7 @@ void ImGui::TextRightAligned(const std::string_view& text, float offsetX)
 	const auto textSize = ImGui::CalcTextSize(text.data(), text.data() + text.size());
 
 	float cursorPosX = ImGui::GetCursorPosX();
-	cursorPosX += ImGui::GetColumnWidth();// ImGui::GetContentRegionAvail().x;
+	cursorPosX += ImGui::GetContentRegionAvail().x;
 	cursorPosX -= textSize.x;
 	cursorPosX -= 2 * ImGui::GetStyle().ItemSpacing.x;
 	cursorPosX -= offsetX;

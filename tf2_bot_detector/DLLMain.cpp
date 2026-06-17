@@ -67,11 +67,14 @@ namespace tf2_bot_detector
 /// <returns></returns>
 TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram(int argc, const char** argv)
 {
-	DebugLog("Hello from RunProgram!");
-	
+#if _WIN32
+	OutputDebugStringA("Hello from RunProgram (pre-log!)");
+#endif
 	{
 		IFilesystem::Get().Init();
 		ILogManager::GetInstance().Init();
+
+		DebugLog("Hello from RunProgram!");
 
 		std::string forwarded_arg;
 		bool running_from_steam = false;
@@ -221,7 +224,7 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram()
 		const auto err = std::error_code(10035, std::system_category());
 		const auto errMsg = err.message();
 
-		CHECK_HR(CoInitializeEx(nullptr, COINIT_MULTITHREADED));
+		CHECK_HR(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED));
 
 		CHECK_HR(CoInitializeSecurity(NULL,
 			-1,                          // COM authentication
@@ -242,76 +245,5 @@ TF2_BOT_DETECTOR_EXPORT int tf2_bot_detector::RunProgram()
 
 	return RunProgram(argc, argv.data());
 }
-
-
-#ifdef TF2BD_OVERLAY_BUILD
-/// <summary>
-/// Run program into an overlay mode (directx/gl/vk* - endscene)
-///
-/// uses dummy device method to hook d3d9.
-///
-/// TODO: if we ever make a linux build or whatever, we should probably consider that too.
-/// </summary>
-/// <param name="ignored"></param>
-void tf2_bot_detector::RunProgramOverlay(HMODULE module) {
-	// game isn't running
-	while (FindWindowA("Valve001", 0) == 0)
-		Sleep(100);
-
-	DebugLog("Initializing TF2BDApplication (Overlay!)...");
-	TF2BotDetectorD3D9Renderer* renderer = new TF2BotDetectorD3D9Renderer();
-
-	std::shared_ptr<TF2BDApplication> app = std::make_shared<TF2BDApplication>();
-
-	MainWindow* mainwin = new MainWindow(app.get());
-
-	// register our draw function to endscene hook draw callback
-	renderer->RegisterDrawCallback([mainwin]() { mainwin->Draw(); });
-
-	// do tf2bd logic here
-	// TODO: a way to quit
-	while (true) {
-		if (app->ShouldUpdate()) {
-			app->Update();
-		}
-	}
-
-	/*
-	// client/engine isnt running
-	while (GetModuleHandleA("client.dll") == 0 || GetModuleHandleA("engine.dll") == 0)
-		Sleep(100);
-	*/
-
-	// clean up and exit
-	FreeLibraryAndExitThread(module, 0);
-}
-
-/// <summary>
-/// entry for tf2bd/overlay 
-/// </summary>
-/// <param name="hinstDLL"></param>
-/// <param name="fdwReason"></param>
-/// <param name="lpReserved"></param>
-/// <returns></returns>
-BOOL WINAPI DllMain(
-	HINSTANCE hinstDLL,  // handle to DLL module.
-	DWORD fdwReason,     // reason for calling function.
-	LPVOID lpReserved)  // reserved.
-{
-	// Perform actions based on the reason for calling.
-	switch (fdwReason) {
-	case DLL_PROCESS_ATTACH:
-#ifdef TF2BD_OVERLAY_BUILD
-		MessageBoxA(NULL, "WARN: This launch configuration is potentially VAC insecure, you have been warned.", "Injected!", MB_OK | MB_ICONEXCLAMATION);
-		CreateThread(nullptr, NULL, (LPTHREAD_START_ROUTINE)tf2_bot_detector::RunProgramOverlay, nullptr, NULL, nullptr);
-#endif // TF2BD_OVERLAY_BUILD
-		break;
-	case DLL_PROCESS_DETACH:
-		break;
-	}
-
-	return TRUE;  // Successful DLL_PROCESS_ATTACH.
-}
-#endif
 
 #endif

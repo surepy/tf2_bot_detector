@@ -22,6 +22,18 @@
 
 #include "nlohmann/json.hpp"
 
+enum ScoreboardColumnID
+{
+	ScoreboardColumnID_ID,
+	ScoreboardColumnID_Name,
+	ScoreboardColumnID_Kills,
+	ScoreboardColumnID_Death,
+	ScoreboardColumnID_Time,
+	ScoreboardColumnID_Ping,
+	ScoreboardColumnID_SteamID
+};
+
+
 using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 using namespace tf2_bot_detector;
@@ -31,7 +43,7 @@ void MainWindow::OnDrawScoreboard()
 	const auto& style = ImGui::GetStyle();
 	const auto currentFontScale = ImGui::GetCurrentFontScale();
 
-	constexpr bool forceRecalc = false;
+	constexpr bool forceRecalc = false; // <- this is forever false, what is this for
 
 	static constexpr float contentWidthMin = 500;
 	float contentWidthMinOuter = contentWidthMin + style.WindowPadding.x * 2;
@@ -53,7 +65,6 @@ void MainWindow::OnDrawScoreboard()
 
 	const auto availableSpaceOuter = ImGui::GetContentRegionAvail();
 
-	//ImGui::SetNextWindowContentSizeConstraints(ImVec2(contentWidthMin, -1), ImVec2(-1, -1));
 	float extraScoreboardHeight = 0;
 	if (availableSpaceOuter.x < contentWidthMinOuter)
 	{
@@ -61,89 +72,127 @@ void MainWindow::OnDrawScoreboard()
 		extraScoreboardHeight += style.ScrollbarSize;
 	}
 
-	static ImGuiDesktop::Storage<float> s_ScoreboardHeightStorage;
-	const auto lastScoreboardHeight = s_ScoreboardHeightStorage.Snapshot();
-	const float minScoreboardHeight = ImGui::GetContentRegionAvail().y / (m_Settings.m_UIState.m_MainWindow.m_AppLogEnabled ? 2 : 1);
-	const auto actualScoreboardHeight = std::max(minScoreboardHeight, lastScoreboardHeight.Get()) + extraScoreboardHeight;
-	if (ImGui::BeginChild("Scoreboard", { 0, actualScoreboardHeight }, true, ImGuiWindowFlags_HorizontalScrollbar))
+	// kind of ugly number of 1.5, but applog takes too much space...
+	const float scoreboardHeight = ImGui::GetContentRegionAvail().y / (m_Settings.m_UIState.m_MainWindow.m_AppLogEnabled ? 1.5f : 1);
+
+	// this shit is ass
+	if (ImGui::BeginChild("Scoreboard", { 0, scoreboardHeight + extraScoreboardHeight }, true, ImGuiWindowFlags_HorizontalScrollbar))
 	{
 		{
-			static ImVec2 s_LastFrameSize;
-			const bool scoreboardResized = [&]()
-			{
-				const auto thisFrameSize = ImGui::GetWindowSize();
-				const bool changed = s_LastFrameSize != thisFrameSize;
-				s_LastFrameSize = thisFrameSize;
-				return changed || forceRecalc;
-			}();
+			// Real table begins here.
+			ImGuiTableFlags flags = ImGuiTableFlags_NoSavedSettings |
+				ImGuiTableFlags_Resizable |
+				ImGuiTableFlags_Sortable |
+				ImGuiTableFlags_SizingStretchSame;
 
-			//const auto windowContentWidth = ImGui::GetWindowContentRegionWidth();
-			const auto windowWidth = ImGui::GetWindowWidth();
-			ImGui::BeginGroup();
-			ImGui::Columns(7, "PlayersColumns");
-
-			// Columns setup
-			{
-				float nameColumnWidth = windowWidth;
-
-				const auto AddColumnHeader = [&](const char* name, float widthOverride = -1)
-				{
-					ImGui::TextFmt(name);
-					if (scoreboardResized)
-					{
-						float width;
-
-						if (widthOverride > 0)
-							width = widthOverride * currentFontScale;
-						else
-							width = (ImGui::GetItemRectSize().x + style.ItemSpacing.x * 2);
-
-						nameColumnWidth -= width;
-						ImGui::SetColumnWidth(-1, width);
-					}
-
-					ImGui::NextColumn();
-				};
-
-				AddColumnHeader("User ID");
-
+			if (ImGui::BeginTable("ScoreboardTable", 7, flags)) {
 				// Name header and column setup
-				ImGui::TextFmt("Name"); ImGui::NextColumn();
-
-				AddColumnHeader("Kills");
-				AddColumnHeader("Deaths");
-				AddColumnHeader("Time", 60);
-				AddColumnHeader("Ping");
-
-				// SteamID header and column setup
 				{
-					ImGui::TextFmt("Steam ID");
-					if (scoreboardResized)
-					{
-						nameColumnWidth -= 100 * currentFontScale;// +ImGui::GetStyle().ItemSpacing.x * 2;
-						ImGui::SetColumnWidth(1, std::max(10.0f, nameColumnWidth - style.ItemSpacing.x * 2));
+					ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_NoResize, .5f, ScoreboardColumnID_ID);
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_None, 2.5f, ScoreboardColumnID_Name);
+					ImGui::TableSetupColumn("Kills", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_PreferSortDescending, .6f, ScoreboardColumnID_Kills);
+					ImGui::TableSetupColumn("Deaths", ImGuiTableColumnFlags_None | ImGuiTableColumnFlags_PreferSortDescending, .6f, ScoreboardColumnID_Death);
+					ImGui::TableSetupColumn("Time", ImGuiTableColumnFlags_None, .75f, ScoreboardColumnID_Time);
+					ImGui::TableSetupColumn("Ping", ImGuiTableColumnFlags_None, .5f, ScoreboardColumnID_Ping);
+					ImGui::TableSetupColumn("Steam ID", ImGuiTableColumnFlags_None, 1.5f, ScoreboardColumnID_SteamID);
+				}
+
+				//ImGui::TableSetupScrollFreeze();
+				ImGui::TableHeadersRow();
+
+				// this is mostly copied from m_Application->m_MainState->GeneratePlayerPrintData().
+				// 100 = player compatiblilty.
+				static IPlayer* printData[100] { nullptr };
+
+				// we regenerate this array every frame, so.
+				auto& world = m_Application->GetWorld();
+				auto begin = std::begin(printData);
+				auto end = std::end(printData);
+
+				// fill the array with tables copied from world state.
+				{
+					auto* current = begin;
+
+					// try to use lobby data and copy it over to playerprintdata.
+					for (IPlayer& member : world.GetLobbyMembers()) {
+						*current = &member;
+						current++;
 					}
 
-					ImGui::NextColumn();
+					// We seem to have either an empty lobby or we're playing on a community server.
+					// Just find the most recent status updates.
+					if (current == begin) {
+						for (IPlayer& playerData : world.GetPlayers()) {
+							// i fail to understand what this check is for, but whatever.
+							if (playerData.GetLastStatusUpdateTime() >= (world.GetLastStatusUpdateTime() - 15s))
+							{
+								*current = &playerData;
+								current++;
+
+								if (current >= end)
+									break; // This might happen, but we're not in a lobby so everything has to be approximate
+							}
+						}
+					}
+
+					end = current;
 				}
-				ImGui::Separator();
-			}
 
-			for (IPlayer& player : m_Application->m_MainState->GeneratePlayerPrintData())
-				OnDrawScoreboardRow(player);
 
-			ImGui::EndGroup();
+				ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs();
 
-			// Save the height of the scoreboard contents so we can resize to fit it next frame
-			{
-				float height = ImGui::GetItemRectSize().y;
-				height += style.WindowPadding.y * 2;
-				lastScoreboardHeight = height;
+				std::sort(begin, end, [&sort_specs](const IPlayer* lhs, const IPlayer* rhs) -> bool {
+					assert(lhs);
+					assert(rhs);
+
+					// copied from CompareWithSortSpecs in imgui_demo.
+					for (int n = 0; n < sort_specs->SpecsCount; n++)
+					{
+						const ImGuiTableColumnSortSpecs* sort_spec = &sort_specs->Specs[n];
+
+						int delta = 0;
+
+
+						switch (sort_spec->ColumnUserID)
+						{
+						case ScoreboardColumnID_ID: {
+							auto luid = lhs->GetUserID();
+							auto ruid = rhs->GetUserID();
+							if (luid && ruid)
+							{
+								delta = luid.value() - ruid.value();
+							}
+							break;
+						}
+						case ScoreboardColumnID_Name: delta = strcmp(lhs->GetNameUnsafe().c_str(), rhs->GetNameUnsafe().c_str()); break;
+						case ScoreboardColumnID_Kills: delta = lhs->GetScores().m_Kills - rhs->GetScores().m_Kills; break;
+						case ScoreboardColumnID_Death: delta = lhs->GetScores().m_Deaths - rhs->GetScores().m_Deaths; break;
+						case ScoreboardColumnID_Time: delta = lhs->GetConnectedTime() > rhs->GetConnectedTime() ? 1 : -1 ; break;
+						case ScoreboardColumnID_Ping: delta = lhs->GetPing() - rhs->GetPing(); break;
+						case ScoreboardColumnID_SteamID: delta = lhs->GetSteamID().ID > rhs->GetSteamID().ID ? 1 : -1 ; break;
+						default: break;
+						}
+
+						// lhs is bigger than rhs.
+						if (delta != 0)
+							return sort_spec->SortDirection == ImGuiSortDirection_Ascending ? delta < 0 : delta > 0 ;
+					}
+
+					// we couldn't sort using the specs so its like whatever i guess
+					return false;
+				});
+
+				// draw the sorted players
+				std::for_each(begin, end, [&](IPlayer* p) -> void {
+					OnDrawScoreboardRow(*p);
+				});
+
+				ImGui::EndTable();
 			}
 		}
-	}
 
-	ImGui::EndChild();
+		ImGui::EndChild();
+	}
 }
 
 // src/dest terminology is mirroring that of opengl: dest color is the base color, src color is the color we are blending towards
@@ -163,6 +212,9 @@ static ImVec4 BlendColors(const std::array<float, 4>& dstColor, const std::array
 
 void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 {
+	ImGui::TableNextRow();
+	ImGui::TableSetColumnIndex(0);
+
 	if (!m_Settings.m_LazyLoadAPIData)
 		TryGetAvatarTexture(player);
 
@@ -225,7 +277,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 
 		shouldDrawPlayerTooltip = ImGui::IsItemHovered();
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	OnDrawScoreboardContextMenu(player);
@@ -355,7 +407,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 			}
 		}
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Kills column
@@ -365,7 +417,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 		else
 			ImGui::TextRightAlignedF("%u", player.GetScores().m_Kills);
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Deaths column
@@ -375,7 +427,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 		else
 			ImGui::TextRightAlignedF("%u", player.GetScores().m_Deaths);
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Connected time column
@@ -391,7 +443,7 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 				std::chrono::duration_cast<std::chrono::seconds>(player.GetConnectedTime()).count() % 60);
 		}
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Ping column
@@ -401,18 +453,13 @@ void MainWindow::OnDrawScoreboardRow(IPlayer& player)
 		else
 			ImGui::TextRightAlignedF("%u", player.GetPing());
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 
 	// Steam ID column
 	{
 		const auto str = player.GetSteamID().str();
-		if (player.GetSteamID().Type != SteamAccountType::Invalid)
-			ImGui::TextFmt(ImGui::GetStyle().Colors[ImGuiCol_Text], str);
-		else
-			ImGui::TextFmt(str);
-
-		ImGui::NextColumn();
+		ImGui::TextFmt(str);
 	}
 
 	if (shouldDrawPlayerTooltip)
@@ -457,6 +504,21 @@ void MainWindow::OnDrawScoreboardContextMenu(IPlayer& player)
 
 		DrawPlayerContextMarkMenu(player.GetSteamID(), player.GetNameSafe(), data.m_pendingReason);
 
+		/*
+		TODO: get moderatorlogic playerextradata and make a checkbox for m_IgnoreRules
+		if (ImGui::BeginMenu("Misc"))
+		{
+			const auto extra_data = player.GetData<IModeratorLogic>();
+			if (extra_data != nullptr) {
+
+			}
+			else {
+
+				ImGui::Checkbox("");
+			}
+
+			ImGui::EndMenu();
+		}*/
 #ifdef _DEBUG
 		ImGui::Separator();
 
