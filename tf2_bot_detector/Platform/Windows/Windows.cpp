@@ -11,6 +11,7 @@
 #include <mh/error/exception_details.hpp>
 #include <mh/text/codecvt.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>

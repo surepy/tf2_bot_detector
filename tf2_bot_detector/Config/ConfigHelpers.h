@@ -5,6 +5,7 @@
 #include <mh/coroutine/thread.hpp>
 #include <mh/reflection/enum.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>
@@ -286,3 +287,6 @@ namespace std
 {
 	template<> struct is_error_condition_enum<tf2_bot_detector::ConfigErrorType> : true_type {};
 }
+
+// fmt 10 removed the implicit operator<< fallback; opt ConfigSchemaInfo in explicitly.
+template<> struct fmt::formatter<tf2_bot_detector::ConfigSchemaInfo> : fmt::ostream_formatter {};

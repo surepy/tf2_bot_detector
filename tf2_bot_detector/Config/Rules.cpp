@@ -330,7 +330,7 @@ bool TextMatch::Match(const std::string_view& text) const try
 				}
 				catch (const std::regex_error&)
 				{
-					LogException("Regex error when trying to match {} against pattern {}", std::quoted(text), std::quoted(pattern));
+					LogException("Regex error when trying to match {} against pattern {}", fmt::streamed(std::quoted(text)), fmt::streamed(std::quoted(pattern)));
 					return false;
 				}
 			});
@@ -364,7 +364,7 @@ bool TextMatch::Match(const std::string_view& text) const try
 }
 catch (...)
 {
-	LogException("Error when trying to match against {}", std::quoted(text));
+	LogException("Error when trying to match against {}", fmt::streamed(std::quoted(text)));
 	throw;
 }
 

@@ -78,7 +78,7 @@ void tf2_bot_detector::Shell::ExploreTo(const std::filesystem::path& path)
 
 void tf2_bot_detector::Shell::OpenURL(const char* url)
 {
-	DebugLog(MH_SOURCE_LOCATION_CURRENT(), "{}", std::quoted(url));
+	DebugLog(MH_SOURCE_LOCATION_CURRENT(), "{}", fmt::streamed(std::quoted(url)));
 	ShellExecuteA(NULL, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
 }
 

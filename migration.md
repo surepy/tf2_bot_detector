@@ -64,6 +64,35 @@ Fix: a tiny **`mh::stuff` INTERFACE target** (`mh_vendored`) is defined *before*
 `add_subdirectory(submodules/SourceRCON)`, pointing at the vendored headers. SourceRCON sees
 the target already exists, skips the fetch, and compiles against the vendored `mh/`.
 
+## fmt bump: 8.1.1 → 10.2.1 (done)
+
+With the wrapper gone, fmt was bumped in `vcpkg.json` (override + `version>=`) to **10.2.1**
+— the max the pinned vcpkg registry offers. (fmt 11/12 need a newer vcpkg submodule + baseline;
+deferred.) Removing the wrapper was *necessary but not sufficient* — the codebase itself relied
+on fmt-8 behaviors that fmt 9.0/10 removed. The fixes:
+
+- **`std::quoted` (~41 fmt-arg sites)** — fmt 9/10 dropped the implicit `operator<<` fallback.
+  Wrapped each fmt-context use with `fmt::streamed(std::quoted(...))` (left the ~43 raw
+  `operator<<` uses untouched — those still work). `std::quoted`'s return type is
+  implementation-defined, so it can't be fixed with a central formatter.
+- **`operator<<`-only types** (`SteamID` already had one; added `ConfigSchemaInfo`, `URL`,
+  `Version`, `IPlayer`, `HumanDuration`, `DifferingLobbyReceivedLine::Lobby`) — opted in with
+  `template<> struct fmt::formatter<T> : fmt::ostream_formatter {};`. For the anon-namespace
+  `ModeratorLogic::Cheater` (can't specialize a formatter for an internal type) the call sites
+  use `fmt::streamed(...)` instead.
+- **`std::filesystem::path`** — fmt 10 formats it via `<fmt/std.h>` (added to the fmt umbrella).
+- **`mh::fmtstr`/`pfstr` as format args** — added `fmt::formatter` specializations in the
+  vendored `fmtstr.hpp` (formats the buffer's `.view()`).
+- **`std::put_time`** — replaced with fmt's native `std::tm` formatting (`{:%Y-%m-%d_%H-%M-%S}`).
+- **formatter `format()` must be `const`** in fmt 10 — fixed the `PlayerListJSON` formatters and
+  the rewritten vendored ones.
+- **`std::source_location`** — fmt 10's `<fmt/std.h>` ships a *full* `formatter<std::source_location>`.
+  Our vendored `mh/source_location.hpp` formatter is a *partial* spec (`<…, CharT>`), so they
+  legally coexist (full wins for `char`). Net effect: log location format shifted from
+  `file(line):func` to fmt's `file:line:col`. No code used our custom `{:p}/{:l}/{:f}` specs, so
+  nothing broke. (Could delete our custom source_location formatter as cleanup — it's now dead
+  for `char`.)
+
 ## Follow-ups (not done yet)
 
 - [ ] **Drop the `mh::stuff` shim entirely.** SourceRCON's *only* mh usage is
@@ -74,8 +103,9 @@ the target already exists, skips the fetch, and compiles against the vendored `m
   until the build is fully green so the originals stay available for reference.
 - [ ] **Prune unused vendored headers.** The whole `mh/` tree was copied to get green with low
   risk; headers that nothing includes can be deleted later.
-- [ ] **Bump fmt** past 8.1.1 in `vcpkg.json` now that the wrapper is gone (and drop the
-  `_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING` workaround in
-  `tf2_bot_detector_common/CMakeLists.txt` once on fmt 10.1.1).
+- [ ] **fmt 11/12** would require bumping the vcpkg submodule + `builtin-baseline` to a 2025+
+  commit (re-resolves all ports). Also drop the `_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING`
+  workaround in `tf2_bot_detector_common/CMakeLists.txt` once comfortably past fmt 10.1.1.
+- [ ] Delete the now-dead custom `fmt::formatter<mh::source_location>` (fmt 10 provides one).
 - [ ] Consider eventually moving the vendored `mh/` headers under their own namespace if full
   de-`mh`-ification is wanted (kept `mh::` here to minimize churn).

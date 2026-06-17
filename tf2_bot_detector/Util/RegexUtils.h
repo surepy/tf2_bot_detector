@@ -2,6 +2,7 @@
 
 #include <mh/text/charconv_helper.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>
@@ -34,7 +35,7 @@ namespace tf2_bot_detector
 		auto result = mh::from_chars(sv, out, std::forward<TArgs>(args)...);
 		if (!result)
 		{
-			throw std::runtime_error(fmt::format("Failed to parse {} as {}", std::quoted(sv), typeid(T).name()));
+			throw std::runtime_error(fmt::format("Failed to parse {} as {}", fmt::streamed(std::quoted(sv)), typeid(T).name()));
 		}
 	}
 }

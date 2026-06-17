@@ -16,6 +16,7 @@
 #include <vdf_parser.hpp>
 
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>
@@ -213,7 +214,7 @@ static std::string FindUserLaunchOptions(const Settings& settings)
 			return {}; // User has never set any launch options
 		}
 
-		DebugLog("Found user-specified TF2 command line args in {}: {}", configPath, std::quoted(keyIter->second));
+		DebugLog("Found user-specified TF2 command line args in {}: {}", configPath, fmt::streamed(std::quoted(keyIter->second)));
 		return keyIter->second; // Return launch options
 	}
 	catch (const std::exception&)
@@ -603,7 +604,7 @@ auto TF2CommandLinePage::OnDraw(const DrawState& ds) -> OnDrawResult
 	{
 		auto& args = m_Data.m_CommandLineArgs.value();
 		ImGui::TextFmt("Connecting to TF2 on 127.0.0.1:{} with password {}...",
-			args.m_RCONPort.value(), std::quoted(args.m_RCONPassword));
+			args.m_RCONPort.value(), fmt::streamed(std::quoted(args.m_RCONPassword)));
 
 		if (!m_Data.m_TestRCONClient) {
 			m_Data.m_TestRCONClient.emplace(args.m_RCONPassword, args.m_RCONPort.value());

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fmt/ostream.h>
+
 #include <cassert>
 #include <chrono>
 #include <ctime>
@@ -128,3 +130,7 @@ namespace tf2_bot_detector
 		return os;
 	}
 }
+
+// fmt 10 removed the implicit operator<< fallback; opt HumanDuration in explicitly.
+template<typename TRep, typename TPeriod>
+struct fmt::formatter<tf2_bot_detector::HumanDuration<TRep, TPeriod>> : fmt::ostream_formatter {};

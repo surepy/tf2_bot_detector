@@ -3,6 +3,7 @@
 #include "Util/RegexUtils.h"
 
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>
@@ -93,7 +94,7 @@ void DRPInfo::DRPFile::ValidateSchema(const ConfigSchemaInfo& schema) const
 	BaseClass::ValidateSchema(schema);
 
 	if (schema.m_Type != "discord_rich_presence")
-		throw std::runtime_error(fmt::format("Schema {} is not a sponsors list", std::quoted(schema.m_Type)));
+		throw std::runtime_error(fmt::format("Schema {} is not a sponsors list", fmt::streamed(std::quoted(schema.m_Type))));
 
 	if (schema.m_Version != DRP_SCHEMA_VERSION)
 	{

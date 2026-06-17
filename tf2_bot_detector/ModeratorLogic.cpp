@@ -15,6 +15,8 @@
 #include "WorldState.h"
 #include "Networking/SteamAPI.h"
 
+#include <fmt/ostream.h>
+
 #include <mh/algorithm/algorithm_generic.hpp>
 #include <mh/algorithm/multi_compare.hpp>
 #include <mh/text/case_insensitive_string.hpp>
@@ -269,17 +271,17 @@ void ModeratorLogic::OnRuleMatch(const ModerationRule& rule, const IPlayer& play
 	for (PlayerAttribute attribute : rule.m_Actions.m_Mark)
 	{
 		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, true, fmt::format("[auto] automatically marked: {} | reason: {}", to_string(attribute), reason)))
-			Log("Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
+			Log("Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), fmt::streamed(std::quoted(rule.m_Description)));
 	}
 	for (PlayerAttribute attribute : rule.m_Actions.m_TransientMark)
 	{
 		if (SetPlayerAttribute(player, attribute, AttributePersistence::Transient))
-			Log("[TRANSIENT] Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
+			Log("[TRANSIENT] Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), fmt::streamed(std::quoted(rule.m_Description)));
 	}
 	for (PlayerAttribute attribute : rule.m_Actions.m_Unmark)
 	{
 		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, false))
-			Log("Unmarked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
+			Log("Unmarked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), fmt::streamed(std::quoted(rule.m_Description)));
 	}
 }
 
@@ -334,7 +336,7 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 	{
 		if (auto localPlayer = GetLocalPlayer(); localPlayer && (player.GetSteamID() != localPlayer->GetSteamID()) && botMsgDetected)
 		{
-			Log("Detected message from {} as another instance of TF2BD: {}", player, std::quoted(msg));
+			Log("Detected message from {} as another instance of TF2BD: {}", player, fmt::streamed(std::quoted(msg)));
 			SetUserRunningTool(player, true);
 
 			if (player.GetUserID() < localPlayer->GetUserID())
@@ -591,7 +593,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 		if (cheater->GetNameSafe().empty())
 			continue;
 
-		fmt::format_to(std::back_inserter(logMsg), "\n\t{}", cheater);
+		fmt::format_to(std::back_inserter(logMsg), "\n\t{}", fmt::streamed(cheater));
 
 		auto& cheaterData = cheater->GetOrCreateData<PlayerExtraData>();
 
@@ -642,7 +644,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 				if (it != cheatersBegin)
 					msgFmt.puts(", ");
 
-				msgFmt.fmt("{}", it->second);
+				msgFmt.fmt("{}", fmt::streamed(it->second));
 			}
 		});
 
@@ -767,7 +769,7 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 		if (isBotLeader)
 		{
 			// We're supposedly in charge
-			DebugLog("We're bot leader: Triggered connecting warning for {}", cheater);
+			DebugLog("We're bot leader: Triggered connecting warning for {}", fmt::streamed(cheater));
 			needsWarning = true;
 			break;
 		}
@@ -775,19 +777,19 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 		{
 			if (now >= cheaterData.m_ConnectingWarningDelayEnd)
 			{
-				DebugLog("We're not bot leader: Delay expired for connecting cheater {}", cheater);
+				DebugLog("We're not bot leader: Delay expired for connecting cheater {}", fmt::streamed(cheater));
 				needsWarning = true;
 				break;
 			}
 			else
 			{
 				DebugLog("We're not bot leader: {} seconds remaining for connecting cheater {}",
-					to_seconds(cheaterData.m_ConnectingWarningDelayEnd.value() - now), cheater);
+					to_seconds(cheaterData.m_ConnectingWarningDelayEnd.value() - now), fmt::streamed(cheater));
 			}
 		}
 		else if (!cheaterData.m_ConnectingWarningDelayEnd.has_value())
 		{
-			DebugLog("We're not bot leader: Starting delay for connecting cheater {}", cheater);
+			DebugLog("We're not bot leader: Starting delay for connecting cheater {}", fmt::streamed(cheater));
 			cheaterData.m_ConnectingWarningDelayEnd = now + CHEATER_WARNING_DELAY;
 		}
 	}

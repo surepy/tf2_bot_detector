@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nlohmann/json_fwd.hpp>
+#include <fmt/ostream.h>
 
 #include <compare>
 #include <cstdint>
@@ -59,3 +60,6 @@ namespace tf2_bot_detector
 		return os;
 	}
 }
+
+// fmt 10 removed the implicit operator<< fallback; opt Version in explicitly.
+template<> struct fmt::formatter<tf2_bot_detector::Version> : fmt::ostream_formatter {};

@@ -4,6 +4,7 @@
 #include "Log.h"
 
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>
@@ -43,7 +44,7 @@ std::shared_ptr<IConsoleLine> SplitPacketLine::TryParse(const ConsoleLineTryPars
 			else if (socket == "lan"sv)
 				packet.m_SocketType = SocketType::LAN;
 			else
-				throw std::runtime_error(fmt::format("Unknown socket type {}", std::quoted(socket)));
+				throw std::runtime_error(fmt::format("Unknown socket type {}", fmt::streamed(std::quoted(socket))));
 		}
 
 		from_chars_throw(result[2], packet.m_Index);
@@ -110,7 +111,7 @@ std::shared_ptr<IConsoleLine> NetStatusConfigLine::TryParse(const ConsoleLineTry
 			playerMode = PlayerMode::Singleplayer;
 		else
 		{
-			LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown player mode {}", std::quoted(playerModeStr));
+			LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown player mode {}", fmt::streamed(std::quoted(playerModeStr)));
 			return nullptr;
 		}
 
@@ -122,7 +123,7 @@ std::shared_ptr<IConsoleLine> NetStatusConfigLine::TryParse(const ConsoleLineTry
 			serverMode = ServerMode::Listen;
 		else
 		{
-			LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown server mode {}", std::quoted(serverModeStr));
+			LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown server mode {}", fmt::streamed(std::quoted(serverModeStr)));
 			return nullptr;
 		}
 

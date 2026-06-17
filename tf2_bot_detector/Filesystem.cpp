@@ -4,6 +4,7 @@
 
 #include <mh/concurrency/thread_sentinel.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>

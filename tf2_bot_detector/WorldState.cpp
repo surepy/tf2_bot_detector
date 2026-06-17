@@ -520,7 +520,7 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 		auto& chatLine = static_cast<const ChatConsoleLine&>(parsed);
 		if (auto sid = FindSteamIDForName(chatLine.GetPlayerName()))
 		{
-			DebugLog("Chat message from {}: {}", *sid, std::quoted(chatLine.GetMessage()));
+			DebugLog("Chat message from {}: {}", *sid, fmt::streamed(std::quoted(chatLine.GetMessage())));
 			if (auto player = FindPlayer(*sid))
 			{
 				InvokeEventListener(&IWorldEventListener::OnChatMsg, *this, *player, chatLine.GetMessage());
@@ -528,13 +528,13 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 			else
 			{
 				LogWarning("Dropped chat message with unknown IPlayer from {} ({})",
-					std::quoted(chatLine.GetPlayerName()), std::quoted(chatLine.GetMessage()));
+					fmt::streamed(std::quoted(chatLine.GetPlayerName())), fmt::streamed(std::quoted(chatLine.GetMessage())));
 			}
 		}
 		else
 		{
 			LogWarning("Dropped chat message with unknown SteamID from {}: {}",
-				std::quoted(chatLine.GetPlayerName()), std::quoted(chatLine.GetMessage()));
+				fmt::streamed(std::quoted(chatLine.GetPlayerName())), fmt::streamed(std::quoted(chatLine.GetMessage())));
 		}
 
 		if (m_Settings.m_SaveChatHistory) {
@@ -577,13 +577,13 @@ void WorldState::OnConsoleLineParsed(IWorldState& world, IConsoleLine& parsed)
 			else
 			{
 				LogWarning("Dropped \"player dropped\" message with unknown IPlayer from {} ({})",
-					std::quoted(dropLine.GetPlayerName()), *sid);
+					fmt::streamed(std::quoted(dropLine.GetPlayerName())), *sid);
 			}
 		}
 		else
 		{
 			LogWarning("Dropped \"player dropped\" message with unknown SteamID from {}",
-				std::quoted(dropLine.GetPlayerName()));
+				fmt::streamed(std::quoted(dropLine.GetPlayerName())));
 		}
 		break;
 	}

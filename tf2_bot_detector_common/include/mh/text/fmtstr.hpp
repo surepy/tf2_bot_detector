@@ -186,3 +186,25 @@ inline std::basic_ostream<CharT, Traits>& operator<<(
 {
 	return os << str.view();
 }
+
+// fmt 10 needs an explicit formatter; format the fixed-buffer string as its view.
+template<size_t N, typename CharT, typename Traits>
+struct fmt::formatter<mh::format_string<N, CharT, Traits>, CharT>
+	: fmt::formatter<std::basic_string_view<CharT, Traits>, CharT>
+{
+	template<typename FormatContext>
+	auto format(const mh::format_string<N, CharT, Traits>& str, FormatContext& ctx) const
+	{
+		return fmt::formatter<std::basic_string_view<CharT, Traits>, CharT>::format(str.view(), ctx);
+	}
+};
+template<size_t N, typename CharT, typename Traits>
+struct fmt::formatter<mh::printf_string<N, CharT, Traits>, CharT>
+	: fmt::formatter<std::basic_string_view<CharT, Traits>, CharT>
+{
+	template<typename FormatContext>
+	auto format(const mh::printf_string<N, CharT, Traits>& str, FormatContext& ctx) const
+	{
+		return fmt::formatter<std::basic_string_view<CharT, Traits>, CharT>::format(str.view(), ctx);
+	}
+};

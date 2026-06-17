@@ -149,3 +149,6 @@ std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>&
 	else
 		return os << *player;
 }
+
+// fmt 10 removed the implicit operator<< fallback; opt IPlayer in explicitly.
+template<> struct fmt::formatter<tf2_bot_detector::IPlayer> : fmt::ostream_formatter {};

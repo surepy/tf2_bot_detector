@@ -8,6 +8,7 @@
 #include <mh/text/codecvt.hpp>
 #include <mh/text/fmtstr.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>
@@ -54,12 +55,12 @@ catch (const fmt::format_error& e)
 	using char_type_t = std::decay_t<decltype(fmtStr[0])>;
 	if constexpr (std::is_same_v<char_type_t, char>)
 	{
-		return fmt::format(FMT_STRING("FORMATTING ERROR: Unable to construct string with fmtstr {}: {}"), std::quoted(fmtStr), e.what());
+		return fmt::format(FMT_STRING("FORMATTING ERROR: Unable to construct string with fmtstr {}: {}"), fmt::streamed(std::quoted(fmtStr)), e.what());
 	}
 	else if constexpr (std::is_same_v<char_type_t, wchar_t>)
 	{
 		// Can't print error message from exception because fmt does not handle conversion from char -> wchar_t on its own unfortunately
-		return fmt::format(FMT_STRING(L"FORMATTING ERROR: Unable to construct string with fmtstr {}"), std::quoted(fmtStr));
+		return fmt::format(FMT_STRING(L"FORMATTING ERROR: Unable to construct string with fmtstr {}"), fmt::streamed(std::quoted(fmtStr)));
 	}
 	else
 	{
@@ -150,7 +151,7 @@ void LogManager::Init()
 		std::lock_guard lock(m_LogMutex);
 
 		const auto t = ToTM(tfbd_clock_t::now());
-		const mh::fmtstr<128> timestampStr("{}", std::put_time(&t, "%Y-%m-%d_%H-%M-%S"));
+		const mh::fmtstr<128> timestampStr("{:%Y-%m-%d_%H-%M-%S}", t);
 
 		// Pick file name for main log file
 		{

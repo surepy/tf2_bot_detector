@@ -55,3 +55,15 @@ namespace tf2_bot_detector
 		bool m_AssignedMatchEnded : 1 = false;
 	};
 }
+
+// fmt 10 removed implicit struct/ostream formatting; format Lobby's members explicitly.
+template<> struct fmt::formatter<tf2_bot_detector::DifferingLobbyReceivedLine::Lobby>
+{
+	constexpr auto parse(fmt::format_parse_context& ctx) const { return ctx.begin(); }
+	template<typename FormatContext>
+	auto format(const tf2_bot_detector::DifferingLobbyReceivedLine::Lobby& lobby, FormatContext& ctx) const
+	{
+		return fmt::format_to(ctx.out(), "[id={}, num={}, match={}]",
+			lobby.m_LobbyID, lobby.m_LobbyNumber, lobby.m_MatchID);
+	}
+};

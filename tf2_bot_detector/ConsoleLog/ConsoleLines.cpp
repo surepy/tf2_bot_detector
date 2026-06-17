@@ -13,6 +13,7 @@
 #include <mh/text/charconv_helper.hpp>
 #include <mh/text/fmtstr.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>
