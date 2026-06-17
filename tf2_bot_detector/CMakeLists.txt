@@ -26,7 +26,9 @@ if (WIN32)
 	target_compile_definitions(tf2_bot_detector PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
 
 	target_include_directories(tf2_bot_detector_launcher PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
-	target_link_libraries(tf2_bot_detector_launcher PRIVATE tf2_bot_detector)
+	# It pulls in app/mh headers that now require fmt + the MH_* defines + C++20;
+	# mh::stuff (the vendored-headers INTERFACE target) supplies all three.
+	target_link_libraries(tf2_bot_detector_launcher PRIVATE tf2_bot_detector mh::stuff)
 	set_target_properties(tf2_bot_detector_launcher PROPERTIES OUTPUT_NAME "tf2_bot_detector")
 	target_compile_features(tf2_bot_detector_launcher PUBLIC cxx_std_20)
 else()
@@ -415,6 +417,6 @@ endif()
 if(TF2BD_ENABLE_CLI_EXE)
 	add_executable(tf2_bot_detector_cli "Launcher/main.cpp")
 	target_include_directories(tf2_bot_detector_cli PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
-	target_link_libraries(tf2_bot_detector_cli PRIVATE tf2_bot_detector)
+	target_link_libraries(tf2_bot_detector_cli PRIVATE tf2_bot_detector mh::stuff)
 	target_compile_features(tf2_bot_detector_cli PUBLIC cxx_std_17)
 endif()
