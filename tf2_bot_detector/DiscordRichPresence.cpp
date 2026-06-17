@@ -377,6 +377,10 @@ namespace discord
 	}
 }
 
+// fmt 10 removed the implicit operator<< fallback; opt discord::Activity in explicitly
+// (its operator<< above lives in namespace discord, so ADL finds it).
+template<> struct fmt::formatter<discord::Activity> : fmt::ostream_formatter {};
+
 namespace
 {
 	struct DiscordGameState final
