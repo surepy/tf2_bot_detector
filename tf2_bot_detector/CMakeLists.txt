@@ -28,7 +28,7 @@ if (WIN32)
 	target_include_directories(tf2_bot_detector_launcher PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 	target_link_libraries(tf2_bot_detector_launcher PRIVATE tf2_bot_detector)
 	set_target_properties(tf2_bot_detector_launcher PROPERTIES OUTPUT_NAME "tf2_bot_detector")
-	target_compile_features(tf2_bot_detector_launcher PUBLIC cxx_std_17)
+	target_compile_features(tf2_bot_detector_launcher PUBLIC cxx_std_20)
 else()
 	add_executable(tf2_bot_detector
 		"Launcher/main.cpp"

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <fmt/ostream.h>
-
 #include <cassert>
 #include <chrono>
 #include <ctime>
 #include <ostream>
+
+#include <fmt/ostream.h>
 
 namespace tf2_bot_detector
 {

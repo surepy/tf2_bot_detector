@@ -37,3 +37,5 @@ target_link_libraries(tf2_bot_detector_common
 	PUBLIC
 		fmt::fmt
 )
+
+target_compile_features(tf2_bot_detector_common PUBLIC cxx_std_20)

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Clock.h"
-
 #include <mh/coroutine/generator.hpp>
 #include <mh/source_location.hpp>
 #include <mh/reflection/enum.hpp>
@@ -10,6 +8,8 @@
 #include <fmt/ostream.h>
 #include <fmt/chrono.h>
 #include <fmt/xchar.h>
+
+#include "Clock.h"
 
 #include <filesystem>
 #include <string>
