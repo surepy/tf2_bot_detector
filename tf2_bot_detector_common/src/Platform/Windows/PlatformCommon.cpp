@@ -1,6 +1,9 @@
 #include "Platform/PlatformCommon.h"
 
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <fmt/format.h>
 #include <stdexcept>
 #include <source_location>

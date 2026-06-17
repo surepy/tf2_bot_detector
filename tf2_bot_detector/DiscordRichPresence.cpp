@@ -23,7 +23,10 @@
 #include <mh/concurrency/thread_sentinel.hpp>
 #include <mh/text/charconv_helper.hpp>
 #include <mh/text/fmtstr.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/indenting_ostream.hpp>
 #include <mh/text/string_insertion.hpp>
 #include <discord-game-sdk/core.h>

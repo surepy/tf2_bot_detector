@@ -10,7 +10,10 @@
 #include <mh/concurrency/thread_pool.hpp>
 #include <mh/coroutine/future.hpp>
 #include <mh/text/fmtstr.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/string_insertion.hpp>
 #include <mh/future.hpp>
 #include <nlohmann/json.hpp>
@@ -182,7 +185,7 @@ static std::string GenerateSteamAPIURL(const ISteamAPISettings& apiSettings,
 	if (!query.empty())
 		query[0] = '&';
 
-	return fmt::format(MH_FMT_STRING("https://api.steampowered.com{}/?key={}{}"), endpoint, apiSettings.GetSteamAPIKey(), query);
+	return fmt::format(FMT_STRING("https://api.steampowered.com{}/?key={}{}"), endpoint, apiSettings.GetSteamAPIKey(), query);
 }
 catch (...)
 {

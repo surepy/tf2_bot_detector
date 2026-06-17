@@ -5,7 +5,10 @@
 #include <mh/coroutine/generator.hpp>
 #include <mh/source_location.hpp>
 #include <mh/reflection/enum.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 
 #include <filesystem>
 #include <string>
@@ -260,7 +263,16 @@ namespace tf2_bot_detector
 			const std::string_view& fmtStr, const TArgs&... args)
 	{
 		/* NOTE: we're losing compile-time evaluation on fmtStr, but I can't be arsed to bother. */
-		LogFatalError(location, mh::try_format(mh::runtime(fmtStr), args...));
+		std::string msg;
+		try
+		{
+			msg = fmt::format(fmt::runtime(fmtStr), args...);
+		}
+		catch (const fmt::format_error& e)
+		{
+			msg = fmt::format("FORMATTING ERROR: Unable to construct string with fmtstr \"{}\": {}", fmtStr, e.what());
+		}
+		LogFatalError(location, msg);
 	}
 	template<typename... TArgs>
 	[[noreturn]] void LogFatalError(const detail::log_h::src_location_wrapper& fmtStr, const TArgs&... args)

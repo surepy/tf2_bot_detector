@@ -2,7 +2,10 @@
 #include "Util/JSONUtils.h"
 #include "Util/RegexUtils.h"
 
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/fmtstr.hpp>
 #include <mh/text/stringops.hpp>
 #include <mh/text/string_insertion.hpp>

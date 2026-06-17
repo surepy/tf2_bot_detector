@@ -15,6 +15,9 @@
 #include <nlohmann/json.hpp>
 
 #include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 
 #include <regex>
 

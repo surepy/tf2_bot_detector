@@ -1,7 +1,10 @@
 #include "SteamID.h"
 #include "Util/RegexUtils.h"
 
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <nlohmann/json.hpp>
 
 #include <regex>

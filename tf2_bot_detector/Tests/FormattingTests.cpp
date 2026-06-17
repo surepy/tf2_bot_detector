@@ -10,7 +10,7 @@ TEST_CASE("mh::formatter<PlayerAttributesList>", "[tf2bd][formatting]")
 	PlayerAttributesList list;
 
 	list.SetAttribute(PlayerAttribute::Cheater);
-	REQUIRE(mh::format("Attribs: {}", list) == "Attribs: PlayerAttribute::Cheater");
+	REQUIRE(fmt::format("Attribs: {}", list) == "Attribs: PlayerAttribute::Cheater");
 }
 
 TEST_CASE("mh::formatter<PlayerMarks>", "[tf2bd][formatting]")
@@ -18,6 +18,6 @@ TEST_CASE("mh::formatter<PlayerMarks>", "[tf2bd][formatting]")
 	PlayerMarks marks;
 	marks.m_Marks.push_back(PlayerMarks::Mark({ PlayerAttribute::Suspicious, PlayerAttribute::Racist }, "cfg/playerlist.json"));
 
-	auto fmt = mh::format("marks: {}", marks);
+	auto fmt = fmt::format("marks: {}", marks);
 	REQUIRE(fmt == "marks: \n\t - \"cfg/playerlist.json\" (PlayerAttribute::Suspicious, PlayerAttribute::Racist)");
 }

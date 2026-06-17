@@ -4,6 +4,9 @@
 #include "HTTPHelpers.h"
 
 #include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <nlohmann/json.hpp>
 
 /// <summary>
@@ -33,7 +36,7 @@ mh::task<tf2_bot_detector::SteamHistoryAPI::PlayerSourceBansResponse>
 	// Might have an option in the future that you can choose between sh api and roto's api
 	// - which exists (https://bd-api.roto.lol/profile?steamids=<ids, comma seperated> apparently).
 	// in case one or the other goes down.
-	URL requestURL = URL(fmt::format(MH_FMT_STRING("https://steamhistory.net/api/sourcebans?shouldkey=1&key={}{}"), apiKey, requestSteamIDs));
+	URL requestURL = URL(fmt::format(FMT_STRING("https://steamhistory.net/api/sourcebans?shouldkey=1&key={}{}"), apiKey, requestSteamIDs));
 
 	auto clientPtr = client.shared_from_this();
 	const std::string data = co_await clientPtr->GetStringAsync(requestURL);

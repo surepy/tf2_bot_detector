@@ -37,8 +37,7 @@
         "compression"
       ]
     },
-    "zlib",
-    "mh-cmake-common"
+    "zlib"
   ],
   "overrides": [
     {

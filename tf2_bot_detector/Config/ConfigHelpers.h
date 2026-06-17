@@ -4,7 +4,10 @@
 #include <mh/coroutine/task.hpp>
 #include <mh/coroutine/thread.hpp>
 #include <mh/reflection/enum.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <nlohmann/json_fwd.hpp>
 
 #include <cassert>

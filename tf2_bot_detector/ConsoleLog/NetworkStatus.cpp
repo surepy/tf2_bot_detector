@@ -3,7 +3,10 @@
 #include "Util/RegexUtils.h"
 #include "Log.h"
 
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 
 using namespace tf2_bot_detector;
 using namespace std::string_literals;

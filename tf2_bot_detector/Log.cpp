@@ -7,7 +7,10 @@
 #include <mh/error/exception_details.hpp>
 #include <mh/text/codecvt.hpp>
 #include <mh/text/fmtstr.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/string_insertion.hpp>
 #include <mh/text/stringops.hpp>
 #include <SDL2/SDL_messagebox.h>
