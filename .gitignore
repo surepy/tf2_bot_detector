@@ -352,3 +352,8 @@ staging/temp/
 enc_temp_folder/
 vcpkg_installed/
 staging/cfg/addons_list.json
+
+# Linux AppImage packaging build artifacts (keep build-appimage.sh + the .png icon)
+/dist/
+/packaging/linux/tools/
+/packaging/linux/AppDir/

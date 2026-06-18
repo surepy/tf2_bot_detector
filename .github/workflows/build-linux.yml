@@ -156,3 +156,18 @@ jobs:
         name: "tf2-bot-detector_${{ matrix.os }}_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
         if-no-files-found: error
         path: ${{ needs.config.outputs.tf2bd_workspace }}/staging/
+
+    - name: "Artifacts: Build AppImage"
+      if: steps.determine_artifact_behavior.outputs.upload
+      run: |
+        ./packaging/linux/build-appimage.sh "${{ needs.config.outputs.tf2bd_build_dir }}/tf2_bot_detector/tf2_bot_detector"
+        # resources ship next to the .AppImage (portable layout), not inside it
+        cp -r staging/cfg staging/fonts staging/images staging/licenses staging/tf2_addons dist/
+
+    - name: "Artifacts: Upload AppImage"
+      if: steps.determine_artifact_behavior.outputs.upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: "tf2-bot-detector_appimage_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
+        if-no-files-found: error
+        path: ${{ needs.config.outputs.tf2bd_workspace }}/dist/

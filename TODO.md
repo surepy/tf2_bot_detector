@@ -54,37 +54,41 @@ call on a pool thread, resumes the coroutine on completion). This also **deletes
       per-host throttling already mostly serializes, but worth verifying under concurrency.
 - [ ] Once done, CI can move back off the `windows-2022` pin to `windows-latest`.
 
-## AppImage target (Linux)
+## AppImage target (Linux) — WORKING
 
-**Feasibility:** packaging is easy (~2-3h); the real gate is one code issue (~1 day total for a
-working AppImage). It's a single SDL2+OpenGL ELF + a `staging/` resource tree
-(`cfg/ fonts/ images/ licenses/ tf2_addons/`) → standard `linuxdeploy` + `appimagetool` flow.
+A basic AppImage builds and runs (verified locally). Turned out easy: the binary is nearly
+self-contained (vcpkg deps static-linked; only `libtbb`/`libstdc++`/`libgcc_s` are private
+dynamic deps; SDL2 `dlopen`s host X11/GL/wayland, which we leave to the host).
 
-**Distribution model:** the AppImage is *just the binary* (the `tf2_bot_detector.exe` equivalent).
-`cfg/ fonts/ images/ licenses/ logs/ temp/ tf2_addons/` + the `.AppImage` ship together in one
-folder, exactly like the Windows portable zip — nothing is packaged *inside* the read-only image.
-So `dirname($APPIMAGE)` is the writable portable folder for both reads and writes; no read/write
-split, no XDG, no separate data dir.
+**Distribution model:** the AppImage is *just the binary*. `cfg/ fonts/ images/ licenses/ logs/
+temp/ tf2_addons/` + the `.AppImage` ship together in one folder, like the Windows portable zip —
+nothing packaged *inside* the read-only image. `dirname($APPIMAGE)` is the writable portable folder
+for both reads and writes; no read/write split, no XDG, no separate data dir.
 
-**The data-dir fix (DONE):** `Platform::GetCurrentExeDir()` (Linux) now returns
-`path($APPIMAGE).parent_path()` when `$APPIMAGE` is set, else `/proc/self/exe`'s dir. It has a
-single caller (`Filesystem.cpp:73 → m_ExeDir`), so everything anchored on `m_ExeDir` (search path,
-the Steam-cwd `current_path()` chdir, `GetLocalAppDataDir`, `GetTempDir`) follows for free — and the
-chdir is fine now because the anchor is the writable external folder, not the read-only mount.
-(Also fixed a latent `readlink` non-null-termination bug in the same function.)
+**Done:**
+- [x] **Data-dir fix:** `Platform::GetCurrentExeDir()` (Linux) returns `path($APPIMAGE).parent_path()`
+      when `$APPIMAGE` is set, else `/proc/self/exe`'s dir. Single caller (`Filesystem.cpp:73 →
+      m_ExeDir`), so the search path / Steam-cwd `current_path()` chdir / `GetLocalAppDataDir` /
+      `GetTempDir` all follow. (Also fixed a latent `readlink` non-null-termination bug.)
+- [x] **Build script:** `packaging/linux/build-appimage.sh` — self-contained (downloads
+      appimagetool, uses committed 256px `packaging/linux/tf2_bot_detector.png` so CI needs no image
+      tooling), `ldd`-bundles the private libs (auto-includes `discord_game_sdk.so` if a non-static
+      build links it), writes `.desktop` + `AppRun` (sets `SDL_VIDEODRIVER=x11`, no chdir), runs
+      appimagetool with `APPIMAGE_EXTRACT_AND_RUN=1` (FUSE-less). Output: `dist/*.AppImage`.
+- [x] **CI:** `build-linux.yml` builds the AppImage and uploads `dist/` (with resources copied
+      beside the `.AppImage`) as `tf2-bot-detector_appimage_*`.
 
-Remaining packaging work:
-- [ ] Scaffold AppDir + `AppRun` (carry over `SDL_VIDEODRIVER=x11` and `LD_LIBRARY_PATH` from
-      `staging/launch_tf2bd_linux.sh`) + `.desktop` + icon (start from `images/`).
-- [ ] No `install()` rules exist in any CMakeLists → either add them or hand-assemble the AppDir
-      in a script (similar to how `staging/` is already built). Remember: resource folders go next
-      to the `.AppImage`, NOT inside it.
-- [ ] Bundle `discord_game_sdk.so` (`platform: "!static"`) so it's resolvable via
-      rpath/`LD_LIBRARY_PATH`. Leave libGL/mesa unbundled (host driver — linuxdeploy default).
-- [ ] Build target: compile in the **sniper SDK** (Steam Runtime 3.0, Debian 11 / glibc 2.31) for
-      a wide, stable ABI floor — guaranteed present post-TF2-x64 (TF2 itself requires sniper; see
-      `TF2CommandLinePage.cpp:294`), and the same env TF2 runs in. Run host-side; do NOT launch
-      TF2BD *through* sniper, since TF2BD launches TF2 via sniper itself → nested pressure-vessel.
+**Remaining / nice-to-have:**
+- [ ] Replace the icon — currently a 32px `.ico` frame upscaled to 256 (blurry); want proper hi-res art.
+- [ ] Test on a few distros (older glibc especially) — see if `libstdc++`/`libgcc_s` bundling is
+      enough or if more compat work is needed.
+- [ ] Discord on Linux: current static build excludes discord (`platform: "!static"`); when shipping
+      it, confirm `discord_game_sdk.so` gets bundled (the `ldd` loop already would) and works.
+- [ ] Optional ABI hardening: build in the **sniper SDK** (Steam Runtime 3.0, glibc 2.31) for a wide
+      floor — guaranteed present post-TF2-x64 (TF2 requires sniper, see `TF2CommandLinePage.cpp:294`).
+      Run host-side; do NOT launch TF2BD *through* sniper (TF2BD launches TF2 via sniper → nested
+      pressure-vessel).
+- [ ] Optional: wire the AppImage build as a CMake target too (not just CI).
 - [ ] Optional: wire the AppImage build as a CMake/CI target.
 
 ## CI
