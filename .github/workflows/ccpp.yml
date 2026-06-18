@@ -139,7 +139,7 @@ jobs:
 
     - name: "Artifacts: Fresh, signed exe"
       if: steps.determine_artifact_behavior.outputs.upload && startsWith(matrix.os, 'windows')
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: "smartscreen_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
         if-no-files-found: error
@@ -160,7 +160,7 @@ jobs:
 
     - name: "Artifacts: Upload staging/"
       if: steps.determine_artifact_behavior.outputs.upload && startsWith(matrix.os, 'windows')
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: "tf2-bot-detector_${{ matrix.os }}_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
         if-no-files-found: error
@@ -168,7 +168,7 @@ jobs:
 
     - name: "Artifacts: symbols"
       if: steps.determine_artifact_behavior.outputs.upload && startsWith(matrix.os, 'windows')
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: "tf2-bot-detector-symbols_${{ matrix.triplet }}_${{ needs.config.outputs.tf2bd_version }}_${{ matrix.build_type }}"
         if-no-files-found: error
