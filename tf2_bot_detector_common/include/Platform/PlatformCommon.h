@@ -1,8 +1,6 @@
 #pragma once
 
 #include <source_location>
-// remove me 
-#include <mh/source_location.hpp>
 
 namespace tf2_bot_detector::Platform
 {
