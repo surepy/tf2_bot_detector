@@ -80,10 +80,10 @@ void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable
     std::string execute_command;
 
     // TODO: implement elevated?
-    execute_command = fmt::format("{} {}", executable, args);
+    execute_command = fmt::format("\"{}\" {}", executable, args);
     // run in the requested working directory; default to the executable's own folder.
     const std::filesystem::path cwd = workingDir.empty() ? executable.parent_path() : workingDir;
-    execute_command = fmt::format("cd {} && {} &", cwd, execute_command);
+    execute_command = fmt::format("cd \"{}\" && {} &", cwd, execute_command);
     Log(execute_command);
 
     system(execute_command.c_str());
