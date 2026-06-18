@@ -175,7 +175,7 @@ namespace tf2_bot_detector
 			d = SteamAPIMode::Direct;
 		else {
 			if (j != "disabled")
-				LogError("Unknown SteamAPIMode {}, defaulting to disabled.", std::quoted(sv));
+				LogError("Unknown SteamAPIMode {}, defaulting to disabled.", fmt::streamed(std::quoted(sv)));
 
 			d = SteamAPIMode::Disabled;
 		}
@@ -208,7 +208,7 @@ namespace tf2_bot_detector
 		}
 		else {
 			if (sv != "x64") {
-				LogError("Unknown TFBinaryMode {}, defaulting to x64.", std::quoted(sv));
+				LogError("Unknown TFBinaryMode {}, defaulting to x64.", fmt::streamed(std::quoted(sv)));
 			}
 			d = TFBinaryMode::x64;
 		}
@@ -294,7 +294,7 @@ std::string GeneralSettings::GetSteamAPIKey() const
 void GeneralSettings::SetSteamAPIKey(std::string key)
 {
 	assert(key.empty() || key.size() == 32);
-	ILogManager::GetInstance().AddSecret(key, mh::format("<STEAM_API_KEY:{}>", key.size()));
+	ILogManager::GetInstance().AddSecret(key, fmt::format("<STEAM_API_KEY:{}>", key.size()));
 	m_SteamAPIKey = std::move(key);
 }
 
@@ -327,7 +327,7 @@ void tf2_bot_detector::from_json(const nlohmann::json& j, Font& d)
 	else if (value == "unifont_24px")
 		d = Font::UniFont_24px;
 	else
-		throw std::invalid_argument(mh::format("{}: Unknown font {}", mh::source_location::current(), std::quoted(value)));
+		throw std::invalid_argument(fmt::format("{}: Unknown font {}", mh::source_location::current(), fmt::streamed(std::quoted(value))));
 }
 
 void tf2_bot_detector::to_json(nlohmann::json& j, const ReleaseChannel& d)
@@ -340,7 +340,7 @@ void tf2_bot_detector::to_json(nlohmann::json& j, const ReleaseChannel& d)
 	case ReleaseChannel::Nightly:   j = "nightly"; return;
 	}
 
-	throw std::invalid_argument(mh::format("Unexpected value {}", mh::enum_fmt(d)));
+	throw std::invalid_argument(fmt::format("Unexpected value {}", mh::enum_fmt(d)));
 }
 
 void tf2_bot_detector::from_json(const nlohmann::json& j, ReleaseChannel& d)
@@ -355,7 +355,7 @@ void tf2_bot_detector::from_json(const nlohmann::json& j, ReleaseChannel& d)
 	else if (value == "disabled"sv || value == "none"sv)
 		d = ReleaseChannel::None;
 	else
-		throw std::invalid_argument(mh::format("Unknown ReleaseChannel {}", std::quoted(value)));
+		throw std::invalid_argument(fmt::format("Unknown ReleaseChannel {}", fmt::streamed(std::quoted(value))));
 }
 
 uint16_t Settings::TF2Interface::GetRandomRCONPort() const
@@ -455,9 +455,9 @@ std::shared_ptr<const HTTPClient> tf2_bot_detector::Settings::GetHTTPClient() co
 void Settings::ValidateSchema(const ConfigSchemaInfo& schema) const
 {
 	if (schema.m_Type != "settings")
-		throw std::runtime_error(mh::format("Schema {} is not a settings file", schema.m_Type));
+		throw std::runtime_error(fmt::format("Schema {} is not a settings file", schema.m_Type));
 	if (schema.m_Version != 3)
-		throw std::runtime_error(mh::format("Schema must be version {} (current version {})", SETTINGS_SCHEMA_VERSION, schema.m_Version));
+		throw std::runtime_error(fmt::format("Schema must be version {} (current version {})", SETTINGS_SCHEMA_VERSION, schema.m_Version));
 }
 
 void Settings::AddDefaultGotoProfileSites()

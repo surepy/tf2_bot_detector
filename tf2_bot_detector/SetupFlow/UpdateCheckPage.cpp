@@ -210,7 +210,7 @@ namespace
 		}
 		else if (updateStatus.m_Status == UpdateStatus::Unknown)
 		{
-			ImGui::TextFmt(msgColor, "UNKNOWN UPDATE STATUS: {}", std::quoted(updateStatus.m_Message));
+			ImGui::TextFmt(msgColor, "UNKNOWN UPDATE STATUS: {}", fmt::streamed(std::quoted(updateStatus.m_Message)));
 		}
 		else
 		{

@@ -4,7 +4,11 @@
 #include <mh/coroutine/task.hpp>
 #include <mh/coroutine/thread.hpp>
 #include <mh/reflection/enum.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <nlohmann/json_fwd.hpp>
 
 #include <cassert>
@@ -168,14 +172,14 @@ namespace tf2_bot_detector
 			const T* defaultMutableList = GetDefaultMutableList();
 			const T* localList = GetLocalList();
 			if (localList)
-				localList->SaveFile(mh::format("cfg/{}.json", GetBaseFileName()));
+				localList->SaveFile(fmt::format("cfg/{}.json", GetBaseFileName()));
 
 			if (defaultMutableList && defaultMutableList != localList)
 			{
-				const std::filesystem::path filename = mh::format("cfg/{}.official.json", GetBaseFileName());
+				const std::filesystem::path filename = fmt::format("cfg/{}.official.json", GetBaseFileName());
 
 				if (!IsOfficial())
-					throw std::runtime_error(mh::format("Attempted to save non-official data to {}", filename));
+					throw std::runtime_error(fmt::format("Attempted to save non-official data to {}", filename));
 
 				defaultMutableList->SaveFile(filename);
 			}
@@ -283,3 +287,6 @@ namespace std
 {
 	template<> struct is_error_condition_enum<tf2_bot_detector::ConfigErrorType> : true_type {};
 }
+
+// fmt 10 removed the implicit operator<< fallback; opt ConfigSchemaInfo in explicitly.
+template<> struct fmt::formatter<tf2_bot_detector::ConfigSchemaInfo> : fmt::ostream_formatter {};

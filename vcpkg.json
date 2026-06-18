@@ -15,7 +15,7 @@
     },
     {
       "name": "fmt",
-      "version>=": "8.0.1"
+      "version>=": "10.2.1"
     },
     {
       "name": "discord-game-sdk",
@@ -37,13 +37,12 @@
         "compression"
       ]
     },
-    "zlib",
-    "mh-cmake-common"
+    "zlib"
   ],
   "overrides": [
     {
       "name": "fmt",
-      "version": "8.1.1"
+      "version": "10.2.1"
     }
   ],
   "builtin-baseline": "253704407ae68efa37bf8f5b59b3e06dd40d3d3f"

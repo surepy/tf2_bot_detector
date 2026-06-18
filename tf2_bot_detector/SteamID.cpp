@@ -1,7 +1,11 @@
 #include "SteamID.h"
 #include "Util/RegexUtils.h"
 
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <nlohmann/json.hpp>
 
 #include <regex>
@@ -41,13 +45,13 @@ SteamID::SteamID(const std::string_view& str)
 			return; // We're totally done trying to parse
 
 		default:
-			throw std::invalid_argument(mh::format("Invalid SteamID3: Unknown SteamAccountType '{}'", firstChar));
+			throw std::invalid_argument(fmt::format("Invalid SteamID3: Unknown SteamAccountType '{}'", firstChar));
 		}
 
 		{
 			uint32_t universe;
 			if (auto parseResult = from_chars(result[2], universe); !parseResult)
-				throw std::invalid_argument(mh::format("Out-of-range value for SteamID3 universe: {}", result[2].str()));
+				throw std::invalid_argument(fmt::format("Out-of-range value for SteamID3 universe: {}", result[2].str()));
 
 			Universe = static_cast<SteamAccountUniverse>(universe);
 		}
@@ -55,7 +59,7 @@ SteamID::SteamID(const std::string_view& str)
 		{
 			uint32_t id;
 			if (auto parseResult = from_chars(result[3], id); !parseResult)
-				throw std::invalid_argument(mh::format("Out-of-range value for SteamID3 ID: {}", result[3].str()));
+				throw std::invalid_argument(fmt::format("Out-of-range value for SteamID3 ID: {}", result[3].str()));
 
 			ID = id;
 		}
@@ -64,7 +68,7 @@ SteamID::SteamID(const std::string_view& str)
 		{
 			uint32_t instance;
 			if (auto parseResult = from_chars(result[4], instance); !parseResult)
-				throw std::invalid_argument(mh::format("Out-of-range value for SteamID3 account instance: {}", result[4].str()));
+				throw std::invalid_argument(fmt::format("Out-of-range value for SteamID3 account instance: {}", result[4].str()));
 
 			Instance = static_cast<SteamAccountInstance>(instance);
 		}
@@ -81,7 +85,7 @@ SteamID::SteamID(const std::string_view& str)
 	{
 		uint64_t result;
 		if (auto parseResult = mh::from_chars(str, result); !parseResult)
-			throw std::invalid_argument(mh::format("Out-of-range SteamID64: {}", str));
+			throw std::invalid_argument(fmt::format("Out-of-range SteamID64: {}", str));
 
 		ID64 = result;
 		return;
@@ -92,7 +96,7 @@ SteamID::SteamID(const std::string_view& str)
 
 std::string SteamID::str() const
 {
-	return mh::format("{}", *this);
+	return fmt::format("{}", *this);
 }
 
 void tf2_bot_detector::to_json(nlohmann::json& j, const SteamID& d)

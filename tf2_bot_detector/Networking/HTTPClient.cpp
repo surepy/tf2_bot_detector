@@ -173,7 +173,7 @@ mh::task<std::string> HTTPClientImpl::GetStringAsync(URL url) const try
 #endif
 
 				if (response.status_code() >= 400 && response.status_code() < 600)
-					throw http_error((HTTPResponseCode)response.status_code(), mh::format("Failed to HTTP GET {}", url));
+					throw http_error((HTTPResponseCode)response.status_code(), fmt::format("Failed to HTTP GET {}", url));
 
 #ifdef __linux__
 				std::string stringResponse = response.extract_utf8string(true).get();

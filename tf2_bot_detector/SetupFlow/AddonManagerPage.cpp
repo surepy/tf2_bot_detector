@@ -151,7 +151,7 @@ namespace
 					{
 						const auto originalInstallTarget = addon.m_InstallTarget;
 						addon.m_InstallTarget = mh::replace_filename_keep_extension(baseInstallTarget,
-							mh::format(MH_FMT_STRING("{}_{}"), mh::filename_without_extension(baseInstallTarget).string(), i));
+							fmt::format(FMT_STRING("{}_{}"), mh::filename_without_extension(baseInstallTarget).string(), i));
 
 						DebugLogWarning("{} already exists, trying {}...", originalInstallTarget, addon.m_InstallTarget);
 					}

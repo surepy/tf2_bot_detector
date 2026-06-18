@@ -23,11 +23,17 @@
 #include <mh/concurrency/thread_sentinel.hpp>
 #include <mh/text/charconv_helper.hpp>
 #include <mh/text/fmtstr.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/indenting_ostream.hpp>
 #include <mh/text/string_insertion.hpp>
 #include <discord-game-sdk/core.h>
 #include <cryptopp/sha.h>
+
+#include <fmt/format.h>
 
 #include <array>
 #include <cassert>
@@ -95,18 +101,18 @@ static bool s_DiscordDebugLogEnabled = true;
 
 template<typename... TArgs>
 static auto DiscordDebugLog(const std::string_view& fmtStr, const TArgs&... args) ->
-	decltype(mh::format(fmtStr, args...), void())
+	decltype(fmt::format(fmtStr, args...), void())
 {
 	if (!s_DiscordDebugLogEnabled)
 		return;
 
-	DebugLog(DISCORD_LOG_COLOR, "DRP: {}", mh::format(mh::runtime(fmtStr), args...));
+	DebugLog(DISCORD_LOG_COLOR, "DRP: {}", fmt::format(fmt::runtime(fmtStr), args...));
 }
 
 template<typename... TArgs>
-static auto DiscordDebugLog(const mh::source_location& location,
+static auto DiscordDebugLog(const std::source_location& location,
 	const std::string_view& fmtStr = {}, const TArgs&... args) ->
-	decltype(mh::format(fmtStr, args...), void())
+	decltype(fmt::format(fmtStr, args...), void())
 {
 	if (!s_DiscordDebugLogEnabled)
 		return;
@@ -114,7 +120,8 @@ static auto DiscordDebugLog(const mh::source_location& location,
 	if (fmtStr.empty())
 		DebugLog(DISCORD_LOG_COLOR, location);
 	else
-		DebugLog(DISCORD_LOG_COLOR, location, "DRP: {}", mh::format(mh::runtime(fmtStr), args...));
+		DebugLog(DISCORD_LOG_COLOR, location, "DRP: {}", fmt::format(fmt::runtime(fmtStr), args...));
+	// TODO: instead of 
 }
 
 static void DiscordLogHookFunc(discord::LogLevel level, const char* logMsg)
@@ -370,6 +377,10 @@ namespace discord
 	}
 }
 
+// fmt 10 removed the implicit operator<< fallback; opt discord::Activity in explicitly
+// (its operator<< above lives in namespace discord, so ADL finds it).
+template<> struct fmt::formatter<discord::Activity> : fmt::ostream_formatter {};
+
 namespace
 {
 	struct DiscordGameState final
@@ -427,7 +438,7 @@ namespace
 
 			bool OnChange(const ConnectionState& newValue) const override
 			{
-				DiscordDebugLog(mh::format("ConnectionState {} -> {}", mh::enum_fmt(get()), mh::enum_fmt(newValue)));
+				DiscordDebugLog(fmt::format("ConnectionState {} -> {}", mh::enum_fmt(get()), mh::enum_fmt(newValue)));
 				return true;
 			}
 
@@ -527,7 +538,7 @@ discord::Activity DiscordGameState::ConstructActivity() const
 	if (m_ConnectionState != ConnectionState::Disconnected && !m_MapName.empty())
 	{
 		if (auto map = m_DRPInfo->FindMap(m_MapName))
-			retVal.GetAssets().SetLargeImage(mh::format("map_{}", map->m_MapNames.at(0)).c_str());
+			retVal.GetAssets().SetLargeImage(fmt::format("map_{}", map->m_MapNames.at(0)).c_str());
 		else
 			retVal.GetAssets().SetLargeImage("map_unknown");
 
@@ -593,7 +604,7 @@ discord::Activity DiscordGameState::ConstructActivity() const
 			if (details.empty())
 				details = GetGameState();
 			else
-				details = mh::format("{} - {}", GetGameState(), details);
+				details = fmt::format("{} - {}", GetGameState(), details);
 		}
 	}
 	else
@@ -1025,7 +1036,7 @@ void DiscordState::Update()
 		// Run discord callbacks
 		if (auto result = m_Core->RunCallbacks(); result != discord::Result::Ok)
 		{
-			auto errMsg = mh::format("Failed to run discord callbacks: {}", mh::enum_fmt(result));
+			auto errMsg = fmt::format("Failed to run discord callbacks: {}", mh::enum_fmt(result));
 			switch (result)
 			{
 			case discord::Result::NotRunning:

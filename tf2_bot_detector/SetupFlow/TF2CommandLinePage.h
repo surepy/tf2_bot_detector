@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#undef DrawState
+
 namespace tf2_bot_detector
 {
 	class TF2CommandLinePage final : public ISetupFlowPage

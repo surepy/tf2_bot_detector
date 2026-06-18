@@ -2,6 +2,7 @@
 
 #include <mh/error/error_code_exception.hpp>
 #include <nlohmann/json.hpp>
+#include <fmt/ostream.h>
 
 #include <compare>
 #include <optional>
@@ -84,3 +85,6 @@ namespace std
 {
 	template<> struct is_error_condition_enum<tf2_bot_detector::HTTPResponseCode> : true_type {};
 }
+
+// fmt 10 removed the implicit operator<< fallback; opt URL in explicitly.
+template<> struct fmt::formatter<tf2_bot_detector::URL> : fmt::ostream_formatter {};

@@ -266,7 +266,7 @@ static void GetChatMsgFormats(const std::string_view& debugInfo, const std::stri
 			if (attrib.second.empty())
 			{
 				LogWarning(MH_SOURCE_LOCATION_CURRENT(), "{}: Empty value read for {} ({})",
-					std::quoted(debugInfo), std::quoted(attrib.first), mh::enum_fmt(cat));
+					fmt::streamed(std::quoted(debugInfo)), fmt::streamed(std::quoted(attrib.first)), mh::enum_fmt(cat));
 			}
 
 			(isEnglish ? strings.m_English : strings.m_Localized)[(int)cat] = attrib.second;

@@ -178,7 +178,7 @@ namespace tf2_bot_detector
 				d.m_AvatarMatches = { mh::copy(*found) };
 			else
 			{
-				throw std::runtime_error(mh::format(
+				throw std::runtime_error(fmt::format(
 					"{}: Expected avatar_match to be an array or object, instead it was a {}",
 					MH_SOURCE_LOCATION_CURRENT(), mh::enum_fmt(found->type())));
 			}
@@ -330,7 +330,7 @@ bool TextMatch::Match(const std::string_view& text) const try
 				}
 				catch (const std::regex_error&)
 				{
-					LogException("Regex error when trying to match {} against pattern {}", std::quoted(text), std::quoted(pattern));
+					LogException("Regex error when trying to match {} against pattern {}", fmt::streamed(std::quoted(text)), fmt::streamed(std::quoted(pattern)));
 					return false;
 				}
 			});
@@ -360,11 +360,11 @@ bool TextMatch::Match(const std::string_view& text) const try
 	}
 	}
 
-	throw std::runtime_error(mh::format("{}: Unknown value {}", MH_SOURCE_LOCATION_CURRENT(), mh::enum_fmt(m_Mode)));
+	throw std::runtime_error(fmt::format("{}: Unknown value {}", std::source_location::current(), mh::enum_fmt(m_Mode)));
 }
 catch (...)
 {
-	LogException("Error when trying to match against {}", std::quoted(text));
+	LogException("Error when trying to match against {}", fmt::streamed(std::quoted(text)));
 	throw;
 }
 

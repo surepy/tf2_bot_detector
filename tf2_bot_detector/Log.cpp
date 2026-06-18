@@ -7,7 +7,11 @@
 #include <mh/error/exception_details.hpp>
 #include <mh/text/codecvt.hpp>
 #include <mh/text/fmtstr.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/string_insertion.hpp>
 #include <mh/text/stringops.hpp>
 #include <SDL2/SDL_messagebox.h>
@@ -39,6 +43,30 @@ using namespace std::chrono_literals;
 using namespace std::string_literals;
 using namespace std::string_view_literals;
 using namespace tf2_bot_detector;
+
+// copied from mh/format.hpp.
+template<typename TFmtStr, typename TFmtArgs>
+inline auto try_vformat(const TFmtStr& fmtStr, const TFmtArgs& args) try
+{
+	return fmt::vformat(fmtStr, args);
+}
+catch (const fmt::format_error& e)
+{
+	using char_type_t = std::decay_t<decltype(fmtStr[0])>;
+	if constexpr (std::is_same_v<char_type_t, char>)
+	{
+		return fmt::format(FMT_STRING("FORMATTING ERROR: Unable to construct string with fmtstr {}: {}"), fmt::streamed(std::quoted(fmtStr)), e.what());
+	}
+	else if constexpr (std::is_same_v<char_type_t, wchar_t>)
+	{
+		// Can't print error message from exception because fmt does not handle conversion from char -> wchar_t on its own unfortunately
+		return fmt::format(FMT_STRING(L"FORMATTING ERROR: Unable to construct string with fmtstr {}"), fmt::streamed(std::quoted(fmtStr)));
+	}
+	else
+	{
+		// Other character types are a compile error for now
+	}
+}
 
 namespace
 {
@@ -123,7 +151,7 @@ void LogManager::Init()
 		std::lock_guard lock(m_LogMutex);
 
 		const auto t = ToTM(tfbd_clock_t::now());
-		const mh::fmtstr<128> timestampStr("{}", std::put_time(&t, "%Y-%m-%d_%H-%M-%S"));
+		const mh::fmtstr<128> timestampStr("{:%Y-%m-%d_%H-%M-%S}", t);
 
 		// Pick file name for main log file
 		{
@@ -223,7 +251,7 @@ void LogManager::LogToStream(std::string msg, std::ostream& output, time_point_t
 		WriteToStream(std::cout);
 
 #ifdef _WIN32
-	OutputDebugStringA(mh::format("Log: {}\n", msg).c_str());
+	OutputDebugStringA(fmt::format("Log: {}\n", msg).c_str());
 #endif
 }
 
@@ -270,8 +298,10 @@ void tf2_bot_detector::LogFatalError(const mh::source_location& location, const 
 {
 	LogError(location, msg);
 
+
+
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal error",
-		mh::format(
+		fmt::format(
 R"({}
 
 Error source filename: {}:{}
@@ -304,7 +334,7 @@ void tf2_bot_detector::LogException(const mh::source_location& location, const s
 
 	if (severity == LogSeverity::Fatal)
 	{
-		auto dialogText = mh::format(
+		auto dialogText = fmt::format(
 			R"({}
 
 Exception type: {}
@@ -333,21 +363,26 @@ void detail::log_h::LogImpl(const LogMessageColor& color, LogSeverity severity, 
 }
 
 void detail::log_h::LogImpl(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-	const mh::source_location& location, const std::string_view& str)
+	const std::source_location& location, const std::string_view& str)
 {
-	LogImpl(color, severity, visibility, mh::format(MH_FMT_STRING("{}: {}"sv), location, str));
+	// -> 349
+	LogImpl(color, severity, visibility, fmt::format(FMT_STRING("{}: {}"sv), location, str));
 }
 
+// called by LOG_DEFINITION_HELPER() (2nd one, debug)
 void detail::log_h::LogImplBase(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-	const std::string_view& fmtStr, const mh::format_args& args)
+	const std::string_view& fmtStr, const fmt::format_args& args)
 {
-	LogImpl(color, severity, visibility, mh::try_vformat(fmtStr, args));
+	// -> L349
+	LogImpl(color, severity, visibility, try_vformat(fmtStr, args));
 }
 
+// called by LOG_DEFINITION_HELPER() (1st one, real logs.)
 void detail::log_h::LogImplBase(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
-	const mh::source_location& location, const std::string_view& fmtStr, const mh::format_args& args)
+	const std::source_location& location, const std::string_view& fmtStr, const fmt::format_args& args)
 {
-	LogImpl(color, severity, visibility, location, mh::try_vformat(fmtStr, args));
+	// -> L354
+	LogImpl(color, severity, visibility, location, try_vformat(fmtStr, args));
 }
 
 void LogManager::Log(std::string msg, const LogMessageColor& color,
@@ -498,7 +533,19 @@ LogMessageColor::LogMessageColor(const ImVec4& vec) :
 
 namespace tf2_bot_detector
 {
-	LOG_DEFINITION_HELPER(Log, LogColors::DEFAULT, LogSeverity::Info, LogVisibility::Default);
+	// LOG_DEFINITION_HELPER(Log, LogColors::DEFAULT, LogSeverity::Info, LogVisibility::Default);
+	void Log(const mh::source_location& location) {
+		Log(LogColors::DEFAULT, location);
+	}
+	void Log(const LogMessageColor& color, const std::string_view& msg, const mh::source_location& location) {
+		Log(color, location, msg);
+	}
+	void Log(const std::string_view& msg, const mh::source_location& location) {
+		Log(location, msg);
+	}
+	void Log(const LogMessageColor& color, const mh::source_location& location) {
+		Log(color, location, std::string_view{});
+	}
 	LOG_DEFINITION_HELPER(DebugLog, LogColors::DEFAULT_DEBUG, LogSeverity::Info, LogVisibility::Debug);
 	LOG_DEFINITION_HELPER(LogWarning, LogColors::WARN, LogSeverity::Warning, LogVisibility::Default);
 	LOG_DEFINITION_HELPER(DebugLogWarning, LogColors::WARN_DEBUG, LogSeverity::Warning, LogVisibility::Debug);

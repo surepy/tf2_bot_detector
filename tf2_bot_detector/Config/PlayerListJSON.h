@@ -240,12 +240,12 @@ MH_ENUM_REFLECT_BEGIN(tf2_bot_detector::PlayerAttribute)
 MH_ENUM_REFLECT_END()
 
 template<typename CharT>
-struct mh::formatter<tf2_bot_detector::PlayerAttributesList, CharT>
+struct fmt::formatter<tf2_bot_detector::PlayerAttributesList, CharT>
 {
 	constexpr auto parse(basic_format_parse_context<CharT>& ctx) const noexcept { return ctx.begin(); }
 
 	template<typename FormatContext>
-	auto format(const tf2_bot_detector::PlayerAttributesList& list, FormatContext& ctx)
+	auto format(const tf2_bot_detector::PlayerAttributesList& list, FormatContext& ctx) const
 	{
 		bool printed = false;
 		auto it = ctx.out();
@@ -256,9 +256,9 @@ struct mh::formatter<tf2_bot_detector::PlayerAttributesList, CharT>
 				continue;
 
 			if (printed)
-				it = mh::format_to(it, MH_FMT_STRING(", "));
+				it = fmt::format_to(it, FMT_STRING(", "));
 
-			it = mh::format_to(it, MH_FMT_STRING("{:v}"), mh::enum_fmt(thisAttr));
+			it = fmt::format_to(it, FMT_STRING("{:v}"), mh::enum_fmt(thisAttr));
 			printed = true;
 		}
 
@@ -267,19 +267,19 @@ struct mh::formatter<tf2_bot_detector::PlayerAttributesList, CharT>
 };
 
 template<typename CharT>
-struct mh::formatter<tf2_bot_detector::PlayerMarks::Mark, CharT>
+struct fmt::formatter<tf2_bot_detector::PlayerMarks::Mark, CharT>
 {
 	constexpr auto parse(basic_format_parse_context<CharT>& ctx) const noexcept { return ctx.begin(); }
 
 	template<typename FormatContext>
-	auto format(const tf2_bot_detector::PlayerMarks::Mark& mark, FormatContext& ctx)
+	auto format(const tf2_bot_detector::PlayerMarks::Mark& mark, FormatContext& ctx) const
 	{
-		return mh::format_to(ctx.out(), MH_FMT_STRING("{} ({})"), std::quoted(mark.m_FileName), mark.m_Attributes);
+		return fmt::format_to(ctx.out(), FMT_STRING("{} ({})"), fmt::streamed(std::quoted(mark.m_FileName)), mark.m_Attributes);
 	}
 };
 
 template<typename CharT>
-struct mh::formatter<tf2_bot_detector::PlayerMarks, CharT>
+struct fmt::formatter<tf2_bot_detector::PlayerMarks, CharT>
 {
 	constexpr auto parse(basic_format_parse_context<CharT>& ctx) const noexcept { return ctx.begin(); }
 
@@ -289,7 +289,7 @@ struct mh::formatter<tf2_bot_detector::PlayerMarks, CharT>
 		auto it = ctx.out();
 
 		for (auto& mark : marks)
-			it = mh::format_to(it, MH_FMT_STRING("\n\t - {}"), mark);
+			it = fmt::format_to(it, FMT_STRING("\n\t - {}"), mark);
 
 		return it;
 	}

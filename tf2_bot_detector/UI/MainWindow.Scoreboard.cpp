@@ -791,7 +791,7 @@ static void PrintPlayerSourceBans(const IPlayer& player)
 				}
 
 				for (const auto& [server, ban] : banState) {
-					ImGui::TextFmt("      {} (as {}) = ", server, std::quoted(ban.m_UserName));
+					ImGui::TextFmt("      {} (as {}) = ", server, fmt::streamed(std::quoted(ban.m_UserName)));
 					ImGui::SameLineNoPad();
 
 					const ImVec4 banStateColor = ban.m_BanState >= tf2_bot_detector::SteamHistoryAPI::Current ? COLOR_YELLOW : ImVec4{ 1, 1, 1, 1 };
@@ -1008,7 +1008,7 @@ void MainWindow::DrawPlayerTooltipBody(IPlayer& player, TeamShareResult teamShar
 
 		for (auto& [fileName, data] : m_Application->GetModLogic().GetPlayerList()->FindPlayerData(player.GetSteamID())) {
 			ImGui::Indent(18.0f);
-			ImGui::TextFmt("- {} ({}):", std::quoted(fileName), data.GetAttributes());
+			ImGui::TextFmt("- {} ({}):", fmt::streamed(std::quoted(fileName)), data.GetAttributes());
 
 			ImGui::Indent(27.0f);
 

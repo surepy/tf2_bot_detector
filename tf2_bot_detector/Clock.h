@@ -5,6 +5,8 @@
 #include <ctime>
 #include <ostream>
 
+#include <fmt/ostream.h>
+
 namespace tf2_bot_detector
 {
 	using clock_t = std::chrono::system_clock;
@@ -128,3 +130,7 @@ namespace tf2_bot_detector
 		return os;
 	}
 }
+
+// fmt 10 removed the implicit operator<< fallback; opt HumanDuration in explicitly.
+template<typename TRep, typename TPeriod>
+struct fmt::formatter<tf2_bot_detector::HumanDuration<TRep, TPeriod>> : fmt::ostream_formatter {};

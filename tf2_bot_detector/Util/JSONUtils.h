@@ -89,12 +89,12 @@ namespace tf2_bot_detector
 			}
 			else if constexpr (detail::JSON_TRY_GET_TO_LOGGING)
 			{
-				DebugLog(MH_SOURCE_LOCATION_CURRENT(), "Failed to find {}", std::quoted(name));
+				DebugLog(MH_SOURCE_LOCATION_CURRENT(), "Failed to find {}", fmt::streamed(std::quoted(name)));
 			}
 		}
 		catch (...)
 		{
-			LogException(MH_SOURCE_LOCATION_CURRENT(), "Exception when getting {}", std::quoted(name));
+			LogException(MH_SOURCE_LOCATION_CURRENT(), "Exception when getting {}", fmt::streamed(std::quoted(name)));
 		}
 
 		defaultValFunc(value);
@@ -210,7 +210,7 @@ namespace tf2_bot_detector
 		}
 		catch (...)
 		{
-			LogException(MH_SOURCE_LOCATION_CURRENT(), "Exception when getting {}", std::quoted(name));
+			LogException(MH_SOURCE_LOCATION_CURRENT(), "Exception when getting {}", fmt::streamed(std::quoted(name)));
 		}
 
 		value.reset();

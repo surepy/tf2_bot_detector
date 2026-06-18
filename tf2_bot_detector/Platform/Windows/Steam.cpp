@@ -75,7 +75,7 @@ SteamID tf2_bot_detector::Platform::GetCurrentActiveSteamID()
 		universe = SteamAccountUniverse::Dev;
 	else
 	{
-		LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown steam account universe {}", std::quoted(universeStr));
+		LogError(MH_SOURCE_LOCATION_CURRENT(), "Unknown steam account universe {}", fmt::streamed(std::quoted(universeStr)));
 		return {};
 	}
 

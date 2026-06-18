@@ -24,7 +24,7 @@ namespace
 				return "They were right all along! I *am* a bad programmer (logic error).";
 			}
 
-			return mh::format("Unknown error condition {}", condition);
+			return fmt::format("Unknown error condition {}", condition);
 		}
 	};
 

@@ -13,6 +13,8 @@
 #include <memory>
 #include <string_view>
 
+#undef GetMessage
+
 namespace tf2_bot_detector
 {
 	enum class TeamShareResult;

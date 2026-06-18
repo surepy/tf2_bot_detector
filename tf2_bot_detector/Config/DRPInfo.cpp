@@ -2,7 +2,11 @@
 #include "Util/JSONUtils.h"
 #include "Util/RegexUtils.h"
 
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/fmtstr.hpp>
 #include <mh/text/stringops.hpp>
 #include <mh/text/string_insertion.hpp>
@@ -90,11 +94,11 @@ void DRPInfo::DRPFile::ValidateSchema(const ConfigSchemaInfo& schema) const
 	BaseClass::ValidateSchema(schema);
 
 	if (schema.m_Type != "discord_rich_presence")
-		throw std::runtime_error(mh::format("Schema {} is not a sponsors list", std::quoted(schema.m_Type)));
+		throw std::runtime_error(fmt::format("Schema {} is not a sponsors list", fmt::streamed(std::quoted(schema.m_Type))));
 
 	if (schema.m_Version != DRP_SCHEMA_VERSION)
 	{
-		throw std::runtime_error(mh::format("DRP schema must be version {}, but was {}",
+		throw std::runtime_error(fmt::format("DRP schema must be version {}, but was {}",
 			DRP_SCHEMA_VERSION, schema.m_Version));
 	}
 }
@@ -104,7 +108,7 @@ std::string DRPInfo::Map::GetLargeImageKey() const
 	if (!m_LargeImageKeyOverride.empty())
 		return m_LargeImageKeyOverride;
 
-	return mh::format("map_{}", m_MapNames.at(0));
+	return fmt::format("map_{}", m_MapNames.at(0));
 }
 
 std::string DRPInfo::Map::GetFriendlyName() const
@@ -150,7 +154,7 @@ bool DRPInfo::Map::Matches(const std::string_view& mapName) const
 		}
 		catch (const std::exception& e)
 		{
-			LogError(MH_SOURCE_LOCATION_CURRENT(), mh::format("{}: {}", typeid(e).name(), e.what()));
+			LogError(MH_SOURCE_LOCATION_CURRENT(), fmt::format("{}: {}", typeid(e).name(), e.what()));
 		}
 	}
 

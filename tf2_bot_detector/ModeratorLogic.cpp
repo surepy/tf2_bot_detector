@@ -15,6 +15,8 @@
 #include "WorldState.h"
 #include "Networking/SteamAPI.h"
 
+#include <fmt/ostream.h>
+
 #include <mh/algorithm/algorithm_generic.hpp>
 #include <mh/algorithm/multi_compare.hpp>
 #include <mh/text/case_insensitive_string.hpp>
@@ -269,17 +271,17 @@ void ModeratorLogic::OnRuleMatch(const ModerationRule& rule, const IPlayer& play
 	for (PlayerAttribute attribute : rule.m_Actions.m_Mark)
 	{
 		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, true, fmt::format("[auto] automatically marked: {} | reason: {}", to_string(attribute), reason)))
-			Log("Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
+			Log("Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), fmt::streamed(std::quoted(rule.m_Description)));
 	}
 	for (PlayerAttribute attribute : rule.m_Actions.m_TransientMark)
 	{
 		if (SetPlayerAttribute(player, attribute, AttributePersistence::Transient))
-			Log("[TRANSIENT] Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
+			Log("[TRANSIENT] Marked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), fmt::streamed(std::quoted(rule.m_Description)));
 	}
 	for (PlayerAttribute attribute : rule.m_Actions.m_Unmark)
 	{
 		if (SetPlayerAttribute(player, attribute, AttributePersistence::Saved, false))
-			Log("Unmarked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), std::quoted(rule.m_Description));
+			Log("Unmarked {} with {:v} due to rule match with {}", player, mh::enum_fmt(attribute), fmt::streamed(std::quoted(rule.m_Description)));
 	}
 }
 
@@ -334,7 +336,7 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 	{
 		if (auto localPlayer = GetLocalPlayer(); localPlayer && (player.GetSteamID() != localPlayer->GetSteamID()) && botMsgDetected)
 		{
-			Log("Detected message from {} as another instance of TF2BD: {}", player, std::quoted(msg));
+			Log("Detected message from {} as another instance of TF2BD: {}", player, fmt::streamed(std::quoted(msg)));
 			SetUserRunningTool(player, true);
 
 			if (player.GetUserID() < localPlayer->GetUserID())
@@ -367,7 +369,7 @@ void ModeratorLogic::OnChatMsg(IWorldState& world, IPlayer& player, const std::s
 			os << std::quoted(msg);
 
 			// this fix is dogshit, this is actually a terrible way to "fix" this
-			// but i want to write less code rn so this is what you get 
+			// but i want to write less code rn so this is what you get
 			// what this is doing is it's only running through chatMsgMatch (this makes it run it twice)
 			// so it doesn't actually append a chat message to reason when it's an avatar match for example
 			// the proper fix would be changing how rule.Match works and the return data
@@ -490,7 +492,7 @@ void ModeratorLogic::HandleFriendlyCheaters(uint8_t friendlyPlayerCount, uint8_t
 	// determine if we should start over our kick iterator.
 	// FLAW: when there's like two bots in the server, and one joins the moment that one leaves-
 	// there's a chance of this code just missing players, especially when all the bots are not connected.
-	// however this should be fine, because the worst that can happen is 
+	// however this should be fine, because the worst that can happen is
 	auto startOver = [friendlyCheaters] {
 		// we've apparently exhaused our list of cheaters to try,
 		// so we should start over from the first player again.
@@ -579,7 +581,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 	const auto now = tfbd_clock_t::now();
 
 	// There are enough people on the other team to votekick the cheater(s)
-	std::string logMsg = mh::format("Telling the other team about {} cheater(s) named ", enemyCheaters.size());
+	std::string logMsg = fmt::format("Telling the other team about {} cheater(s) named ", enemyCheaters.size());
 
 	const bool isBotLeader = IsBotLeader();
 	bool needsWarning = false;
@@ -589,16 +591,16 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 	{
 		// Theoretically this should never happen, but don't embarass ourselves
 		if (cheater->GetNameSafe().empty())
-			continue; 
+			continue;
 
-		mh::format_to(std::back_inserter(logMsg), "\n\t{}", cheater);
+		fmt::format_to(std::back_inserter(logMsg), "\n\t{}", fmt::streamed(cheater));
 
 		auto& cheaterData = cheater->GetOrCreateData<PlayerExtraData>();
 
 		// we should warn if either
 		// 1. m_ChatWarningSendOnce is false
 		// 2. m_WarnedOnce is false
-		if (!m_Settings->m_ChatWarningSendOnce || !cheaterData.m_WarnedOnce) {		
+		if (!m_Settings->m_ChatWarningSendOnce || !cheaterData.m_WarnedOnce) {
 			chatMsgCheaterNames.emplace_back(cheater->GetNameSafe());
 		}
 		// we've warned for this guy, dont send again if m_ChatWarningSendOnce is true
@@ -620,7 +622,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 			else
 			{
 				cheaterDebugWarnings.emplace(
-					mh::format("We're not bot leader: {} seconds remaining for ACTIVE cheater(s) ", to_seconds(cheaterData.m_WarningDelayEnd.value() - now)),
+					fmt::format("We're not bot leader: {} seconds remaining for ACTIVE cheater(s) ", to_seconds(cheaterData.m_WarningDelayEnd.value() - now)),
 					cheater);
 			}
 		}
@@ -642,7 +644,7 @@ void ModeratorLogic::HandleConnectedEnemyCheaters(const std::vector<Cheater>& en
 				if (it != cheatersBegin)
 					msgFmt.puts(", ");
 
-				msgFmt.fmt("{}", it->second);
+				msgFmt.fmt("{}", fmt::streamed(it->second));
 			}
 		});
 
@@ -767,7 +769,7 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 		if (isBotLeader)
 		{
 			// We're supposedly in charge
-			DebugLog("We're bot leader: Triggered connecting warning for {}", cheater);
+			DebugLog("We're bot leader: Triggered connecting warning for {}", fmt::streamed(cheater));
 			needsWarning = true;
 			break;
 		}
@@ -775,19 +777,19 @@ void ModeratorLogic::HandleConnectingEnemyCheaters(const std::vector<Cheater>& c
 		{
 			if (now >= cheaterData.m_ConnectingWarningDelayEnd)
 			{
-				DebugLog("We're not bot leader: Delay expired for connecting cheater {}", cheater);
+				DebugLog("We're not bot leader: Delay expired for connecting cheater {}", fmt::streamed(cheater));
 				needsWarning = true;
 				break;
 			}
 			else
 			{
 				DebugLog("We're not bot leader: {} seconds remaining for connecting cheater {}",
-					to_seconds(cheaterData.m_ConnectingWarningDelayEnd.value() - now), cheater);
+					to_seconds(cheaterData.m_ConnectingWarningDelayEnd.value() - now), fmt::streamed(cheater));
 			}
 		}
 		else if (!cheaterData.m_ConnectingWarningDelayEnd.has_value())
 		{
-			DebugLog("We're not bot leader: Starting delay for connecting cheater {}", cheater);
+			DebugLog("We're not bot leader: Starting delay for connecting cheater {}", fmt::streamed(cheater));
 			cheaterData.m_ConnectingWarningDelayEnd = now + CHEATER_WARNING_DELAY;
 		}
 	}
@@ -943,7 +945,7 @@ void ModeratorLogic::HandleConnectingMarkedPlayers(const std::vector<Cheater>& c
 				fileName = std::filesystem::path(fileName).filename().string();
 			}
 
-			msg += mh::format("{} - {}, ", name, marksToString(marks), fileName);
+			msg += fmt::format("{} - {}, ", name, marksToString(marks), fileName);
 		}
 
 		msg.pop_back();
@@ -1087,7 +1089,7 @@ bool ModeratorLogic::SetPlayerAttribute(const SteamID& player, std::string name,
 				case AttributePersistence::Transient:  return data.m_TransientAttributes;
 				}
 
-				throw std::invalid_argument(mh::format("{}", MH_SOURCE_LOCATION_CURRENT()));
+				throw std::invalid_argument(fmt::format("{}", ::std::source_location::current()));
 			}();
 
 			attributeChanged = attribs.SetAttribute(attribute, set);
@@ -1282,9 +1284,9 @@ bool ModeratorLogic::InitiateVotekick(const IPlayer& player, KickReason reason, 
 
 	if (m_ActionManager->QueueAction<KickAction>(userID.value(), reason))
 	{
-		std::string logMsg = mh::format("InitiateVotekick on {}: {:v}", player, mh::enum_fmt(reason));
+		std::string logMsg = fmt::format("InitiateVotekick on {}: {:v}", player, mh::enum_fmt(reason));
 		if (marks)
-			mh::format_to_container(logMsg, ", in playerlist(s){}", *marks);
+			fmt::format_to(std::back_inserter(logMsg), ", in playerlist(s){}", *marks);
 
 		Log(std::move(logMsg));
 

@@ -174,5 +174,5 @@ void ChatWrappersGeneratorPage::Commit(const CommitState& cs)
 
 std::string ChatWrappersGeneratorPage::GetChatWrapperStringToken(uint32_t token)
 {
-	return mh::format("TF2BD_CHAT_WRAPPER_TOKEN_VERIFY_{}", token);
+	return fmt::format("TF2BD_CHAT_WRAPPER_TOKEN_VERIFY_{}", token);
 }

@@ -215,8 +215,7 @@ namespace
 			{
 				const mh::exception_details details(std::current_exception());
 				LogException(MH_SOURCE_LOCATION_CURRENT(), __FUNCSIG__);
-				SetUpdateStatus(MH_SOURCE_LOCATION_CURRENT(), failure,
-					mh::format("{}:\n\t- {}\n\t- {}", failureMsg, details.type_name(), details.m_Message));
+				SetUpdateStatus(MH_SOURCE_LOCATION_CURRENT(), failure, fmt::format("{}:\n\t- {}\n\t- {}", failureMsg, details.type_name(), details.m_Message));
 				variant.template emplace<std::monostate>();
 			}
 
@@ -293,14 +292,14 @@ namespace
 						if (update.m_BuildInfo.m_Version <= VERSION)
 						{
 							m_State.SetUpdateCheck(MH_SOURCE_LOCATION_CURRENT(), UpdateStatus::UpToDate,
-								mh::format("Up to date (v{} {:v})", VERSION, mh::enum_fmt(
+								fmt::format("Up to date (v{} {:v})", VERSION, mh::enum_fmt(
 									m_Settings.m_ReleaseChannel.value_or(ReleaseChannel::Public))),
 								std::move(update));
 						}
 						else
 						{
 							m_State.SetUpdateCheck(MH_SOURCE_LOCATION_CURRENT(), UpdateStatus::UpdateAvailable,
-								mh::format("Update available (v{} {:v})", update.m_BuildInfo.m_Version, mh::enum_fmt(
+								fmt::format("Update available (v{} {:v})", update.m_BuildInfo.m_Version, mh::enum_fmt(
 									m_Settings.m_ReleaseChannel.value_or(ReleaseChannel::Public))),
 								std::move(update));
 						}
@@ -315,7 +314,7 @@ namespace
 			catch (const std::exception& e)
 			{
 				m_State.ClearUpdateCheck(MH_SOURCE_LOCATION_CURRENT(), UpdateStatus::CheckFailed,
-					mh::format("Update check failed:\n\t- {}\n\t- {}", typeid(e).name(), e.what()));
+					fmt::format("Update check failed:\n\t- {}\n\t- {}", typeid(e).name(), e.what()));
 			}
 		}
 	}

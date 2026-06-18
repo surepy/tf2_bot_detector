@@ -9,7 +9,11 @@
 
 #include "ConsoleLines/ChatConsoleLine.h"
 
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/formatters/error_code.hpp>
 #include <mh/future.hpp>
 

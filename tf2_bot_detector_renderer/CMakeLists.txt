@@ -4,6 +4,8 @@ include(../cmake/init-preproject.cmake)
 project(tf2_bot_detector_renderer)
 include(../cmake/init-postproject.cmake)
 
+set(CMAKE_CXX_STANDARD 20)
+
 # our source files
 add_library(tf2_bot_detector_renderer OBJECT
 	"renderer.h"
@@ -153,7 +155,6 @@ target_link_libraries(tf2_bot_detector_renderer
 	PRIVATE
 		SDL2::SDL2
 		fmt::fmt
-		mh::stuff
 )
 
 target_include_directories(tf2_bot_detector_renderer PRIVATE "${CMAKE_SOURCE_DIR}/tf2_bot_detector")

@@ -49,9 +49,12 @@ TF2BotDetectorSDLRenderer::TF2BotDetectorSDLRenderer() : TF2BotDetectorRendererB
 
 	// Create our window
 	// 
-	// SDL_WINDOW_HIDDEN: Why? Why do I have to do this it complains constantly about IID_ITfUIElementSink not being registered, why???
+	// SDL_WINDOW_HIDDEN: Why? Why do I have to do this or it complains constantly about IID_ITfUIElementSink not being registered, why???
 	// why do i have to create it with SDL_WINDOW_HIDDEN and then call SDL_ShowWindow at the bottom of this constructor??
 	// it's also how pazer's imgui_desktop handled it;; but, but why??
+	//
+	// - a born-visible window gets its first WM_SETFOCUS synchronously inside DL_CreateWindow, which kicks SDL's TSF/IME setup before that subsystem is fully initialized.
+	// so this is needed or we crash /shrug
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
 	window = SDL_CreateWindow(version_string.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
 	// uh oh.

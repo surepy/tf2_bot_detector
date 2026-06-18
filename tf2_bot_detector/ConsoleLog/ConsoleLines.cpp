@@ -12,7 +12,11 @@
 #include <mh/algorithm/multi_compare.hpp>
 #include <mh/text/charconv_helper.hpp>
 #include <mh/text/fmtstr.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
 #include <mh/text/string_insertion.hpp>
 #include <Util/ScopeGuards.h>
 

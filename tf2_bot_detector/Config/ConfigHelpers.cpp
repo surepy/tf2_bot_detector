@@ -14,6 +14,12 @@
 #include <mh/text/string_insertion.hpp>
 #include <nlohmann/json.hpp>
 
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
+
 #include <regex>
 
 using namespace std::string_literals;
@@ -24,9 +30,9 @@ auto tf2_bot_detector::GetConfigFilePaths(const std::string_view& basename) -> C
 {
 	ConfigFilePaths retVal;
 
-	if (auto path = mh::format("cfg/{}.official.json", basename); IFilesystem::Get().Exists(path))
+	if (auto path = fmt::format("cfg/{}.official.json", basename); IFilesystem::Get().Exists(path))
 		retVal.m_Official = path;
-	if (auto path = mh::format("cfg/{}.json", basename); IFilesystem::Get().Exists(path))
+	if (auto path = fmt::format("cfg/{}.json", basename); IFilesystem::Get().Exists(path))
 		retVal.m_User = path;
 
 	constexpr std::filesystem::directory_options options =
@@ -36,7 +42,7 @@ auto tf2_bot_detector::GetConfigFilePaths(const std::string_view& basename) -> C
 	{
 		for (const auto& file : IFilesystem::Get().IterateDir("cfg", false, options))
 		{
-			const std::regex filenameRegex(mh::format("{}{}", basename, R"regex(\.(?!official).*\.json)regex"),
+			const std::regex filenameRegex(fmt::format("{}{}", basename, R"regex(\.(?!official).*\.json)regex"),
 				std::regex::optimize | std::regex::icase);
 
 			const auto path = file.path();
@@ -152,7 +158,7 @@ static mh::task<bool> TryAutoUpdate(std::filesystem::path filename, const nlohma
 
 void tf2_bot_detector::to_json(nlohmann::json& j, const ConfigSchemaInfo& d)
 {
-	j = mh::format("{}", d);
+	j = fmt::format("{}", d);
 }
 
 void tf2_bot_detector::from_json(const nlohmann::json& j, ConfigSchemaInfo& d)
@@ -216,7 +222,7 @@ static void SaveConfigFileBackup(const std::filesystem::path& filename) noexcept
 	std::filesystem::path backupPath;
 	for (size_t i = 1; ; i++)
 	{
-		backupPath = baseTargetPath / mh::format("{}.BACKUP_{}", filename.filename().string(), i);
+		backupPath = baseTargetPath / fmt::format("{}.BACKUP_{}", filename.filename().string(), i);
 
 		if (!std::filesystem::exists(backupPath))
 		{
@@ -250,7 +256,7 @@ mh::task<std::error_condition> ConfigFileBase::LoadFileAsync(const std::filesyst
 
 	if (loadResult && loadResult != std::errc::no_such_file_or_directory) {
 		SaveConfigFileBackup(filename);
-		// investigate: 
+		// investigate:
 		// co_return loadResult;
 	}
 

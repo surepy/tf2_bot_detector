@@ -5,7 +5,12 @@
 #define CATCH_CONFIG_NOSTDOUT
 
 #include <catch2/catch.hpp>
-#include <mh/text/format.hpp>
+#include <fmt/format.h>
+#include <fmt/std.h>
+#include <fmt/ostream.h>
+#include <fmt/chrono.h>
+#include <fmt/xchar.h>
+#include <fmt/format.h>
 
 namespace Catch
 {
@@ -27,7 +32,7 @@ namespace Catch
 
 		int sync() override
 		{
-			auto message = mh::format("[Catch2] {}", str());
+			auto message = fmt::format("[Catch2] {}", str());
 			switch (m_Type)
 			{
 			case LogBufType::Out:
@@ -37,7 +42,7 @@ namespace Catch
 
 			default:
 				tf2_bot_detector::LogError(MH_SOURCE_LOCATION_CURRENT(),
-					mh::format("[Catch2] Unknown LogBufType {}", int(m_Type)));
+					fmt::format("[Catch2] Unknown LogBufType {}", int(m_Type)));
 				[[fallthrough]];
 			case LogBufType::Error:
 				tf2_bot_detector::LogError(std::move(message));

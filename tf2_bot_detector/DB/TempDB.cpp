@@ -98,7 +98,7 @@ namespace
 			m_Connection.reset();
 			std::filesystem::remove(CreateDBPath());
 			Connect();
-			m_Connection->exec(mh::format("PRAGMA user_version = {}", DB_VERSION)); // TODO check current user_version and delete if different
+			m_Connection->exec(fmt::format("PRAGMA user_version = {}", DB_VERSION)); // TODO check current user_version and delete if different
 		}
 
 		m_Connection->exec("PRAGMA journal_mode = WAL;");
@@ -184,14 +184,14 @@ namespace
 
 	void TempDB::GetNearestAccountAgeInfos(SteamID id, std::optional<AccountAgeInfo>& lower, std::optional<AccountAgeInfo>& upper) const
 	{
-		auto queryStr = mh::format(R"SQL(
+		auto queryStr = fmt::format(R"SQL(
 SELECT max({col_AccountID}) AS {col_AccountID}, {col_CreationTime} FROM {tbl_AccountAges} WHERE {col_AccountID} <= $steamID
 UNION ALL
 SELECT min({col_AccountID}) AS {col_AccountID}, {col_CreationTime} FROM {tbl_AccountAges} WHERE {col_AccountID} >= $steamID)SQL",
 
-			mh::fmtarg("col_AccountID", s_TableAccountAges.COL_ACCOUNT_ID.m_Name),
-			mh::fmtarg("col_CreationTime", s_TableAccountAges.COL_CREATION_TIME.m_Name),
-			mh::fmtarg("tbl_AccountAges", s_TableAccountAges.GetTableName()));
+			fmt::arg("col_AccountID", s_TableAccountAges.COL_ACCOUNT_ID.m_Name),
+			fmt::arg("col_CreationTime", s_TableAccountAges.COL_CREATION_TIME.m_Name),
+			fmt::arg("tbl_AccountAges", s_TableAccountAges.GetTableName()));
 
 		Statement2 query(SQLite::Statement(const_cast<SQLite::Database&>(m_Connection.value()), queryStr));
 		query.bind("$steamID", id.GetAccountID());
