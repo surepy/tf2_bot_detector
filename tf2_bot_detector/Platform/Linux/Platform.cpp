@@ -6,6 +6,7 @@
 
 #include <mh/io/filesystem_helpers.hpp>
 
+#include <cstdlib>
 #include <fstream>
 
 // "ERROR_PRIVILEGE_NOT_HELD" doesn't really seem to apply in linux, so just do permission denied again (lol)
@@ -54,9 +55,16 @@ bool tf2_bot_detector::Platform::IsPortAvailable(uint16_t port)
 
 std::filesystem::path tf2_bot_detector::Platform::GetCurrentExeDir()
 {
+    // When run as an AppImage, /proc/self/exe points inside the read-only squashfs mount, but
+    // cfg/fonts/logs/temp/etc. ship next to the .AppImage file (like the Windows portable layout,
+    // not packaged into the image). $APPIMAGE is the absolute path to that file, so its parent is
+    // the writable portable folder we want to anchor reads and writes to.
+    if (const char* appimage = getenv("APPIMAGE"))
+        return std::filesystem::path(appimage).parent_path();
+
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    std::filesystem::path path (result);
-    
-    return path.parent_path();
+
+    // readlink does not null-terminate; bound the string by the byte count it actually wrote.
+    return std::filesystem::path(std::string(result, count > 0 ? count : 0)).parent_path();
 }

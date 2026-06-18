@@ -54,6 +54,39 @@ call on a pool thread, resumes the coroutine on completion). This also **deletes
       per-host throttling already mostly serializes, but worth verifying under concurrency.
 - [ ] Once done, CI can move back off the `windows-2022` pin to `windows-latest`.
 
+## AppImage target (Linux)
+
+**Feasibility:** packaging is easy (~2-3h); the real gate is one code issue (~1 day total for a
+working AppImage). It's a single SDL2+OpenGL ELF + a `staging/` resource tree
+(`cfg/ fonts/ images/ licenses/ tf2_addons/`) → standard `linuxdeploy` + `appimagetool` flow.
+
+**Distribution model:** the AppImage is *just the binary* (the `tf2_bot_detector.exe` equivalent).
+`cfg/ fonts/ images/ licenses/ logs/ temp/ tf2_addons/` + the `.AppImage` ship together in one
+folder, exactly like the Windows portable zip — nothing is packaged *inside* the read-only image.
+So `dirname($APPIMAGE)` is the writable portable folder for both reads and writes; no read/write
+split, no XDG, no separate data dir.
+
+**The data-dir fix (DONE):** `Platform::GetCurrentExeDir()` (Linux) now returns
+`path($APPIMAGE).parent_path()` when `$APPIMAGE` is set, else `/proc/self/exe`'s dir. It has a
+single caller (`Filesystem.cpp:73 → m_ExeDir`), so everything anchored on `m_ExeDir` (search path,
+the Steam-cwd `current_path()` chdir, `GetLocalAppDataDir`, `GetTempDir`) follows for free — and the
+chdir is fine now because the anchor is the writable external folder, not the read-only mount.
+(Also fixed a latent `readlink` non-null-termination bug in the same function.)
+
+Remaining packaging work:
+- [ ] Scaffold AppDir + `AppRun` (carry over `SDL_VIDEODRIVER=x11` and `LD_LIBRARY_PATH` from
+      `staging/launch_tf2bd_linux.sh`) + `.desktop` + icon (start from `images/`).
+- [ ] No `install()` rules exist in any CMakeLists → either add them or hand-assemble the AppDir
+      in a script (similar to how `staging/` is already built). Remember: resource folders go next
+      to the `.AppImage`, NOT inside it.
+- [ ] Bundle `discord_game_sdk.so` (`platform: "!static"`) so it's resolvable via
+      rpath/`LD_LIBRARY_PATH`. Leave libGL/mesa unbundled (host driver — linuxdeploy default).
+- [ ] Build target: compile in the **sniper SDK** (Steam Runtime 3.0, Debian 11 / glibc 2.31) for
+      a wide, stable ABI floor — guaranteed present post-TF2-x64 (TF2 itself requires sniper; see
+      `TF2CommandLinePage.cpp:294`), and the same env TF2 runs in. Run host-side; do NOT launch
+      TF2BD *through* sniper, since TF2BD launches TF2 via sniper itself → nested pressure-vessel.
+- [ ] Optional: wire the AppImage build as a CMake/CI target.
+
 ## CI
 
 - [ ] **`build-linux.yml:151`** still copies `submodules/mh_stuff/libmh-stuff.so` to staging —
