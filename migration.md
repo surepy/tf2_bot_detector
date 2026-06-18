@@ -93,16 +93,19 @@ on fmt-8 behaviors that fmt 9.0/10 removed. The fixes:
   nothing broke. (Could delete our custom source_location formatter as cleanup — it's now dead
   for `char`.)
 
-## Follow-ups (not done yet)
+## Follow-ups
 
-- [ ] **Drop the `mh::stuff` shim entirely.** SourceRCON's *only* mh usage is
-  `mh::locked_value<srcon_addr>` in `src/async_client.cpp` — just a mutex + value wrapper.
-  Replace it with a plain `std::mutex`-guarded value (in the surepy/tf2bd_SourceRCON fork),
-  then delete `mh_vendored`/`mh::stuff` from the root CMakeLists.
+> Remaining open items now tracked in `TODO.md` (alongside the cpprestsdk drop). Listed here
+> too for historical continuity.
+
+- [~] **Drop the `mh::stuff` shim entirely.** SourceRCON's *only* mh usage was
+  `mh::locked_value<srcon_addr>` in `src/async_client.cpp` — **done** in fork commit `f0275ed`
+  (replaced with a plain `std::mutex`-guarded value; its CMake `mh::stuff` link + FetchContent
+  block removed). Still TODO: delete `mh_vendored`/`mh::stuff` from the root CMakeLists.
 - [ ] **`git rm` the `submodules/mh_stuff` submodule** (and its `.gitmodules` entry). Held back
   until the build is fully green so the originals stay available for reference.
-- [ ] **Prune unused vendored headers.** The whole `mh/` tree was copied to get green with low
-  risk; headers that nothing includes can be deleted later.
+- [x] **Prune unused vendored headers.** Done — deleted 17 unused headers; the include closure
+  is now 59/59 with no dead files.
 - [ ] **fmt 11/12** would require bumping the vcpkg submodule + `builtin-baseline` to a 2025+
   commit (re-resolves all ports). Also drop the `_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING`
   workaround in `tf2_bot_detector_common/CMakeLists.txt` once comfortably past fmt 10.1.1.
