@@ -10,9 +10,7 @@ on:
 
 env:
   VCPKG_ROOT: ${{ github.workspace }}/submodules/vcpkg
-  VCPKG_BINARY_SOURCES: 'default'
-  VCPKG_FEATURE_FLAGS: manifests,binarycaching,registries
-  VCPKG_CACHE_VERSION: 9
+  VCPKG_FEATURE_FLAGS: manifests,registries
 
 defaults:
   run:
@@ -20,7 +18,7 @@ defaults:
 
 jobs:
   config:
-    runs-on: windows-latest
+    runs-on: windows-2022
     outputs:
       tf2bd_version: ${{ steps.tf2bd_version.outputs.value }}
       tf2bd_workspace: ${{ steps.tf2bd_paths.outputs.workspace }}
@@ -59,16 +57,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
         triplet: [x86-windows, x64-windows]
         discord_integration: [true]
         # discord_integration: [true, false]        
         build_type: [Debug, Release]
         include:
-          - os: windows-latest
+          - os: windows-2022
             triplet: x86-windows
             tf2bd_arch: x86
-          - os: windows-latest
+          - os: windows-2022
             triplet: x64-windows
             tf2bd_arch: x64
 
