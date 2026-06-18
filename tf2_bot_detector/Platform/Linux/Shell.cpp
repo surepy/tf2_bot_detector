@@ -50,6 +50,7 @@ std::filesystem::path tf2_bot_detector::Shell::BrowseForFolderDialog() {
     fgets(buffer, sizeof(buffer), pipe);
     pclose(pipe);
     std::string file_str = buffer;
+    file_str.pop_back(); // remove trailing newline, #46 (shit fix but whatever)
     Log("Selected file: {}", file_str);
 
     return std::filesystem::path(file_str);
