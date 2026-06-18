@@ -316,10 +316,12 @@ static void OpenTF2(const Settings& settings, const std::string_view& rconPasswo
 	const std::string final_cmd = fmt::format("{}/ubuntu12_32/reaper SteamLaunch AppId=440 -- {}", settings.GetSteamDir(), steam_launch_wrapper);
 	*/
 	// getenv("TF2BD_TF2_LD_PRELOAD")
-	Processes::Launch(runtime_sniper, sniper_args);
+	// tf.sh expects the tf2 install dir (where it lives) as the cwd, not the sniper runtime dir.
+	Processes::Launch(runtime_sniper, sniper_args, false, gameEXE.parent_path());
 #else
 	// if not linux we don't have to do all of that and just launch the game.
-	Processes::Launch(gameEXE, args);
+	// launch with the game's own dir as cwd (ShellExecute otherwise inherits our cwd).
+	Processes::Launch(gameEXE, args, false, gameEXE.parent_path());
 #endif
 }
 

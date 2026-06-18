@@ -64,25 +64,26 @@ bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& proce
 }
 
 void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable,
-	const std::vector<std::string>& args, bool elevated)
+	const std::vector<std::string>& args, bool elevated, const std::filesystem::path& workingDir)
 {
 	std::string cmdLine;
 
 	for (const auto& arg : args)
 		cmdLine << std::quoted(arg) << ' ';
 
-	return Launch(executable, cmdLine, elevated);
+	return Launch(executable, cmdLine, elevated, workingDir);
 }
 
 void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable,
-	const std::string_view& args, bool elevated)
+	const std::string_view& args, bool elevated, const std::filesystem::path& workingDir)
 {
     std::string execute_command;
 
     // TODO: implement elevated?
     execute_command = fmt::format("{} {}", executable, args);
-    // we need to change cwd apparently?
-    execute_command = fmt::format("cd {} && {} &", executable.parent_path(), execute_command);
+    // run in the requested working directory; default to the executable's own folder.
+    const std::filesystem::path cwd = workingDir.empty() ? executable.parent_path() : workingDir;
+    execute_command = fmt::format("cd {} && {} &", cwd, execute_command);
     Log(execute_command);
 
     system(execute_command.c_str());

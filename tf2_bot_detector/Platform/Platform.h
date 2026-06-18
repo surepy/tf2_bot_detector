@@ -87,9 +87,9 @@ namespace tf2_bot_detector
 			bool IsProcessRunning(const std::string_view& processName);
 
 			void Launch(const std::filesystem::path& executable, const std::vector<std::string>& args = {},
-				bool elevated = false);
+				bool elevated = false, const std::filesystem::path& workingDir = {});
 			void Launch(const std::filesystem::path& executable, const std::string_view& args = {},
-					bool elevated = false);
+					bool elevated = false, const std::filesystem::path& workingDir = {});
 			int GetCurrentProcessID();
 
 			size_t GetCurrentRAMUsage();

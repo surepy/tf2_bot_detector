@@ -283,18 +283,18 @@ bool tf2_bot_detector::Processes::IsProcessRunning(const std::string_view& proce
 }
 
 void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable,
-	const std::vector<std::string>& args, bool elevated)
+	const std::vector<std::string>& args, bool elevated, const std::filesystem::path& workingDir)
 {
 	std::string cmdLine;
 
 	for (const auto& arg : args)
 		cmdLine << std::quoted(arg) << ' ';
 
-	return Launch(executable, cmdLine, elevated);
+	return Launch(executable, cmdLine, elevated, workingDir);
 }
 
 void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable,
-	const std::string_view& args, bool elevated)
+	const std::string_view& args, bool elevated, const std::filesystem::path& workingDir)
 {
 	DebugLog("ShellExecute({}, {}) (elevated = {})", executable, args, elevated);
 
@@ -305,7 +305,7 @@ void tf2_bot_detector::Processes::Launch(const std::filesystem::path& executable
 		elevated ? L"runas" : L"open",
 		executable.c_str(),
 		cmdLineWide.c_str(),
-		nullptr,
+		workingDir.empty() ? nullptr : workingDir.c_str(),
 		SW_SHOWDEFAULT);
 
 	if (reinterpret_cast<intptr_t>(result) <= 32)
