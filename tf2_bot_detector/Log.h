@@ -141,13 +141,12 @@ namespace tf2_bot_detector
 		NOINLINE void LogImplBase(const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
 			const std::source_location& location, const std::string_view& fmtStr, const fmt::format_args& args);
 
-		// TODO: make fmtStr not always fmt::runtime() <- possible even?
 		template<typename... TArgs>
 		NOINLINE inline auto LogImpl(
 			const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
 			const std::string_view& fmtStr, const TArgs&... args
 		)
-			-> decltype(::try_format(fmt::runtime(fmtStr), fmt::make_format_args(args...)), void())
+			-> decltype(::try_format(fmtStr, fmt::make_format_args(args...)), void())
 		{
 			LogImplBase(color, severity, visibility, fmtStr, fmt::make_format_args(args...));
 		}
@@ -157,7 +156,7 @@ namespace tf2_bot_detector
 			const LogMessageColor& color, LogSeverity severity, LogVisibility visibility,
 			const std::source_location& location, const std::string_view& fmtStr, const TArgs&... args
 		)
-			-> decltype(::try_format(fmt::runtime(fmtStr), fmt::make_format_args(args...)), void())
+			-> decltype(::try_format(fmtStr, fmt::make_format_args(args...)), void())
 		{
 			LogImplBase(color, severity, visibility, location, fmtStr, fmt::make_format_args(args...));
 		}
