@@ -54,6 +54,47 @@ call on a pool thread, resumes the coroutine on completion). This also **deletes
       per-host throttling already mostly serializes, but worth verifying under concurrency.
 - [ ] Once done, CI can move back off the `windows-2022` pin to `windows-latest`.
 
+### Follow-on: one ImGui frontend for native and browser builds
+
+This is a larger, separate refactor than replacing the outbound HTTP client above. The
+native application would serve the browser build and expose local state/actions over HTTP;
+the same `MainWindow.cpp` (and its supporting UI code) should compile in both targets.
+
+- [ ] Define a browser-safe UI state model and action interface. `MainWindow` currently reads
+      `TF2BDApplication`/`IWorldState`/`IModeratorLogic` directly and mutates `Settings`.
+      Keep drawing and interaction logic shared; provide native and HTTP-backed adapters.
+- [ ] Move app-only work behind that boundary: scoreboard actions, settings persistence,
+      chat-line formatting, setup flow, avatars/textures, filesystem dialogs, and platform
+      actions. Browser requests must be asynchronous; the app should validate and dispatch
+      mutations on its update thread.
+- [ ] Add a localhost HTTP server in `tf2bdapp` to serve the WASM assets, state snapshots,
+      and action endpoints. Bind to loopback and protect mutating endpoints from other
+      pages/processes; the existing `IHTTPClient` is outbound only.
+- [ ] Add an Emscripten SDL2/WebGL build target for the shared ImGui UI, with browser-safe
+      font/texture loading and no native OpenGL 4.3/Glad dependency. Test it in the intended
+      in-game browser before porting the entire UI.
+
+## Player-list and UI work
+
+- [ ] Build player-list management as new UI work. The abandoned
+      `PlayerListManagementWindow` stub (disabled in `DLLMain.cpp`) is reference material,
+      not an implementation to finish. Add players by SteamID, edit marks/reasons, and
+      remove players from the writable local list without manual JSON edits. Show entries
+      from read-only lists without editing those source files.
+- [ ] Add a marked-friends detail view: for a selected player, list each marked friend by
+      SteamID/name, their marks, and the source list(s). The tooltip currently shows only
+      counts by mark; handle private or unavailable friends data explicitly.
+
+## Debugging and tests
+
+- [ ] Make the Debug configuration and `--run-tests` path reliably build and run on supported
+      platforms. The existing Catch2 tests are gated by `TF2BD_ENABLE_TESTS` and need a
+      repeatable local/CI invocation.
+- [ ] Add a reusable fake world/application state with representative players, teams, marks,
+      friends, chat, and updates. Use it for deterministic UI development and meaningful
+      tests without launching TF2 or requiring a live Steam session. The current test-only
+      `DummyWorldState` throws for most operations.
+
 ## AppImage target (Linux) — WORKING
 
 A basic AppImage builds and runs (verified locally). Turned out easy: the binary is nearly
@@ -89,13 +130,11 @@ for both reads and writes; no read/write split, no XDG, no separate data dir.
       Run host-side; do NOT launch TF2BD *through* sniper (TF2BD launches TF2 via sniper → nested
       pressure-vessel).
 - [ ] Optional: wire the AppImage build as a CMake target too (not just CI).
-- [ ] Optional: wire the AppImage build as a CMake/CI target.
 
 ## CI
 
-- [ ] **`build-linux.yml:151`** still copies `submodules/mh_stuff/libmh-stuff.so` to staging —
-      stale after the mh_stuff removal (header-only now, no `.so` built). Will fail the Linux
-      discord-integration artifact upload. Remove the line (or repoint if a real artifact exists).
+- [x] Removed the stale `submodules/mh_stuff/libmh-stuff.so` staging copy from
+      `build-linux.yml`; the build-artifact staging step now copies only the executable.
 - [ ] Move CI Windows runner back to `windows-latest` after cpprestsdk is dropped (currently
       pinned to `windows-2022` to dodge the VS 2026 `stdext` removal).
 
@@ -103,10 +142,9 @@ for both reads and writes; no read/write split, no XDG, no separate data dir.
 
 - [ ] **Finish dropping the `mh::stuff` shim.** SourceRCON no longer uses mh
       (`locked_value` → `std::mutex` done in fork commit `f0275ed`; its CMake `mh::stuff`
-      link + FetchContent block are gone). Now delete the `mh_vendored` / `mh::stuff` INTERFACE
-      target from the root `CMakeLists.txt` — nothing depends on it anymore.
-- [ ] **`git rm` the `submodules/mh_stuff` submodule** and its `.gitmodules` entry. Held back
-      until the build is fully green so originals stay available for reference.
+      link + FetchContent block are gone). The launcher and CLI targets still link the root
+      `mh_vendored` / `mh::stuff` INTERFACE target; move their required includes/definitions
+      to the appropriate target(s) before deleting the shim.
 - [ ] **fmt 11/12** — requires bumping the vcpkg submodule + `builtin-baseline` to a 2025+ commit
       (re-resolves all ports). Then drop the `_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING`
       workaround in `tf2_bot_detector_common/CMakeLists.txt`.
@@ -117,8 +155,15 @@ for both reads and writes; no read/write split, no XDG, no separate data dir.
 
 ## Done this session (for reference)
 
+- [x] `submodules/mh_stuff` gitlink was already removed; cleaned up its stale `.gitmodules` entry.
 - [x] SourceRCON `mh::locked_value<srcon_addr>` → plain value + `std::mutex` (fork `f0275ed`).
 - [x] Pruned unused vendored `mh/` headers (deleted 17; closure now 59/59, no dead files).
 - [x] CI: pinned Windows runner to `windows-2022`; removed NuGet binary caching from both
       workflows (+ vestigial `VCPKG_CACHE_VERSION`).
 - [x] Deleted all 117 stale vcpkg binary-cache nuget packages from GitHub Packages.
+
+## Ideas
+
+- [ ] Copy [NetHook2](https://github.com/SteamRE/SteamKit/tree/master/Resources/NetHook2)'s
+      implementation to get a better TF2 game state from packet data.
+      Probably too much work to maintain; revisit someday. Assess VAC risk before trying it.

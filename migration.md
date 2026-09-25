@@ -102,8 +102,8 @@ on fmt-8 behaviors that fmt 9.0/10 removed. The fixes:
   `mh::locked_value<srcon_addr>` in `src/async_client.cpp` — **done** in fork commit `f0275ed`
   (replaced with a plain `std::mutex`-guarded value; its CMake `mh::stuff` link + FetchContent
   block removed). Still TODO: delete `mh_vendored`/`mh::stuff` from the root CMakeLists.
-- [ ] **`git rm` the `submodules/mh_stuff` submodule** (and its `.gitmodules` entry). Held back
-  until the build is fully green so the originals stay available for reference.
+- [x] **Remove the `submodules/mh_stuff` submodule and its `.gitmodules` entry.** The gitlink
+  was already gone; the stale `.gitmodules` entry has now been removed.
 - [x] **Prune unused vendored headers.** Done — deleted 17 unused headers; the include closure
   is now 59/59 with no dead files.
 - [ ] **fmt 11/12** would require bumping the vcpkg submodule + `builtin-baseline` to a 2025+
