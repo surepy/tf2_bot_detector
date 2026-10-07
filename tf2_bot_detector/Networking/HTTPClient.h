@@ -18,6 +18,7 @@ namespace tf2_bot_detector
 		static std::shared_ptr<IHTTPClient> Create();
 
 		virtual std::string GetString(const URL& url) const = 0;
+		// Completion may run on an HTTP worker. Dispatch before accessing main-thread state.
 		virtual mh::task<std::string> GetStringAsync(URL url) const = 0;
 
 		struct RequestCounts

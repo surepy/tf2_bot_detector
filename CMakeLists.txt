@@ -9,6 +9,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/submodules/vcpkg/scripts/b
 
 option(TF2BD_ENABLE_DISCORD_INTEGRATION "Enable discord integration" on)
 option(TF2BD_ENABLE_TESTS "Enable test compilation" off)
+option(TF2BD_ENABLE_HTTP_TESTS "Build standalone HTTP transport tests" off)
 
 include(cmake/init-preproject.cmake)
 	project(tf2_bot_detector)
@@ -41,4 +42,3 @@ add_subdirectory(submodules/glad2)
 add_subdirectory(tf2_bot_detector_common)
 add_subdirectory(tf2_bot_detector_renderer)
 add_subdirectory(tf2_bot_detector)
-
