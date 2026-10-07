@@ -8,7 +8,10 @@
       "features": [ "wayland", "x11", "vulkan" ],
       "platform": "linux"
     },
-    "cryptopp",
+    {
+      "name": "cryptopp",
+      "version>=": "2026-03-02"
+    },
     {
       "name": "libzippp",
       "version>=": "6.1-1.9.2"
