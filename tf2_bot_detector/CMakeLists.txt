@@ -337,6 +337,8 @@ if (TF2BD_ENABLE_DISCORD_INTEGRATION)
 
 	# lol.
 	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+		# Portable artifacts ship the Discord SDK beside the executable.
+		set_property(TARGET tf2_bot_detector APPEND PROPERTY BUILD_RPATH "$ORIGIN")
 		target_sources(tf2_bot_detector PRIVATE
 			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/voice_manager.cpp"
 			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/user_manager.cpp"
