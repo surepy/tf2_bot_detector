@@ -336,7 +336,7 @@ if (TF2BD_ENABLE_DISCORD_INTEGRATION)
 	endif()
 
 	# lol.
-	if(LINUX)
+	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 		target_sources(tf2_bot_detector PRIVATE
 			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/voice_manager.cpp"
 			"${DISCORD_GAME_SDK_INCLUDE}/discord-game-sdk/user_manager.cpp"
@@ -365,7 +365,7 @@ if (TF2BD_ENABLE_DISCORD_INTEGRATION)
 	# We really only need this library for one thing in the DRP integration.
 	# Later on it will probably be moved out of this if statement when it is required elsewhere in the code.
 	find_package(cryptopp CONFIG REQUIRED)
-	target_link_libraries(tf2_bot_detector PRIVATE cryptopp-static)
+	target_link_libraries(tf2_bot_detector PRIVATE cryptopp::cryptopp)
 endif()
 
 find_package(nlohmann_json CONFIG REQUIRED)
