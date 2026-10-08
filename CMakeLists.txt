@@ -11,9 +11,18 @@ option(TF2BD_ENABLE_DISCORD_INTEGRATION "Enable discord integration" on)
 option(TF2BD_ENABLE_TESTS "Enable test compilation" off)
 option(TF2BD_ENABLE_HTTP_TESTS "Build standalone HTTP transport tests" off)
 
+list(REMOVE_ITEM VCPKG_MANIFEST_FEATURES "http-tests")
+if (TF2BD_ENABLE_HTTP_TESTS)
+	list(APPEND VCPKG_MANIFEST_FEATURES "http-tests")
+endif()
+
 include(cmake/init-preproject.cmake)
 	project(tf2_bot_detector)
 include(cmake/init-postproject.cmake)
+
+if (TF2BD_ENABLE_TESTS OR TF2BD_ENABLE_HTTP_TESTS OR TF2BD_ENABLE_PLAYERLIST_TESTS)
+	enable_testing()
+endif()
 
 # apparent bug in VS 16.9.1 makes error messages unclickable because of wrong paths
 if (MSVC)

@@ -1,9 +1,21 @@
+#ifdef _WIN32
+// Only the loopback server fixture requires Windows 10. Production sources keep
+// the Windows 8.1 API target from init-postproject.cmake.
+#undef NTDDI_VERSION
+#undef WINVER
+#undef _WIN32_WINNT
+#define NTDDI_VERSION NTDDI_WIN10
+#define WINVER _WIN32_WINNT_WIN10
+#define _WIN32_WINNT _WIN32_WINNT_WIN10
+#endif
+
 #include "Networking/HTTPClient.h"
 #include "Networking/HTTPHelpers.h"
 #include "GlobalDispatcher.h"
 #include "Log.h"
 
 #include <catch2/catch_test_macros.hpp>
+#include <curl/curl.h>
 #include <httplib.h>
 #include <zlib.h>
 
@@ -92,8 +104,8 @@ namespace
 				});
 			m_Server.Get("/transport-retry", [this](const httplib::Request&, httplib::Response& response)
 				{
-					// An invalid status line exercises transport-error recovery without DNS dependencies.
-					response.status = ++m_TransportAttempts == 1 ? 9999 : 200;
+					// A two-digit status exercises transport-error recovery without DNS dependencies.
+					response.status = ++m_TransportAttempts == 1 ? 99 : 200;
 					response.set_content("reconnected", "text/plain");
 				});
 			m_Server.Get("/gate", [this](const httplib::Request& request, httplib::Response& response)
@@ -172,6 +184,16 @@ TEST_CASE("HTTP preserves bodies, redirects, and encoded queries", "[http]")
 	REQUIRE(client->GetString(server.GetURL("/redirect")) == "hello \xF0\x9F\x98\x80");
 	REQUIRE(client->GetString(server.GetURL("/query?value=a%2Fb%20c%2Bd")) == "a/b c+d");
 }
+
+#ifdef _WIN32
+TEST_CASE("HTTP uses the native Windows TLS backend", "[http]")
+{
+	auto client = IHTTPClient::Create();
+	const auto* version = curl_version_info(CURLVERSION_NOW);
+	REQUIRE(version->ssl_version != nullptr);
+	REQUIRE(std::string_view(version->ssl_version).starts_with("Schannel"));
+}
+#endif
 
 TEST_CASE("HTTP status errors retain their code and do not retry 404", "[http]")
 {

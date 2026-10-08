@@ -377,7 +377,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(BZip2 REQUIRED)
 find_package(SQLiteCpp CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(httplib CONFIG REQUIRED COMPONENTS OpenSSL ZLIB Brotli)
+find_package(CURL 8.20 CONFIG REQUIRED)
 
 target_link_libraries(tf2_bot_detector PRIVATE
 	tf2_bot_detector::common
@@ -391,11 +391,12 @@ target_link_libraries(tf2_bot_detector PRIVATE
 	BZip2::BZip2
 	SQLiteCpp
 	ZLIB::ZLIB
-	httplib::httplib
+	CURL::libcurl
 )
 
 if (TF2BD_ENABLE_HTTP_TESTS)
 	find_package(Catch2 CONFIG REQUIRED)
+	find_package(httplib CONFIG REQUIRED)
 	# Exercise the real transport without launching the application or its GUI.
 	add_executable(tf2bd_http_tests
 		"Networking/HTTPClient.cpp"
@@ -406,10 +407,10 @@ if (TF2BD_ENABLE_HTTP_TESTS)
 	target_compile_definitions(tf2bd_http_tests PRIVATE WIN32_LEAN_AND_MEAN)
 	set_target_properties(tf2bd_http_tests PROPERTIES
 		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tests")
-	target_link_libraries(tf2bd_http_tests PRIVATE tf2_bot_detector::common httplib::httplib
-		nlohmann_json::nlohmann_json Catch2::Catch2WithMain)
+	target_link_libraries(tf2bd_http_tests PRIVATE tf2_bot_detector::common CURL::libcurl
+		httplib::httplib ZLIB::ZLIB nlohmann_json::nlohmann_json Catch2::Catch2WithMain)
 	add_test(NAME HTTPClient COMMAND tf2bd_http_tests)
-	set_tests_properties(HTTPClient PROPERTIES TIMEOUT 90)
+	set_tests_properties(HTTPClient PROPERTIES TIMEOUT 90 ENVIRONMENT "NO_PROXY=localhost,127.0.0.1")
 endif()
 
 if (TF2BD_ENABLE_PLAYERLIST_TESTS)

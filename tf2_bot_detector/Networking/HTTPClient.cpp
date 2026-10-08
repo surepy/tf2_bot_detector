@@ -11,14 +11,16 @@
 #ifdef _MSC_VER
 #pragma warning(push, 1)
 #endif
-#include <httplib.h>
+#include <curl/curl.h>
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
 
+#include <array>
 #include <atomic>
 #include <condition_variable>
 #include <coroutine>
+#include <exception>
 #include <functional>
 #include <map>
 #include <mutex>
@@ -33,7 +35,6 @@ using namespace tf2_bot_detector;
 
 namespace
 {
-	using ClientCache = std::map<std::string, std::unique_ptr<httplib::Client>>;
 	using http_clock_t = std::chrono::steady_clock;
 
 	class HTTPTransportError final : public std::runtime_error
@@ -42,7 +43,113 @@ namespace
 		using std::runtime_error::runtime_error;
 	};
 
-	// Each worker owns its clients: keep-alive without sharing httplib's request mutex.
+	class CurlRuntime final
+	{
+	public:
+		CurlRuntime()
+		{
+			const auto result = curl_global_init(CURL_GLOBAL_DEFAULT);
+			if (result != CURLE_OK)
+				throw HTTPTransportError(curl_easy_strerror(result));
+		}
+		~CurlRuntime() { curl_global_cleanup(); }
+		CurlRuntime(const CurlRuntime&) = delete;
+		CurlRuntime& operator=(const CurlRuntime&) = delete;
+	};
+
+	struct HTTPResponse
+	{
+		long status = 0;
+		std::string body;
+	};
+
+	class CurlClient final
+	{
+	public:
+		CurlClient() : m_Handle(curl_easy_init(), &curl_easy_cleanup)
+		{
+			if (!m_Handle)
+				throw HTTPTransportError("Failed to initialize HTTP client");
+			SetOption(CURLOPT_CONNECTTIMEOUT_MS, 10'000L);
+			SetOption(CURLOPT_TIMEOUT_MS, 30'000L);
+			SetOption(CURLOPT_NOSIGNAL, 1L);
+			SetOption(CURLOPT_FOLLOWLOCATION, 1L);
+			SetOption(CURLOPT_MAXREDIRS, 20L);
+			SetOption(CURLOPT_PROTOCOLS_STR, "http,https");
+			SetOption(CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
+			SetOption(CURLOPT_USERAGENT, "tf2-bot-detector");
+			SetOption(CURLOPT_ACCEPT_ENCODING, "");
+			SetOption(CURLOPT_SSLVERSION, static_cast<long>(CURL_SSLVERSION_TLSv1_2));
+			SetOption(CURLOPT_SSL_VERIFYPEER, 1L);
+			SetOption(CURLOPT_SSL_VERIFYHOST, 2L);
+			// Preserve caller-encoded paths and queries, including dot segments.
+			SetOption(CURLOPT_PATH_AS_IS, 1L);
+			SetOption(CURLOPT_WRITEFUNCTION, &WriteBody);
+			SetOption(CURLOPT_WRITEDATA, static_cast<void*>(&m_Buffer));
+			SetOption(CURLOPT_ERRORBUFFER, m_Error.data());
+		}
+
+		HTTPResponse Get(const URL& url)
+		{
+			m_Buffer.body.clear();
+			m_Buffer.error = nullptr;
+			m_Error.fill('\0');
+			const auto address = url.GetSchemeHostPort() + (url.m_Path.empty() ? "/" : url.m_Path);
+			SetOption(CURLOPT_URL, address.c_str());
+			const auto result = curl_easy_perform(m_Handle.get());
+			if (m_Buffer.error)
+				std::rethrow_exception(m_Buffer.error);
+			if (result != CURLE_OK)
+				throw HTTPTransportError(fmt::format("HTTP GET failed: {}",
+					m_Error[0] ? m_Error.data() : curl_easy_strerror(result)));
+			long status = 0;
+			const auto infoResult = curl_easy_getinfo(m_Handle.get(), CURLINFO_RESPONSE_CODE, &status);
+			if (infoResult != CURLE_OK)
+				throw HTTPTransportError(curl_easy_strerror(infoResult));
+			return { status, std::move(m_Buffer.body) };
+		}
+
+	private:
+		struct ResponseBuffer
+		{
+			std::string body;
+			std::exception_ptr error;
+		};
+
+		static size_t WriteBody(char* data, size_t size, size_t count, void* context) noexcept
+		{
+			auto& buffer = *static_cast<ResponseBuffer*>(context);
+			const auto bytes = size * count;
+			try
+			{
+				buffer.body.append(data, bytes);
+				return bytes;
+			}
+			catch (...)
+			{
+				// Exceptions must not cross libcurl's C callback boundary.
+				buffer.error = std::current_exception();
+				return CURL_WRITEFUNC_ERROR;
+			}
+		}
+
+		template<typename T>
+		void SetOption(CURLoption option, T value)
+		{
+			const auto result = curl_easy_setopt(m_Handle.get(), option, value);
+			if (result != CURLE_OK)
+				throw HTTPTransportError(curl_easy_strerror(result));
+		}
+
+		ResponseBuffer m_Buffer;
+		std::array<char, CURL_ERROR_SIZE> m_Error{};
+		// Destroy the handle before the buffers referenced by its callbacks/options.
+		std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> m_Handle;
+	};
+
+	using ClientCache = std::map<std::string, std::unique_ptr<CurlClient>>;
+
+	// Each worker owns its clients: connection reuse without sharing curl handles.
 	// Timed jobs also keep throttling/retries independent of the application dispatcher.
 	class HTTPWorkers final
 	{
@@ -178,6 +285,8 @@ namespace
 			}
 		}
 
+		// Initialize before starting workers; clean up after they join and destroy their handles.
+		CurlRuntime m_CurlRuntime;
 		std::mutex m_Mutex;
 		std::condition_variable m_CV;
 		bool m_Stopping = false;
@@ -194,22 +303,11 @@ namespace
 		return workers;
 	}
 
-	httplib::Client& GetInnerClient(ClientCache& clients, const URL& url)
+	CurlClient& GetInnerClient(ClientCache& clients, const URL& url)
 	{
 		auto& client = clients[url.GetSchemeHostPort()];
 		if (!client)
-		{
-			client = std::make_unique<httplib::Client>(url.GetSchemeHostPort());
-			client->set_connection_timeout(10s);
-			client->set_read_timeout(30s);
-			client->set_write_timeout(30s);
-			client->set_max_timeout(30s);
-			client->set_keep_alive(true);
-			client->set_follow_location(true);
-			// Callers already percent-encode query parameters.
-			client->set_path_encode(false);
-			client->enable_server_certificate_verification(true);
-		}
+			client = std::make_unique<CurlClient>();
 		return *client;
 	}
 
@@ -303,10 +401,7 @@ mh::task<std::string> HTTPClientImpl::GetStringAsync(URL url) const try
 					{
 						SetThrottled(false);
 						requestIndex = ++m_TotalRequestCount;
-						auto result = GetInnerClient(clients, url).Get(url.m_Path.empty() ? "/" : url.m_Path);
-						if (!result)
-							throw HTTPTransportError(fmt::format("HTTP GET failed: {}", httplib::to_string(result.error())));
-						return std::move(*result);
+						return GetInnerClient(clients, url).Get(url);
 					};
 				auto responseTask = workers.AddTask(std::move(request), http_clock_t::now(),
 					url.m_Host, GetMinRequestInterval(url));
