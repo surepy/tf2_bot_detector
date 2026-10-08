@@ -18,7 +18,7 @@ defaults:
 
 jobs:
   config:
-    runs-on: windows-2922
+    runs-on: windows-2022
     outputs:
       tf2bd_version: ${{ steps.tf2bd_version.outputs.value }}
       tf2bd_workspace: ${{ steps.tf2bd_paths.outputs.workspace }}
