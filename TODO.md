@@ -2,57 +2,38 @@
 
 Living task list. Historical context for the mh_stuff work lives in `migration.md`.
 
-## Drop cpprestsdk (replace HTTP transport)
+## HTTP transport migration
 
-**Why:** cpprestsdk is archived by Microsoft and was **removed from vcpkg** upstream
-(`9ceec72e0a [cpprestsdk, azure-storage-cpp] Deindex (#52130)`). Our pinned baseline
-(`2537044…`, 2022-10-28) still has it at **2.10.18**, which uses `stdext::checked_array_iterator`
-— removed in the VS 2026 / MSVC 14.51 toolset, so it fails to compile on newer toolchains
-(the reason CI is pinned to `windows-2022`, see below). Upstream did patch it
-(`#51750`, in 2.10.19) but then deindexed it, so bumping the baseline is not a durable path.
+cpprestsdk was removed because it is archived, deindexed from upstream vcpkg, and
+incompatible with newer MSVC headers. The initial cpp-httplib replacement then hit
+its Windows 10 minimum; the application still targets Windows 8.1.
 
-**Scope is small and isolated** — only `tf2_bot_detector/Networking/HTTPClient.cpp` touches
-cpprestsdk. Everything around it is transport-agnostic:
-- Public interface `IHTTPClient` (`GetString` / `GetStringAsync → mh::task<std::string>` /
-  `GetRequestCounts`) leaks no cpprest types.
-- Error types `http_error` / `HTTPResponseCode` / `URL` (`HTTPHelpers.h`) are built on
-  `mh::error_condition_exception` + nlohmann — no cpprest.
-- ~10 call sites (SteamAPI, LogsTFAPI, GithubAPI, ConfigHelpers, SteamHistoryAPI) only
-  `co_await GetStringAsync(...)`. No call-site churn.
-- The throttle/retry/counting logic (bulk of HTTPClient.cpp) stays as-is.
+**Current transport: libcurl's easy interface.** `HTTPClient.cpp` keeps its twelve
+workers, per-host dispatch throttling, coroutine completion, retry policy, and
+request counters. Each worker owns its per-origin curl handles and reuses their
+connections. Handles are never used concurrently; the earlier objection about a
+shared per-host cache no longer applies to this worker-owned cache.
 
-cpprest is used only for: per-host `web::http::client::http_client` (cached by
-`GetSchemeHostPort`), `request(GET, path)`, `status_code()`, `extract_utf8string`,
-`http_exception`, and `utility::conversions::to_string_t`.
+The callback, checked curl options, and handle/global lifecycle add some adapter
+code, but preserve the existing public `IHTTPClient` interface and call sites.
+The vcpkg `curl[ssl,brotli]` dependency disables default features: HTTP/HTTPS only,
+Schannel on desktop Windows, OpenSSL on Linux, and gzip/Brotli decoding. Requests
+require TLS 1.2 or later and verify certificates and hostnames.
 
-**Recommendation: cpp-httplib over libcurl.**
-- `HTTPClient.cpp:1-2` already define `CPPHTTPLIB_OPENSSL_SUPPORT` / `CPPHTTPLIB_ZLIB_SUPPORT`,
-  and cpp-httplib was already trialed here (it was in the deleted nuget binary cache). It's just
-  not in `vcpkg.json` / CMake currently.
-- `res->body` is already a UTF-8 `std::string` → deletes every `utility::conversions::to_string_t`
-  call (the UTF-16 dance only existed because cpprest uses `wstring` on Windows).
-- Header-only, `Get(path)` is one call; no write callbacks / handle lifecycle.
-- libcurl is heavier here: write-callback boilerplate, `curl_global_init`, and a `CURL*` easy
-  handle can't be shared across threads (breaks the per-host cache + thread-pool offload). No
-  functional gain for a GET-only use case.
-
-**Async bridge is already solved:** both libcurl and cpp-httplib are blocking, but
-`mh::thread_pool::add_task(fn)` returns an `mh::task<T>` you can `co_await` (runs the blocking
-call on a pool thread, resumes the coroutine on completion). This also **deletes the
-`#ifdef __linux__ … co_await … #else pplawait …` split** (HTTPClient.cpp:168-182) and `pplawait.h`.
-
-**Steps:**
-- [ ] Add cpp-httplib to `vcpkg.json`; swap `find_package(cpprestsdk)` / `cpprestsdk::cpprest`
-      in `tf2_bot_detector/CMakeLists.txt:378,392` for cpp-httplib.
-- [ ] Rewrite the ~50 transport lines in `HTTPClient.cpp` (cache `httplib::Client` per
-      scheme+host+port; `co_await pool.add_task([cli,path]{ return cli->Get(path); })`; map
-      `!res`/`res.error()` to the retry path and `res->status` to `http_error`).
-- [ ] Remove the `cpprestsdk` dep from `vcpkg.json`.
-- [ ] Set `set_connection_timeout` / `set_read_timeout`; add `CPPHTTPLIB_BROTLI_SUPPORT` if brotli
-      response decoding parity with cpprest's `compression` feature is wanted.
-- [ ] Note: `httplib::Client` serializes requests via an internal socket mutex — fine given
-      per-host throttling already mostly serializes, but worth verifying under concurrency.
-- [ ] Once done, CI can move back off the `windows-2022` pin to `windows-latest`.
+- [x] Remove cpprestsdk from production code and dependencies.
+- [x] Replace the production httplib client with libcurl; retain the worker/retry flow.
+- [x] Keep the Windows 8.1 API target rather than raise it for the HTTP library.
+- [x] Make cpp-httplib an optional, TLS-free loopback server fixture through the
+      `http-tests` vcpkg feature, selected by `TF2BD_ENABLE_HTTP_TESTS` before `project()`.
+      Only that fixture translation unit targets Windows 10 on Windows; production
+      HTTP sources keep the application's API target. Windows tests check Schannel.
+- [x] Build Linux Release, pass the six loopback transport test cases, and verify
+      HTTPS against the public GitHub release endpoint with certificate checks enabled.
+- [ ] Validate the exact Windows release build and its live API requests on Windows
+      8.1 and, as a best effort, Windows 7 SP1. The API target alone cannot guarantee
+      compatibility of the compiler runtime and all bundled dependencies.
+- [ ] Audit MSVC/runtime compatibility before moving Windows CI to `windows-latest`.
+      Keep `windows-2022` for now to avoid accidentally raising the release floor.
 
 ### Follow-on: one ImGui frontend for native and browser builds
 
@@ -135,8 +116,9 @@ for both reads and writes; no read/write split, no XDG, no separate data dir.
 
 - [x] Removed the stale `submodules/mh_stuff/libmh-stuff.so` staging copy from
       `build-linux.yml`; the build-artifact staging step now copies only the executable.
-- [ ] Move CI Windows runner back to `windows-latest` after cpprestsdk is dropped (currently
-      pinned to `windows-2022` to dodge the VS 2026 `stdext` removal).
+- [ ] Audit the compiler/runtime Windows minimum before changing `windows-2022` to
+      `windows-latest`; dropping cpprestsdk alone does not establish compatibility
+      with Windows 8.1 or Windows 7 SP1 on a newer toolset.
 
 ## Carried over from migration.md (still open)
 
