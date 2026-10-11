@@ -16,14 +16,17 @@
 #pragma warning(pop)
 #endif
 
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <condition_variable>
 #include <coroutine>
+#include <deque>
 #include <exception>
 #include <functional>
 #include <map>
 #include <mutex>
+#include <optional>
 #include <stdexcept>
 #include <thread>
 #include <type_traits>
@@ -63,13 +66,354 @@ namespace
 		std::string body;
 	};
 
-	class CurlClient final
+	// Completions run here rather than on the I/O thread, so slow continuations
+	// (JSON parsing, nested synchronous requests) never stall other transfers.
+	class CompletionPool final
 	{
 	public:
-		CurlClient() : m_Handle(curl_easy_init(), &curl_easy_cleanup)
+		explicit CompletionPool(size_t threadCount)
 		{
-			if (!m_Handle)
+			try
+			{
+				for (size_t i = 0; i < threadCount; ++i)
+					m_Threads.emplace_back([this] { Run(); });
+			}
+			catch (...)
+			{
+				Stop();
+				throw;
+			}
+		}
+
+		~CompletionPool() { Stop(); }
+
+		void Post(std::coroutine_handle<> handle)
+		{
+			{
+				std::lock_guard lock(m_Mutex);
+				m_Queue.push_back(handle);
+			}
+			m_CV.notify_one();
+		}
+
+	private:
+		void Stop()
+		{
+			{
+				std::lock_guard lock(m_Mutex);
+				m_Stopping = true;
+			}
+			m_CV.notify_all();
+		}
+
+		void Run()
+		{
+			while (true)
+			{
+				std::coroutine_handle<> handle;
+				{
+					std::unique_lock lock(m_Mutex);
+					m_CV.wait(lock, [this] { return m_Stopping || !m_Queue.empty(); });
+					if (m_Queue.empty())
+						return; // Drain everything before exiting.
+					handle = m_Queue.front();
+					m_Queue.pop_front();
+				}
+				handle.resume();
+			}
+		}
+
+		std::mutex m_Mutex;
+		std::condition_variable m_CV;
+		bool m_Stopping = false;
+		std::deque<std::coroutine_handle<>> m_Queue;
+		// Destroy first, joining threads before their queue and synchronization objects.
+		std::vector<std::jthread> m_Threads;
+	};
+
+	// A scheduled transfer (or a plain delay when m_URL is empty). Lives in the
+	// awaiting coroutine's frame, so it stays put until that coroutine resumes.
+	struct Transfer
+	{
+		std::optional<URL> m_URL;
+		std::string m_Host;
+		http_clock_t::duration m_MinInterval{};
+		std::function<void()> m_OnStart;
+		std::coroutine_handle<> m_Coroutine;
+
+		HTTPResponse m_Response;
+		std::exception_ptr m_Error;
+		std::array<char, CURL_ERROR_SIZE> m_ErrorBuffer{};
+		std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> m_Easy{ nullptr, &curl_easy_cleanup };
+	};
+
+	// One thread drives every transfer through a curl multi handle: there is no
+	// cap on concurrent requests, and idle connections are shared across them.
+	// Per-host dispatch throttling is still enforced before a transfer starts.
+	class HTTPEngine final
+	{
+	public:
+		HTTPEngine() :
+			m_Multi(curl_multi_init(), &curl_multi_cleanup),
+			m_Completions(std::clamp<size_t>(std::thread::hardware_concurrency(), 4, 16))
+		{
+			if (!m_Multi)
 				throw HTTPTransportError("Failed to initialize HTTP client");
+			// Unlimited transfers, but keep a generous pool of idle connections for reuse.
+			curl_multi_setopt(m_Multi.get(), CURLMOPT_MAXCONNECTS, 64L);
+			m_Thread = std::jthread([this] { Run(); });
+		}
+
+		~HTTPEngine()
+		{
+			{
+				std::lock_guard lock(m_Mutex);
+				m_Stopping = true;
+			}
+			curl_multi_wakeup(m_Multi.get());
+		}
+
+		class Awaitable
+		{
+		public:
+			Awaitable(HTTPEngine& engine, Transfer& transfer) : m_Engine(engine), m_Transfer(transfer) {}
+
+			bool await_ready() const noexcept { return false; }
+			void await_suspend(std::coroutine_handle<> handle)
+			{
+				m_Transfer.m_Coroutine = handle;
+				m_Engine.Enqueue(m_Transfer, http_clock_t::now());
+			}
+			HTTPResponse await_resume()
+			{
+				if (m_Transfer.m_Error)
+					std::rethrow_exception(m_Transfer.m_Error);
+				return std::move(m_Transfer.m_Response);
+			}
+
+		private:
+			HTTPEngine& m_Engine;
+			Transfer& m_Transfer;
+		};
+
+		mh::task<HTTPResponse> Get(URL url, std::string host, http_clock_t::duration minInterval,
+			std::function<void()> onStart)
+		{
+			Transfer transfer;
+			transfer.m_URL = std::move(url);
+			transfer.m_Host = std::move(host);
+			transfer.m_MinInterval = minInterval;
+			transfer.m_OnStart = std::move(onStart);
+			Awaitable awaitable{ *this, transfer };
+			co_return co_await awaitable;
+		}
+
+		mh::task<bool> DelayUntil(http_clock_t::time_point readyAt)
+		{
+			Transfer transfer;
+			struct DelayAwaitable
+			{
+				HTTPEngine& m_Engine;
+				Transfer& m_Transfer;
+				http_clock_t::time_point m_ReadyAt;
+				bool await_ready() const noexcept { return false; }
+				void await_suspend(std::coroutine_handle<> handle)
+				{
+					m_Transfer.m_Coroutine = handle;
+					m_Engine.Enqueue(m_Transfer, m_ReadyAt);
+				}
+				void await_resume() const noexcept {}
+			} awaitable{ *this, transfer, readyAt };
+			co_await awaitable;
+			co_return true;
+		}
+
+	private:
+		void Enqueue(Transfer& transfer, http_clock_t::time_point readyAt)
+		{
+			{
+				std::lock_guard lock(m_Mutex);
+				if (m_Stopping)
+					throw std::runtime_error("HTTP engine is shutting down");
+				m_Pending.emplace(std::make_pair(readyAt, m_NextTask++), &transfer);
+			}
+			curl_multi_wakeup(m_Multi.get());
+		}
+
+		// Removes due transfers from the queue, honoring per-host start intervals.
+		std::vector<Transfer*> TakeReady(http_clock_t::time_point now)
+		{
+			std::vector<Transfer*> ready;
+			while (!m_Pending.empty() && m_Pending.begin()->first.first <= now)
+			{
+				auto first = m_Pending.begin();
+				Transfer& transfer = *first->second;
+				if (!transfer.m_Host.empty())
+				{
+					auto& nextStart = m_NextHostStart[transfer.m_Host];
+					if (nextStart > now)
+					{
+						auto deferred = m_Pending.extract(first);
+						deferred.key().first = nextStart;
+						m_Pending.insert(std::move(deferred));
+						continue;
+					}
+					nextStart = now + transfer.m_MinInterval;
+				}
+				ready.push_back(&transfer);
+				m_Pending.erase(first);
+			}
+			return ready;
+		}
+
+		void Start(Transfer& transfer)
+		{
+			if (!transfer.m_URL)
+				return Complete(transfer); // Plain delay
+
+			try
+			{
+				if (transfer.m_OnStart)
+					transfer.m_OnStart();
+
+				transfer.m_Easy.reset(curl_easy_init());
+				if (!transfer.m_Easy)
+					throw HTTPTransportError("Failed to initialize HTTP request");
+				Configure(transfer);
+
+				const auto result = curl_multi_add_handle(m_Multi.get(), transfer.m_Easy.get());
+				if (result != CURLM_OK)
+					throw HTTPTransportError(curl_multi_strerror(result));
+			}
+			catch (...)
+			{
+				transfer.m_Easy.reset();
+				transfer.m_Error = std::current_exception();
+				Complete(transfer);
+			}
+		}
+
+		void Finish(CURL* easy, CURLcode result)
+		{
+			Transfer* transferPtr = nullptr;
+			curl_easy_getinfo(easy, CURLINFO_PRIVATE, &transferPtr);
+			Transfer& transfer = *transferPtr;
+			curl_multi_remove_handle(m_Multi.get(), easy);
+
+			if (!transfer.m_Error)
+			{
+				if (result != CURLE_OK)
+				{
+					transfer.m_Error = std::make_exception_ptr(HTTPTransportError(fmt::format("HTTP GET failed: {}",
+						transfer.m_ErrorBuffer[0] ? transfer.m_ErrorBuffer.data() : curl_easy_strerror(result))));
+				}
+				else if (const auto infoResult = curl_easy_getinfo(easy, CURLINFO_RESPONSE_CODE, &transfer.m_Response.status);
+					infoResult != CURLE_OK)
+				{
+					transfer.m_Error = std::make_exception_ptr(HTTPTransportError(curl_easy_strerror(infoResult)));
+				}
+			}
+
+			transfer.m_Easy.reset();
+			Complete(transfer);
+		}
+
+		void Complete(Transfer& transfer)
+		{
+			m_Completions.Post(transfer.m_Coroutine);
+		}
+
+		void Run()
+		{
+			while (true)
+			{
+				std::vector<Transfer*> ready;
+				auto nextReady = http_clock_t::time_point::max();
+				{
+					std::lock_guard lock(m_Mutex);
+					if (m_Stopping)
+						break;
+					ready = TakeReady(http_clock_t::now());
+					if (!m_Pending.empty())
+						nextReady = m_Pending.begin()->first.first;
+				}
+
+				for (Transfer* transfer : ready)
+					Start(*transfer);
+
+				int running = 0;
+				curl_multi_perform(m_Multi.get(), &running);
+
+				int queued = 0;
+				while (CURLMsg* message = curl_multi_info_read(m_Multi.get(), &queued))
+				{
+					if (message->msg == CURLMSG_DONE)
+						Finish(message->easy_handle, message->data.result);
+				}
+
+				// Sleep until curl needs attention, the next queued transfer is due,
+				// or Enqueue/the destructor wakes us.
+				auto wait = 1000ms;
+				if (long curlTimeout = -1; curl_multi_timeout(m_Multi.get(), &curlTimeout) == CURLM_OK && curlTimeout >= 0)
+					wait = std::min(wait, std::chrono::milliseconds(curlTimeout));
+				if (nextReady != http_clock_t::time_point::max())
+				{
+					wait = std::min(wait, std::chrono::ceil<std::chrono::milliseconds>(
+						std::max<http_clock_t::duration>(nextReady - http_clock_t::now(), 0ms)));
+				}
+				if (wait > 0ms)
+					curl_multi_poll(m_Multi.get(), nullptr, 0, static_cast<int>(wait.count()), nullptr);
+			}
+
+			// Shutting down: fail everything still outstanding.
+			const auto Abort = [&](Transfer& transfer)
+			{
+				transfer.m_Error = std::make_exception_ptr(HTTPTransportError("HTTP engine is shutting down"));
+				Complete(transfer);
+			};
+
+			for (CURL* easy : GetEasyHandles())
+			{
+				Transfer* transfer = nullptr;
+				curl_easy_getinfo(easy, CURLINFO_PRIVATE, &transfer);
+				curl_multi_remove_handle(m_Multi.get(), easy);
+				transfer->m_Easy.reset();
+				Abort(*transfer);
+			}
+
+			std::lock_guard lock(m_Mutex);
+			for (auto& [key, transfer] : m_Pending)
+				Abort(*transfer);
+			m_Pending.clear();
+		}
+
+		std::vector<CURL*> GetEasyHandles()
+		{
+			std::vector<CURL*> result;
+			if (CURL** handles = curl_multi_get_handles(m_Multi.get()))
+			{
+				for (CURL** it = handles; *it; ++it)
+					result.push_back(*it);
+				curl_free(handles);
+			}
+			return result;
+		}
+
+		static void Configure(Transfer& transfer)
+		{
+			CURL* easy = transfer.m_Easy.get();
+			const auto SetOption = [easy](CURLoption option, auto value)
+			{
+				const auto result = curl_easy_setopt(easy, option, value);
+				if (result != CURLE_OK)
+					throw HTTPTransportError(curl_easy_strerror(result));
+			};
+
+			const auto& url = *transfer.m_URL;
+			const auto address = url.GetSchemeHostPort() + (url.m_Path.empty() ? "/" : url.m_Path);
+
+			SetOption(CURLOPT_URL, address.c_str());
+			SetOption(CURLOPT_PRIVATE, static_cast<void*>(&transfer));
 			SetOption(CURLOPT_CONNECTTIMEOUT_MS, 10'000L);
 			SetOption(CURLOPT_TIMEOUT_MS, 30'000L);
 			SetOption(CURLOPT_NOSIGNAL, 1L);
@@ -85,230 +429,45 @@ namespace
 			// Preserve caller-encoded paths and queries, including dot segments.
 			SetOption(CURLOPT_PATH_AS_IS, 1L);
 			SetOption(CURLOPT_WRITEFUNCTION, &WriteBody);
-			SetOption(CURLOPT_WRITEDATA, static_cast<void*>(&m_Buffer));
-			SetOption(CURLOPT_ERRORBUFFER, m_Error.data());
+			SetOption(CURLOPT_WRITEDATA, static_cast<void*>(&transfer));
+			SetOption(CURLOPT_ERRORBUFFER, transfer.m_ErrorBuffer.data());
 		}
-
-		HTTPResponse Get(const URL& url)
-		{
-			m_Buffer.body.clear();
-			m_Buffer.error = nullptr;
-			m_Error.fill('\0');
-			const auto address = url.GetSchemeHostPort() + (url.m_Path.empty() ? "/" : url.m_Path);
-			SetOption(CURLOPT_URL, address.c_str());
-			const auto result = curl_easy_perform(m_Handle.get());
-			if (m_Buffer.error)
-				std::rethrow_exception(m_Buffer.error);
-			if (result != CURLE_OK)
-				throw HTTPTransportError(fmt::format("HTTP GET failed: {}",
-					m_Error[0] ? m_Error.data() : curl_easy_strerror(result)));
-			long status = 0;
-			const auto infoResult = curl_easy_getinfo(m_Handle.get(), CURLINFO_RESPONSE_CODE, &status);
-			if (infoResult != CURLE_OK)
-				throw HTTPTransportError(curl_easy_strerror(infoResult));
-			return { status, std::move(m_Buffer.body) };
-		}
-
-	private:
-		struct ResponseBuffer
-		{
-			std::string body;
-			std::exception_ptr error;
-		};
 
 		static size_t WriteBody(char* data, size_t size, size_t count, void* context) noexcept
 		{
-			auto& buffer = *static_cast<ResponseBuffer*>(context);
+			auto& transfer = *static_cast<Transfer*>(context);
 			const auto bytes = size * count;
 			try
 			{
-				buffer.body.append(data, bytes);
+				transfer.m_Response.body.append(data, bytes);
 				return bytes;
 			}
 			catch (...)
 			{
 				// Exceptions must not cross libcurl's C callback boundary.
-				buffer.error = std::current_exception();
+				transfer.m_Error = std::current_exception();
 				return CURL_WRITEFUNC_ERROR;
 			}
 		}
 
-		template<typename T>
-		void SetOption(CURLoption option, T value)
-		{
-			const auto result = curl_easy_setopt(m_Handle.get(), option, value);
-			if (result != CURLE_OK)
-				throw HTTPTransportError(curl_easy_strerror(result));
-		}
-
-		ResponseBuffer m_Buffer;
-		std::array<char, CURL_ERROR_SIZE> m_Error{};
-		// Destroy the handle before the buffers referenced by its callbacks/options.
-		std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> m_Handle;
-	};
-
-	using ClientCache = std::map<std::string, std::unique_ptr<CurlClient>>;
-
-	// Each worker owns its clients: connection reuse without sharing curl handles.
-	// Timed jobs also keep throttling/retries independent of the application dispatcher.
-	class HTTPWorkers final
-	{
-	public:
-		// why 12? because it seemed like a good number (half of a 24-player server)
-		static constexpr size_t WORKERS_MAX = 12;
-	
-		HTTPWorkers()
-		{
-			try
-			{
-				for (size_t i = 0; i < WORKERS_MAX; ++i)
-					m_Threads.emplace_back([this] { Run(); });
-			}
-			catch (...)
-			{
-				Stop();
-				throw;
-			}
-		}
-
-		~HTTPWorkers() { Stop(); }
-
-		template<typename TFunc>
-		mh::task<std::invoke_result_t<TFunc, ClientCache&>> AddTask(TFunc func,
-			http_clock_t::time_point readyAt = http_clock_t::now(), std::string host = {},
-			http_clock_t::duration minInterval = {})
-		{
-			auto& clients = co_await ScheduledTask{ *this, readyAt, host, minInterval };
-			co_return func(clients);
-		}
-
-		mh::task<bool> DelayUntil(http_clock_t::time_point readyAt)
-		{
-			return AddTask([](ClientCache&) { return true; }, readyAt);
-		}
-
-	private:
-		struct ScheduledTask
-		{
-			HTTPWorkers& m_Workers;
-			http_clock_t::time_point m_ReadyAt;
-			std::string_view m_Host;
-			http_clock_t::duration m_MinInterval;
-			ClientCache* m_Clients = nullptr;
-
-			bool await_ready() const noexcept { return false; }
-			ClientCache& await_resume() const noexcept { return *m_Clients; }
-			void await_suspend(std::coroutine_handle<> handle)
-			{
-				m_Workers.Enqueue(m_ReadyAt, std::string(m_Host), m_MinInterval, [this, handle](ClientCache& clients)
-					{
-						m_Clients = &clients;
-						handle.resume();
-					});
-			}
-		};
-
-		struct WorkItem
-		{
-			std::string m_Host;
-			http_clock_t::duration m_MinInterval;
-			std::function<void(ClientCache&)> m_Task;
-		};
-
-		void Enqueue(http_clock_t::time_point readyAt, std::string host, http_clock_t::duration minInterval,
-			std::function<void(ClientCache&)> task)
-		{
-			{
-				std::lock_guard lock(m_Mutex);
-				if (m_Stopping)
-					throw std::runtime_error("HTTP workers are shutting down");
-				m_Tasks.emplace(std::make_pair(readyAt, m_NextTask++),
-					WorkItem{ std::move(host), minInterval, std::move(task) });
-			}
-			m_CV.notify_all();
-		}
-
-		void Stop()
-		{
-			{
-				std::lock_guard lock(m_Mutex);
-				m_Stopping = true;
-			}
-			m_CV.notify_all();
-		}
-
-		void Run()
-		{
-			ClientCache clients;
-			while (true)
-			{
-				std::function<void(ClientCache&)> task;
-				{
-					std::unique_lock lock(m_Mutex);
-					while (true)
-					{
-						if (m_Tasks.empty())
-						{
-							if (m_Stopping)
-								return;
-							m_CV.wait(lock);
-						}
-						else if (!m_Stopping && m_Tasks.begin()->first.first > http_clock_t::now())
-						{
-							const auto readyAt = m_Tasks.begin()->first.first;
-							m_CV.wait_until(lock, readyAt);
-						}
-						else
-						{
-							auto first = m_Tasks.begin();
-							if (!m_Stopping && !first->second.m_Host.empty())
-							{
-								const auto now = http_clock_t::now();
-								auto& nextStart = m_NextHostStart[first->second.m_Host];
-								if (nextStart > now)
-								{
-									// Enforce intervals at dispatch, including after all workers were busy.
-									auto deferred = m_Tasks.extract(first);
-									deferred.key().first = nextStart;
-									m_Tasks.insert(std::move(deferred));
-									continue;
-								}
-								nextStart = now + first->second.m_MinInterval;
-							}
-							task = std::move(first->second.m_Task);
-							m_Tasks.erase(m_Tasks.begin());
-							break;
-						}
-					}
-				}
-				task(clients);
-			}
-		}
-
-		// Initialize before starting workers; clean up after they join and destroy their handles.
+		// Initialize before everything else; clean up after all handles are gone.
 		CurlRuntime m_CurlRuntime;
+		std::unique_ptr<CURLM, decltype(&curl_multi_cleanup)> m_Multi;
 		std::mutex m_Mutex;
-		std::condition_variable m_CV;
 		bool m_Stopping = false;
 		uint64_t m_NextTask = 0;
-		std::map<std::pair<http_clock_t::time_point, uint64_t>, WorkItem> m_Tasks;
+		std::map<std::pair<http_clock_t::time_point, uint64_t>, Transfer*> m_Pending;
 		std::map<std::string, http_clock_t::time_point> m_NextHostStart;
-		// Destroy first, joining workers before their queue and synchronization objects.
-		std::vector<std::jthread> m_Threads;
+		// Joins after the I/O thread, draining the aborts it posts during shutdown.
+		CompletionPool m_Completions;
+		// Destroy first, so the I/O loop stops before anything it touches.
+		std::jthread m_Thread;
 	};
 
-	HTTPWorkers& GetHTTPWorkers()
+	HTTPEngine& GetHTTPEngine()
 	{
-		static HTTPWorkers workers;
-		return workers;
-	}
-
-	CurlClient& GetInnerClient(ClientCache& clients, const URL& url)
-	{
-		auto& client = clients[url.GetSchemeHostPort()];
-		if (!client)
-			client = std::make_unique<CurlClient>();
-		return *client;
+		static HTTPEngine engine;
+		return engine;
 	}
 
 	class HTTPClientImpl final : public IHTTPClient
@@ -363,7 +522,7 @@ static duration_t GetMinRequestInterval(const URL& url)
 mh::task<std::string> HTTPClientImpl::GetStringAsync(URL url) const try
 {
 	auto self = shared_from_this(); // Make sure we don't vanish
-	auto& workers = GetHTTPWorkers();
+	auto& engine = GetHTTPEngine();
 	std::shared_ptr<RequestInProgressObj> inProgressObj;
 	std::shared_ptr<RequestQueuedObj> queuedObj;
 
@@ -397,14 +556,13 @@ mh::task<std::string> HTTPClientImpl::GetStringAsync(URL url) const try
 				SetThrottled(true);
 				// Keep the callable and task explicit: GCC 11 mishandles owning lambda
 				// captures in a co_await operand, including URL's small strings.
-				auto request = [url, &SetThrottled, &requestIndex, this](ClientCache& clients)
+				// Runs on the I/O thread when the transfer actually starts.
+				auto onStart = [&SetThrottled, &requestIndex, this]
 					{
 						SetThrottled(false);
 						requestIndex = ++m_TotalRequestCount;
-						return GetInnerClient(clients, url).Get(url);
 					};
-				auto responseTask = workers.AddTask(std::move(request), http_clock_t::now(),
-					url.m_Host, GetMinRequestInterval(url));
+				auto responseTask = engine.Get(url, url.m_Host, GetMinRequestInterval(url), std::move(onStart));
 				auto response = co_await responseTask;
 
 				if (response.status >= 400 && response.status < 600)
@@ -461,7 +619,7 @@ mh::task<std::string> HTTPClientImpl::GetStringAsync(URL url) const try
 		// Wait and try again
 		{
 			SetThrottled(true);
-			co_await workers.DelayUntil(http_clock_t::now() + retryDelayTime);
+			co_await engine.DelayUntil(http_clock_t::now() + retryDelayTime);
 			SetThrottled(false);
 		}
 		retryCount++;

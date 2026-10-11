@@ -8,11 +8,11 @@ cpprestsdk was removed because it is archived, deindexed from upstream vcpkg, an
 incompatible with newer MSVC headers. The initial cpp-httplib replacement then hit
 its Windows 10 minimum; the application still targets Windows 8.1.
 
-**Current transport: libcurl's easy interface.** `HTTPClient.cpp` keeps its twelve
-workers, per-host dispatch throttling, coroutine completion, retry policy, and
-request counters. Each worker owns its per-origin curl handles and reuses their
-connections. Handles are never used concurrently; the earlier objection about a
-shared per-host cache no longer applies to this worker-owned cache.
+**Current transport: libcurl's multi interface.** `HTTPClient.cpp` runs every
+transfer on one I/O thread with no cap on concurrent requests; per-host dispatch
+throttling, the retry policy, and request counters are unchanged. Idle connections
+are shared through the multi handle's cache. Coroutines resume on a small
+completion pool so slow continuations never stall the I/O loop.
 
 The callback, checked curl options, and handle/global lifecycle add some adapter
 code, but preserve the existing public `IHTTPClient` interface and call sites.

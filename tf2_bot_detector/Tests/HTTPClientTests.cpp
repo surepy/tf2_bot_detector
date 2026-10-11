@@ -79,7 +79,7 @@ namespace
 	public:
 		Server()
 		{
-			m_Server.new_task_queue = [] { return new httplib::ThreadPool(16); };
+			m_Server.new_task_queue = [] { return new httplib::ThreadPool(32); };
 			m_Server.set_keep_alive_max_count(100);
 			m_Server.set_keep_alive_timeout(30);
 			m_Server.Get("/body", [](const httplib::Request&, httplib::Response& response)
@@ -232,47 +232,45 @@ TEST_CASE("HTTP retries release workers and do not require a UI dispatcher", "[h
 	REQUIRE(client->GetRequestCounts().m_Failed == 2);
 }
 
-TEST_CASE("HTTP overlaps same-host requests, caps operations at twelve, and reuses connections", "[http]")
+TEST_CASE("HTTP overlaps same-host requests without a concurrency cap and reuses connections", "[http]")
 {
-	constexpr int MAX_ACTIVE_REQUESTS = 12;
-	constexpr int TOTAL_REQUESTS = MAX_ACTIVE_REQUESTS + 2;
+	// More than any fixed worker count; same host, so the 500ms dispatch throttle still applies.
+	constexpr int TOTAL_REQUESTS = 20;
 	Server server;
 	auto client = IHTTPClient::Create();
 	std::vector<mh::task<std::string>> tasks;
-	const auto started = std::chrono::steady_clock::now();
 	for (int i = 0; i < TOTAL_REQUESTS; ++i)
 		tasks.push_back(client->GetStringAsync(server.GetURL("/gate", "localhost")));
 	{
 		std::unique_lock lock(server.m_Mutex);
-		REQUIRE(server.m_CV.wait_for(lock, 9s, [&] { return server.m_Entered >= MAX_ACTIVE_REQUESTS; }));
-		// Give all requests time to pass the existing 500ms throttle.
-		server.m_CV.wait_until(lock, started + (TOTAL_REQUESTS + 1) * 500ms,
-			[&] { return server.m_Entered > MAX_ACTIVE_REQUESTS; });
-		REQUIRE(server.m_Entered == MAX_ACTIVE_REQUESTS);
-		REQUIRE(server.m_MaxActive == MAX_ACTIVE_REQUESTS);
+		REQUIRE(server.m_CV.wait_for(lock, (TOTAL_REQUESTS + 4) * 500ms,
+			[&] { return server.m_Entered == TOTAL_REQUESTS; }));
+		REQUIRE(server.m_MaxActive == TOTAL_REQUESTS);
+		for (size_t i = 1; i < server.m_StartTimes.size(); ++i)
+			REQUIRE(server.m_StartTimes[i] - server.m_StartTimes[i - 1] >= 450ms);
 	}
-	REQUIRE(client->GetRequestCounts().m_InProgress == MAX_ACTIVE_REQUESTS);
-	REQUIRE(client->GetRequestCounts().m_Throttled == 2);
+	REQUIRE(client->GetRequestCounts().m_InProgress == TOTAL_REQUESTS);
+	REQUIRE(client->GetRequestCounts().m_Throttled == 0);
 	server.Release();
 	for (auto& task : tasks)
 	{
 		REQUIRE(task.wait_for(5s) == std::future_status::ready);
 		REQUIRE(task.get() == "released");
 	}
+
+	// A follow-up request should ride one of the now-idle connections.
+	REQUIRE(client->GetString(server.GetURL("/gate", "localhost")) == "released");
 	{
 		std::lock_guard lock(server.m_Mutex);
-		REQUIRE(server.m_Entered == TOTAL_REQUESTS);
-		REQUIRE(server.m_MaxActive == MAX_ACTIVE_REQUESTS);
-		REQUIRE(server.m_Ports.size() == MAX_ACTIVE_REQUESTS);
-		for (size_t i = 1; i < server.m_StartTimes.size(); ++i)
-			REQUIRE(server.m_StartTimes[i] - server.m_StartTimes[i - 1] >= 450ms);
+		REQUIRE(server.m_Entered == TOTAL_REQUESTS + 1);
+		REQUIRE(server.m_Ports.size() == TOTAL_REQUESTS);
 	}
 	REQUIRE(WaitUntil([&]
 		{
 			const auto counts = client->GetRequestCounts();
 			return counts.m_InProgress == 0 && counts.m_Throttled == 0;
 		}));
-	REQUIRE(client->GetRequestCounts().m_Total == TOTAL_REQUESTS);
+	REQUIRE(client->GetRequestCounts().m_Total == TOTAL_REQUESTS + 1);
 	REQUIRE(client->GetRequestCounts().m_Failed == 0);
 }
 
