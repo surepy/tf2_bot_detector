@@ -488,10 +488,11 @@ std::optional<time_point_t> DiscordGameState::GetEarliestActiveQueueStartTime() 
 
 static void SetHashedPartyId(discord::ActivityParty& discordParty, const DiscordGameState::PartyInfo& gameParty)
 {
-	// I'm not 100% sure that discord exposes the party id to clients, but rather than
-	// find out the hard way that its possible to annoy people in parties, we hash the
-	// party ID and the party leader SteamID together to create an ID for discord that
-	// is not trivially reversible.
+	// I'm not 100% sure that discord exposes the party id to clients, 
+	// (note: it does: https://docs.discord.com/developers/events/gateway-events#activity-object-activity-party)
+	// but rather than find out the hard way that its possible to annoy people in parties, 
+	// we hash the party ID and the party leader SteamID together to create an ID for discord 
+	// that is not trivially reversible.
 	CryptoPP::SHA256 partyIDHash;
 
 	const auto HashByValue = [&partyIDHash](const auto& data)
