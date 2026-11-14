@@ -463,10 +463,10 @@ void Settings::ValidateSchema(const ConfigSchemaInfo& schema) const
 void Settings::AddDefaultGotoProfileSites()
 {
 	m_GotoProfileSites.push_back({ "Steam Community", "https://steamcommunity.com/profiles/%SteamID64%" });
+	m_GotoProfileSites.push_back({ "BackpackTF", "https://backpack.tf/profiles/%SteamID64%" });
 	m_GotoProfileSites.push_back({ "logs.tf", "https://logs.tf/profile/%SteamID64%" });
 	m_GotoProfileSites.push_back({ "RGL", "https://rgl.gg/Public/PlayerProfile.aspx?p=%SteamID64%" });
-	m_GotoProfileSites.push_back({ "SteamRep", "https://steamrep.com/profiles/%SteamID64%" });
-	m_GotoProfileSites.push_back({ "UGC League", "https://www.ugcleague.com/players_page.cfm?player_id=%SteamID64%" });
+	m_GotoProfileSites.push_back({ "ETF2L", "https://etf2l.org/search/%SteamID64%" });
 	m_GotoProfileSites.push_back({ "SteamHistory", "https://steamhistory.net/id/%SteamID64%" });
 }
 
