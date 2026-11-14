@@ -40,7 +40,14 @@ cp "$ICON" "$APPDIR/tf2_bot_detector.png"
 # Bundle private, non-system shared libs (everything else is statically linked).
 # Leave the core system/loader and host graphics libs to the host.
 echo ">> bundling shared libs"
-ldd "$BIN" | awk '/=> \//{print $3}' | while read -r lib; do
+DEPENDENCIES="$(ldd "$BIN")"
+if [[ "$DEPENDENCIES" == *"=> not found"* ]]; then
+  echo "Cannot package binary with missing shared libraries:" >&2
+  echo "$DEPENDENCIES" >&2
+  exit 1
+fi
+# This includes libdiscord_game_sdk.so when Discord integration is enabled.
+printf '%s\n' "$DEPENDENCIES" | awk '/=> \//{print $3}' | while read -r lib; do
   case "$(basename "$lib")" in
     libc.so.*|libm.so.*|libdl.so.*|libpthread.so.*|librt.so.*|ld-linux*) ;;  # host glibc
     libGL*|libEGL*|libX11*|libxcb*|libwayland*|libdrm*) ;;                    # host graphics

@@ -113,6 +113,7 @@ jobs:
       run: |
         cmake -G Ninja \
           -DTF2BD_IS_CI_COMPILE=ON \
+          -DTF2BD_ENABLE_HTTP_TESTS=ON \
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
           -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" \
           -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="${{ needs.config.outputs.tf2bd_build_dir }}" \
@@ -125,6 +126,10 @@ jobs:
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
         cmake --build . --config ${{matrix.build_type}}
+
+    - name: Test HTTP transport and playerlist editing
+      working-directory: ${{needs.config.outputs.tf2bd_build_dir}}
+      run: ctest --build-config ${{matrix.build_type}} --output-on-failure -R '^(HTTPClient|PlayerListEditing)$'
 
     - name: "Artifacts: Fresh, signed exe"
       if: steps.determine_artifact_behavior.outputs.upload && startsWith(matrix.os, 'windows')
